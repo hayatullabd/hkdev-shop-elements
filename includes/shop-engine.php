@@ -136,11 +136,12 @@ class Shop_Engine {
 	 * @param int    $post_id       Product ID.
 	 * @param int    $trending_days Trending lookback days.
 	 * @param bool   $is_carousel   Whether inside a carousel slide.
-	 * @param string $image_size    WooCommerce image size for the card image.
-	 * @param bool   $show_wishlist Render the wishlist heart on the image.
+	 * @param string $image_size       WooCommerce image size for the card image.
+	 * @param bool   $show_wishlist    Render the wishlist heart on the image.
+	 * @param bool   $show_hover_image Reveal the second gallery image on hover.
 	 * @return void
 	 */
-	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false, $image_size = 'woocommerce_thumbnail', $show_wishlist = false ) {
+	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false, $image_size = 'woocommerce_thumbnail', $show_wishlist = false, $show_hover_image = false ) {
 		global $product;
 		$product = wc_get_product( $post_id );
 		if ( ! $product ) {
@@ -165,6 +166,16 @@ class Shop_Engine {
 		$permalink    = get_permalink( $post_id );
 		$checkout_url = wc_get_checkout_url();
 
+		// Second gallery image, revealed over the featured one on hover. Cards
+		// stay single-image when the product only has the featured image.
+		$hover_image_id = 0;
+		if ( $show_hover_image ) {
+			$gallery = $product->get_gallery_image_ids();
+			if ( ! empty( $gallery ) ) {
+				$hover_image_id = (int) $gallery[0];
+			}
+		}
+
 		$total_sales    = (int) $product->get_total_sales();
 		$trending_sales = ( $trending_days > 0 ) ? $this->get_sales_by_period( $post_id, $trending_days ) : 0;
 
@@ -179,6 +190,12 @@ class Shop_Engine {
 				<a href="<?php echo esc_url( $permalink ); ?>">
 					<?php echo $product->get_image( $image_size ? sanitize_key( $image_size ) : 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</a>
+
+				<?php if ( $hover_image_id ) : ?>
+					<span class="hkdev-hover-img" aria-hidden="true">
+						<?php echo wp_get_attachment_image( $hover_image_id, $image_size ? sanitize_key( $image_size ) : 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</span>
+				<?php endif; ?>
 
 				<?php if ( $show_wishlist && class_exists( Wishlist_Engine::class ) ) : ?>
 					<?php echo Wishlist_Engine::instance()->button_html( $post_id, [ 'class' => 'hkdev-wishlist-card-btn' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -608,6 +625,7 @@ class Shop_Engine {
 			'stock_status'     => isset( $_POST['stock_status'] ) ? sanitize_key( wp_unslash( $_POST['stock_status'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'image_size'       => isset( $_POST['image_size'] ) ? sanitize_key( wp_unslash( $_POST['image_size'] ) ) : 'woocommerce_thumbnail', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'wishlist_btn'     => ( isset( $_POST['wishlist_btn'] ) && 'no' === sanitize_text_field( wp_unslash( $_POST['wishlist_btn'] ) ) ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			'hover_img'        => ( isset( $_POST['hover_img'] ) && 'no' === sanitize_text_field( wp_unslash( $_POST['hover_img'] ) ) ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		];
 
 		if ( $with_paged ) {
@@ -633,7 +651,7 @@ class Shop_Engine {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['wishlist_btn'] );
+				$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['wishlist_btn'], 'yes' === $params['hover_img'] );
 			}
 			wp_reset_postdata();
 		} else {
@@ -659,7 +677,7 @@ class Shop_Engine {
 		ob_start();
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$this->render_single_product_card( get_the_ID(), $params['days'], false, $params['image_size'], 'yes' === $params['wishlist_btn'] );
+			$this->render_single_product_card( get_the_ID(), $params['days'], false, $params['image_size'], 'yes' === $params['wishlist_btn'], 'yes' === $params['hover_img'] );
 		}
 		wp_reset_postdata();
 		$html = ob_get_clean();
@@ -910,6 +928,7 @@ class Shop_Engine {
 				'view_toggle'      => 'no',
 				'default_view'     => 'grid',
 				'wishlist_btn'     => 'yes',
+				'hover_img'        => 'yes',
 				'load_more'        => 'no',
 				'load_more_text'   => __( 'Load More', 'hkdev-shop-elements' ),
 			],
@@ -943,6 +962,9 @@ class Shop_Engine {
 
 		// Wishlist heart on every card (grid, carousel and related listings).
 		$show_wishlist = ( 'yes' === $atts['wishlist_btn'] );
+
+		// Second gallery image on hover (grid, carousel and related listings).
+		$show_hover = ( 'yes' === $atts['hover_img'] );
 
 		$current_cat_id = 0;
 		$exclude_ids    = [];
@@ -1024,6 +1046,7 @@ class Shop_Engine {
 			 data-view-toggle="<?php echo esc_attr( $view_toggle ); ?>"
 			 data-default-view="<?php echo esc_attr( $default_view ); ?>"
 			 data-wishlist-btn="<?php echo esc_attr( $atts['wishlist_btn'] ); ?>"
+			 data-hover-img="<?php echo esc_attr( $atts['hover_img'] ); ?>"
 			 data-hkdev-elements="1">
 
 			<?php echo $this->shop_heading_html( is_array( $atts['heading'] ) ? $atts['heading'] : [] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -1091,7 +1114,7 @@ class Shop_Engine {
 								<?php
 								while ( $query->have_posts() ) {
 									$query->the_post();
-									$this->render_single_product_card( get_the_ID(), (int) $atts['days'], true, $atts['image_size'], $show_wishlist );
+									$this->render_single_product_card( get_the_ID(), (int) $atts['days'], true, $atts['image_size'], $show_wishlist, $show_hover );
 								}
 								wp_reset_postdata();
 								?>
@@ -1109,7 +1132,7 @@ class Shop_Engine {
 							<?php
 							while ( $query->have_posts() ) {
 								$query->the_post();
-								$this->render_single_product_card( get_the_ID(), (int) $atts['days'], false, $atts['image_size'], $show_wishlist );
+								$this->render_single_product_card( get_the_ID(), (int) $atts['days'], false, $atts['image_size'], $show_wishlist, $show_hover );
 							}
 							wp_reset_postdata();
 							?>

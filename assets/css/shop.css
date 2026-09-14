@@ -290,6 +290,27 @@
     transition: transform 0.45s ease;
 }.hkdev-product-card:hover .hkdev-img-box img{
     transform: scale(1.05);
+}/* --- Second image on hover --- */
+/* The gallery image fades in over the featured one; it must stay below the
+   badges (z-index 3) and the wishlist heart (z-index 4). */.hkdev-hover-img{
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    display: block !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    background: var(--hkdev-bg-soft) !important;
+    transition: opacity 0.35s ease !important;
+}.hkdev-hover-img img{
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: cover !important;
+    transition: transform 0.45s ease !important;
+}.hkdev-product-card:hover .hkdev-hover-img,
+.hkdev-product-card:focus-within .hkdev-hover-img{
+    opacity: 1 !important;
 }/* --- Badges --- */.hkdev-badge-container{
     position: absolute !important;
     top: 12px !important;

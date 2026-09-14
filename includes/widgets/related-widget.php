@@ -245,6 +245,7 @@ class Related_Widget extends Widget_Base {
 			'carousel'         => $this->get_carousel_config( $settings ),
 			'title_lines'      => $this->get_title_lines( $settings ),
 			'wishlist_btn'     => $this->get_wishlist_btn( $settings ),
+			'hover_img'        => $this->get_hover_img( $settings ),
 		];
 
 		$related_ids = \HkdevShopElements\Includes\Shop_Engine::instance()->get_related_product_ids( $product_id, $limit );

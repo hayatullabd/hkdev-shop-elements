@@ -153,6 +153,7 @@
 			columns: $cat.attr('data-columns'),
 			per_page: $cat.attr('data-per-page'),
 			wishlist_btn: $cat.attr('data-wishlist-btn'),
+			hover_img: $cat.attr('data-hover-img'),
 			hk_page: options.page || 1,
 			hk_append: options.append ? 1 : 0,
 			hk_locked_cats: lockedSlugs($cat, 'cats').join(','),

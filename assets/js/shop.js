@@ -237,6 +237,7 @@ jQuery(function($) {
                 stock_status: $wrapper.data('stock_status'),
                 image_size: $wrapper.data('image_size'),
                 wishlist_btn: $wrapper.attr('data-wishlist-btn'),
+                hover_img: $wrapper.attr('data-hover-img'),
                 style: $wrapper.data('style')
             },
             success: function(response) { 
@@ -319,7 +320,8 @@ jQuery(function($) {
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
                 image_size: $wrapper.data('image_size'),
-                wishlist_btn: $wrapper.attr('data-wishlist-btn')
+                wishlist_btn: $wrapper.attr('data-wishlist-btn'),
+                hover_img: $wrapper.attr('data-hover-img')
             },
             success: function (response) {
                 const data = (response && response.success && response.data) ? response.data : null;

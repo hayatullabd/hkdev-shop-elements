@@ -420,6 +420,7 @@ class Shop_Widget extends Widget_Base {
 			'load_more'        => isset( $settings['load_more'] ) ? $yes_no( 'load_more' ) : 'yes',
 			'load_more_text'   => isset( $settings['load_more_text'] ) && '' !== $settings['load_more_text'] ? sanitize_text_field( $settings['load_more_text'] ) : __( 'Load More', 'hkdev-shop-elements' ),
 			'wishlist_btn'     => $this->get_wishlist_btn( $settings ),
+			'hover_img'        => $this->get_hover_img( $settings ),
 			'heading'          => $this->get_heading_config( $settings ),
 			'carousel'         => $this->get_carousel_config( $settings ),
 			'title_lines'      => $this->get_title_lines( $settings ),

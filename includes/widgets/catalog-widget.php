@@ -206,6 +206,17 @@ class Catalog_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'hover_img',
+			[
+				'label'        => esc_html__( 'Second image on hover', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Swaps in the next gallery image while the pointer is over a card.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->end_controls_section();
 
 		// Product card styling (same controls as the Shop Grid widget).
@@ -235,6 +246,7 @@ class Catalog_Widget extends Widget_Base {
 				'show_view'    => ( ! isset( $settings['show_view'] ) || 'yes' === $settings['show_view'] ) ? 'yes' : 'no',
 				'default_view' => ( isset( $settings['default_view'] ) && 'list' === $settings['default_view'] ) ? 'list' : 'grid',
 				'wishlist_btn' => ( ! isset( $settings['wishlist_btn'] ) || 'yes' === $settings['wishlist_btn'] ) ? 'yes' : 'no',
+				'hover_img'    => ( ! isset( $settings['hover_img'] ) || 'yes' === $settings['hover_img'] ) ? 'yes' : 'no',
 			],
 			false
 		);

@@ -25,22 +25,23 @@ trait Product_Controls {
 	/**
 	 * Register the card + carousel control sections.
 	 *
-	 * @param bool $with_wishlist Include the wishlist heart control (listings of
-	 *                            products only – category cards have none).
+	 * @param bool $for_products Product card controls (wishlist heart, hover
+	 *                           image). Category cards have neither.
 	 * @return void
 	 */
-	protected function register_product_controls( $with_wishlist = true ) {
-		$this->register_card_controls( $with_wishlist );
+	protected function register_product_controls( $for_products = true ) {
+		$this->register_card_controls( $for_products );
 		$this->register_carousel_controls();
 	}
 
 	/**
 	 * Content tab – product card options.
 	 *
-	 * @param bool $with_wishlist Include the wishlist heart control.
+	 * @param bool $for_products Include the product-only controls (wishlist
+	 *                           heart, hover image).
 	 * @return void
 	 */
-	protected function register_card_controls( $with_wishlist = true ) {
+	protected function register_card_controls( $for_products = true ) {
 		$this->start_controls_section(
 			'section_card',
 			[
@@ -64,7 +65,7 @@ trait Product_Controls {
 			]
 		);
 
-		if ( $with_wishlist ) {
+		if ( $for_products ) {
 			$this->add_control(
 				'wishlist_btn',
 				[
@@ -76,6 +77,19 @@ trait Product_Controls {
 					'return_value' => 'yes',
 					'separator'    => 'before',
 					'description'  => esc_html__( 'Adds a save-to-wishlist heart to every card in this listing.', 'hkdev-shop-elements' ),
+				]
+			);
+
+			$this->add_control(
+				'hover_img',
+				[
+					'label'        => esc_html__( 'Second Image on Hover', 'hkdev-shop-elements' ),
+					'type'         => Controls_Manager::SWITCHER,
+					'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+					'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+					'default'      => 'yes',
+					'return_value' => 'yes',
+					'description'  => esc_html__( 'Swaps in the next gallery image while the pointer is over a card. Products with a single image are unaffected.', 'hkdev-shop-elements' ),
 				]
 			);
 		}
@@ -272,6 +286,16 @@ trait Product_Controls {
 	 */
 	protected function get_wishlist_btn( $settings ) {
 		return ( ! isset( $settings['wishlist_btn'] ) || 'yes' === $settings['wishlist_btn'] ) ? 'yes' : 'no';
+	}
+
+	/**
+	 * Whether cards swap in the second gallery image on hover (on by default).
+	 *
+	 * @param array $settings Widget settings.
+	 * @return string "yes" or "no".
+	 */
+	protected function get_hover_img( $settings ) {
+		return ( ! isset( $settings['hover_img'] ) || 'yes' === $settings['hover_img'] ) ? 'yes' : 'no';
 	}
 
 	/**

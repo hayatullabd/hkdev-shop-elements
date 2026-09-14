@@ -615,7 +615,7 @@ class Wishlist_Engine {
 					if ( $query->have_posts() ) {
 						while ( $query->have_posts() ) {
 							$query->the_post();
-							Shop_Engine::instance()->render_single_product_card( get_the_ID(), 0, false, 'woocommerce_thumbnail', true );
+							Shop_Engine::instance()->render_single_product_card( get_the_ID(), 0, false, 'woocommerce_thumbnail', true, true );
 						}
 						wp_reset_postdata();
 					}
