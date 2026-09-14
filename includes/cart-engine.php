@@ -236,14 +236,7 @@ class Cart_Engine {
 								<?php if ( 'yes' === HKDEV_ELEMENTS_SHOW_REMOVE_BTN ) : ?>
 									<button type="button" class="hkdev-item-remove-btn" title="<?php esc_attr_e( 'Remove', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-trash-can"></i></button>
 								<?php endif; ?>
-
-								<?php echo Wishlist_Engine::instance()->button_html( $product_id, [ 'class' => 'hkdev-cart-wishlist-btn' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
-
-							<button type="button" class="hkdev-item-move-btn" data-key="<?php echo esc_attr( $cart_item_key ); ?>">
-								<i class="fa-solid fa-heart" aria-hidden="true"></i>
-								<span><?php esc_html_e( 'Move to Wishlist', 'hkdev-shop-elements' ); ?></span>
-							</button>
 						</div>
 
 						<?php if ( 'yes' === HKDEV_ELEMENTS_SHOW_ITEM_SUBTOTAL ) : ?>

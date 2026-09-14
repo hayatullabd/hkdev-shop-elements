@@ -76,7 +76,7 @@ class Related_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_style_depends() {
-		return [ 'hkdev-elements-shop-style', 'hkdev-elements-wishlist-style', 'hkdev-elements-swiper-css', 'hkdev-elements-fontawesome' ];
+		return [ 'hkdev-elements-shop-style', 'hkdev-elements-swiper-css', 'hkdev-elements-fontawesome' ];
 	}
 
 	/**
@@ -85,7 +85,7 @@ class Related_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'hkdev-elements-shop-js', 'hkdev-elements-wishlist-js', 'hkdev-elements-swiper-js' ];
+		return [ 'hkdev-elements-shop-js', 'hkdev-elements-swiper-js' ];
 	}
 
 	/**
@@ -244,7 +244,6 @@ class Related_Widget extends Widget_Base {
 			'type'             => 'recent',
 			'carousel'         => $this->get_carousel_config( $settings ),
 			'title_lines'      => $this->get_title_lines( $settings ),
-			'wishlist_btn'     => $this->get_wishlist_btn( $settings ),
 			'hover_img'        => $this->get_hover_img( $settings ),
 		];
 

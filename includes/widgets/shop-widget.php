@@ -78,7 +78,7 @@ class Shop_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_style_depends() {
-		return [ 'hkdev-elements-shop-style', 'hkdev-elements-wishlist-style', 'hkdev-elements-swiper-css', 'hkdev-elements-fontawesome' ];
+		return [ 'hkdev-elements-shop-style', 'hkdev-elements-swiper-css', 'hkdev-elements-fontawesome' ];
 	}
 
 	/**
@@ -87,7 +87,7 @@ class Shop_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'hkdev-elements-shop-js', 'hkdev-elements-wishlist-js', 'hkdev-elements-swiper-js' ];
+		return [ 'hkdev-elements-shop-js', 'hkdev-elements-swiper-js' ];
 	}
 
 	/**
@@ -419,7 +419,6 @@ class Shop_Widget extends Widget_Base {
 			'default_view'     => ( isset( $settings['default_view'] ) && 'list' === $settings['default_view'] ) ? 'list' : 'grid',
 			'load_more'        => isset( $settings['load_more'] ) ? $yes_no( 'load_more' ) : 'yes',
 			'load_more_text'   => isset( $settings['load_more_text'] ) && '' !== $settings['load_more_text'] ? sanitize_text_field( $settings['load_more_text'] ) : __( 'Load More', 'hkdev-shop-elements' ),
-			'wishlist_btn'     => $this->get_wishlist_btn( $settings ),
 			'hover_img'        => $this->get_hover_img( $settings ),
 			'heading'          => $this->get_heading_config( $settings ),
 			'carousel'         => $this->get_carousel_config( $settings ),

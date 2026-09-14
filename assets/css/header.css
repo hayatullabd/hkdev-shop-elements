@@ -586,49 +586,6 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     box-shadow: 0 0 0 2px #ffffff !important;
 }
 
-/* ---- Wishlist icon + live count ---- */
-.hkdev-header-wishlist.has-items {
-    color: var(--hd-secondary) !important;
-}
-
-.hkdev-header-icon-btn.hkdev-header-wishlist.has-items {
-    border-color: rgba(240, 103, 36, 0.4) !important;
-}
-
-.hkdev-header-wishlist-count {
-    position: absolute !important;
-    top: -8px !important;
-    right: -8px !important;
-    min-width: 21px !important;
-    height: 21px !important;
-    padding: 0 6px !important;
-    border-radius: var(--hd-pill) !important;
-    background: var(--hd-primary) !important;
-    color: #ffffff !important;
-    font-size: 11.5px !important;
-    font-weight: 800 !important;
-    line-height: 21px !important;
-    text-align: center !important;
-    box-shadow: 0 0 0 2px #ffffff !important;
-}
-
-/* In the mobile panel the count sits inline with the label. */
-.hkdev-header-wishlist-count-inline {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    min-width: 20px !important;
-    height: 20px !important;
-    padding: 0 7px !important;
-    margin-left: 8px !important;
-    border-radius: var(--hd-pill) !important;
-    background: var(--hd-primary) !important;
-    color: #ffffff !important;
-    font-size: 11px !important;
-    font-weight: 800 !important;
-    line-height: 1 !important;
-}
-
 /* ---- Log In / Register ---- */
 .hkdev-header-auth {
     display: flex !important;

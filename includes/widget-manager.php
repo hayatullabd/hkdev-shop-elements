@@ -98,7 +98,6 @@ final class Widget_Manager {
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/account-widget.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/tracking-widget.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/404-widget.php';
-		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/wishlist-widget.php';
 
 		$widgets = [
 			Widgets\Shop_Widget::class,
@@ -115,7 +114,6 @@ final class Widget_Manager {
 			Widgets\Account_Widget::class,
 			Widgets\Tracking_Widget::class,
 			Widgets\Page404_Widget::class,
-			Widgets\Wishlist_Widget::class,
 		];
 
 		foreach ( $widgets as $widget_class ) {

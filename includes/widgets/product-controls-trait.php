@@ -25,8 +25,8 @@ trait Product_Controls {
 	/**
 	 * Register the card + carousel control sections.
 	 *
-	 * @param bool $for_products Product card controls (wishlist heart, hover
-	 *                           image). Category cards have neither.
+	 * @param bool $for_products Product card controls (hover image).
+	 *                           Category cards have neither.
 	 * @return void
 	 */
 	protected function register_product_controls( $for_products = true ) {
@@ -37,8 +37,7 @@ trait Product_Controls {
 	/**
 	 * Content tab – product card options.
 	 *
-	 * @param bool $for_products Include the product-only controls (wishlist
-	 *                           heart, hover image).
+	 * @param bool $for_products Include the product-only controls (hover image).
 	 * @return void
 	 */
 	protected function register_card_controls( $for_products = true ) {
@@ -66,20 +65,6 @@ trait Product_Controls {
 		);
 
 		if ( $for_products ) {
-			$this->add_control(
-				'wishlist_btn',
-				[
-					'label'        => esc_html__( 'Wishlist Heart', 'hkdev-shop-elements' ),
-					'type'         => Controls_Manager::SWITCHER,
-					'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
-					'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
-					'default'      => 'yes',
-					'return_value' => 'yes',
-					'separator'    => 'before',
-					'description'  => esc_html__( 'Adds a save-to-wishlist heart to every card in this listing.', 'hkdev-shop-elements' ),
-				]
-			);
-
 			$this->add_control(
 				'hover_img',
 				[
@@ -275,17 +260,6 @@ trait Product_Controls {
 	 */
 	protected function get_title_lines( $settings ) {
 		return isset( $settings['title_lines'] ) ? absint( $settings['title_lines'] ) : 0;
-	}
-
-	/**
-	 * Whether the cards carry the wishlist heart (on by default, so widgets
-	 * saved before the control existed also get it).
-	 *
-	 * @param array $settings Widget settings.
-	 * @return string "yes" or "no".
-	 */
-	protected function get_wishlist_btn( $settings ) {
-		return ( ! isset( $settings['wishlist_btn'] ) || 'yes' === $settings['wishlist_btn'] ) ? 'yes' : 'no';
 	}
 
 	/**

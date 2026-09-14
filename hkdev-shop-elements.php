@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       HKDEV Shop Elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.1
+ * Version:           0.5.2
  * Author:            FitForLife
  * Text Domain:       hkdev-shop-elements
  * Requires at least: 6.0
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.1' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.2' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -158,10 +158,6 @@ function hkdev_elements_boot() {
 	require_once HKDEV_ELEMENTS_PATH . 'includes/catalog-engine.php';
 	Includes\Catalog_Engine::instance();
 
-	// Wishlist Engine (saved products: card / cart / single product + page).
-	require_once HKDEV_ELEMENTS_PATH . 'includes/wishlist-engine.php';
-	Includes\Wishlist_Engine::instance();
-
 	// Admin settings (Checkout Fields on/off). Only hooks admin_menu, safe to
 	// init unconditionally.
 	require_once HKDEV_ELEMENTS_PATH . 'includes/checkout-options.php';
@@ -205,7 +201,6 @@ function hkdev_elements_boot() {
 	add_shortcode( 'hkdev_my_account', [ Includes\Account_Engine::instance(), 'account_shortcode' ] );
 	add_shortcode( 'hkdev_track_order', [ Includes\Tracking_Engine::instance(), 'tracking_shortcode' ] );
 	add_shortcode( 'hkdev_404', [ Includes\Page404_Engine::instance(), 'page404_shortcode' ] );
-	add_shortcode( 'hkdev_wishlist', [ Includes\Wishlist_Engine::instance(), 'wishlist_shortcode' ] );
 }
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\hkdev_elements_boot' );
 
@@ -443,33 +438,6 @@ function hkdev_elements_register_assets() {
 		hkdev_elements_asset_ver( 'assets/css/404.css' )
 	);
 
-	// Wishlist button + wishlist page. Depends on the shop card styles.
-	wp_register_style(
-		'hkdev-elements-wishlist-style',
-		hkdev_elements_asset_url( 'assets/css/wishlist.css' ),
-		[ 'hkdev-elements-shop-style', 'hkdev-elements-fontawesome' ],
-		hkdev_elements_asset_ver( 'assets/css/wishlist.css' )
-	);
-	wp_register_script(
-		'hkdev-elements-wishlist-js',
-		hkdev_elements_asset_url( 'assets/js/wishlist.js' ),
-		[ 'jquery' ],
-		hkdev_elements_asset_ver( 'assets/js/wishlist.js' ),
-		true
-	);
-	wp_localize_script(
-		'hkdev-elements-wishlist-js',
-		'hkdevWishlistL10n',
-		[
-			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-			'action'       => 'hkdev_elements_wishlist_toggle',
-			'moveAction'   => 'hkdev_elements_wishlist_move',
-			'addAllAction' => 'hkdev_elements_wishlist_add_all',
-			'nonce'        => wp_create_nonce( 'hkdev_elements_wishlist' ),
-			'error'        => esc_html__( 'Something went wrong. Please try again.', 'hkdev-shop-elements' ),
-		]
-	);
-
 	wp_localize_script(
 		'jquery',
 		'hkdevElementsAjax',
@@ -504,7 +472,6 @@ function hkdev_elements_force_style_order() {
 		'hkdev-elements-404-style',
 		'hkdev-elements-header-style',
 		'hkdev-elements-footer-style',
-		'hkdev-elements-wishlist-style',
 	];
 
 	foreach ( $handles as $handle ) {
@@ -602,37 +569,6 @@ function hkdev_elements_enqueue_tracking_404_assets() {
 	}
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_tracking_404_assets', 20 );
-
-/**
- * Enqueue the wishlist assets on the pages that can show a wishlist button:
- * the cart (per-item button) and any page holding the wishlist / account
- * shortcode. Elementor widgets load them through their own dependencies.
- *
- * @return void
- */
-function hkdev_elements_enqueue_wishlist_assets() {
-	if ( ! function_exists( 'is_woocommerce' ) || is_admin() ) {
-		return;
-	}
-
-	$needed = function_exists( 'is_cart' ) && is_cart();
-
-	if ( ! $needed ) {
-		global $post;
-		if ( is_a( $post, 'WP_Post' ) ) {
-			$needed = has_shortcode( $post->post_content, 'hkdev_wishlist' )
-				|| has_shortcode( $post->post_content, 'hkdev_my_account' );
-		}
-	}
-
-	if ( ! $needed ) {
-		return;
-	}
-
-	wp_enqueue_style( 'hkdev-elements-wishlist-style' );
-	wp_enqueue_script( 'hkdev-elements-wishlist-js' );
-}
-add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_wishlist_assets', 25 );
 
 /**
  * Enqueue the plugin checkout assets on the WooCommerce checkout page.

@@ -292,7 +292,7 @@
     transform: scale(1.05);
 }/* --- Second image on hover --- */
 /* The gallery image fades in over the featured one; it must stay below the
-   badges (z-index 3) and the wishlist heart (z-index 4). */.hkdev-hover-img{
+   badges (z-index 3). */.hkdev-hover-img{
     position: absolute !important;
     inset: 0 !important;
     z-index: 2 !important;

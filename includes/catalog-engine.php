@@ -367,12 +367,11 @@ class Catalog_Engine {
 		$locks = [ 'cats' => $this->post_slugs( 'hk_locked_cats' ), 'tags' => [] ];
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce was verified above.
-		$wishlist = ! isset( $_POST['wishlist_btn'] ) || 'no' !== sanitize_text_field( wp_unslash( $_POST['wishlist_btn'] ) );
-		$hover    = ! isset( $_POST['hover_img'] ) || 'no' !== sanitize_text_field( wp_unslash( $_POST['hover_img'] ) );
+		$hover = ! isset( $_POST['hover_img'] ) || 'no' !== sanitize_text_field( wp_unslash( $_POST['hover_img'] ) );
 
 		wp_send_json_success(
 			[
-				'html'       => $this->grid_html( $query, $columns, (bool) $params['append'], $wishlist, $hover ),
+				'html'       => $this->grid_html( $query, $columns, (bool) $params['append'], $hover ),
 				'chips_html' => $this->chips_html( $params, $locks ),
 				'count_html' => $this->count_html( $query, $params ),
 				'found'      => (int) $query->found_posts,
@@ -404,7 +403,6 @@ class Catalog_Engine {
 				'show_filters' => 'yes',
 				'show_view'    => 'yes',
 				'default_view' => 'grid',
-				'wishlist_btn' => 'yes',
 				'hover_img'    => 'yes',
 			],
 			$atts,
@@ -417,19 +415,11 @@ class Catalog_Engine {
 	/**
 	 * Ensure the catalog assets are enqueued (shortcode / widget render).
 	 *
-	 * @param bool $with_wishlist Also load the wishlist assets (the cards carry
-	 *                            a heart everywhere except the archive bar,
-	 *                            whose loop belongs to the theme).
 	 * @return void
 	 */
-	private function enqueue_assets( $with_wishlist = false ) {
+	private function enqueue_assets() {
 		wp_enqueue_style( 'hkdev-elements-catalog-style' );
 		wp_enqueue_script( 'hkdev-elements-catalog-js' );
-
-		if ( $with_wishlist ) {
-			wp_enqueue_style( 'hkdev-elements-wishlist-style' );
-			wp_enqueue_script( 'hkdev-elements-wishlist-js' );
-		}
 	}
 
 	/**
@@ -455,13 +445,10 @@ class Catalog_Engine {
 		$show_view    = ( ! $is_archive ) && ( ! isset( $atts['show_view'] ) || 'yes' === $atts['show_view'] );
 		$default_view = ( isset( $atts['default_view'] ) && 'list' === $atts['default_view'] ) ? 'list' : 'grid';
 
-		// Wishlist heart on every card of the catalog grid.
-		$show_wishlist = ( ! isset( $atts['wishlist_btn'] ) || 'yes' === $atts['wishlist_btn'] );
-
 		// Second gallery image on hover.
 		$show_hover = ( ! isset( $atts['hover_img'] ) || 'yes' === $atts['hover_img'] );
 
-		$this->enqueue_assets( ! $is_archive && $show_wishlist );
+		$this->enqueue_assets();
 
 		// A category / tag page (or a locked "categories" attribute) always wins:
 		// the listing can never be widened to other categories by the filter UI.
@@ -488,7 +475,6 @@ class Catalog_Engine {
 			data-archive="<?php echo $is_archive ? '1' : '0'; ?>"
 			data-view-toggle="<?php echo $show_view ? '1' : '0'; ?>"
 			data-default-view="<?php echo esc_attr( $default_view ); ?>"
-			data-wishlist-btn="<?php echo $show_wishlist ? 'yes' : 'no'; ?>"
 			data-hover-img="<?php echo $show_hover ? 'yes' : 'no'; ?>"
 			data-columns="<?php echo esc_attr( $columns ); ?>"
 			data-per-page="<?php echo esc_attr( $per_page ); ?>"
@@ -507,7 +493,7 @@ class Catalog_Engine {
 					<div class="hkdev-cat-chips"><?php echo $this->chips_html( $params, $locks ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 					<div class="hkdev-cat-count"><?php echo $this->count_html( $query, $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 					<div class="hkdev-cat-grid hkdev-shop-grid hkdev-columns-<?php echo esc_attr( $columns ); ?>">
-						<?php echo $this->grid_html( $query, $columns, false, $show_wishlist, $show_hover ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo $this->grid_html( $query, $columns, false, $show_hover ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 					<div class="hkdev-cat-foot">
 						<button type="button" class="hkdev-cat-more" <?php echo ( $params['page'] >= (int) $query->max_num_pages ) ? 'hidden' : ''; ?>>
@@ -923,11 +909,10 @@ class Catalog_Engine {
 	 * @param \WP_Query $query    Query.
 	 * @param int       $columns  Columns.
 	 * @param bool      $append   Whether this is a load-more append.
-	 * @param bool      $wishlist Render the wishlist heart on the cards.
 	 * @param bool      $hover    Reveal the second gallery image on hover.
 	 * @return string
 	 */
-	private function grid_html( $query, $columns, $append, $wishlist = true, $hover = true ) {
+	private function grid_html( $query, $columns, $append, $hover = true ) {
 		$engine = Shop_Engine::instance();
 
 		if ( ! $query->have_posts() ) {
@@ -937,7 +922,7 @@ class Catalog_Engine {
 		ob_start();
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$engine->render_single_product_card( get_the_ID(), 0, false, 'woocommerce_thumbnail', $wishlist, $hover );
+			$engine->render_single_product_card( get_the_ID(), 0, false, 'woocommerce_thumbnail', $hover );
 		}
 		wp_reset_postdata();
 		return ob_get_clean();

@@ -29,13 +29,6 @@ class Header_Engine {
 	const CONFIG_OPTION = 'hkdev_elements_header_config';
 
 	/**
-	 * Cache of the auto-detected wishlist page URL.
-	 *
-	 * @var string
-	 */
-	const WISHLIST_URL_OPTION = 'hkdev_elements_wishlist_url';
-
-	/**
 	 * AJAX action used by the live product search.
 	 *
 	 * @var string
@@ -96,18 +89,6 @@ class Header_Engine {
 		add_action( 'wp_ajax_nopriv_' . self::CART_ACTION, [ $this, 'ajax_mini_cart' ] );
 
 		add_action( 'wp_footer', [ $this, 'render_floating_cart' ], 20 );
-
-		// A new / edited page can become the wishlist page – re-detect it.
-		add_action( 'save_post_page', [ $this, 'flush_wishlist_url_cache' ] );
-	}
-
-	/**
-	 * Drop the cached wishlist page URL so it is detected again.
-	 *
-	 * @return void
-	 */
-	public function flush_wishlist_url_cache() {
-		delete_option( self::WISHLIST_URL_OPTION );
 	}
 
 	/**
@@ -132,12 +113,10 @@ class Header_Engine {
 			'instagram'        => '',
 			'youtube'          => '',
 			'track_url'        => '',
-			'wishlist_url'     => '',
 			'show_menu'        => 'yes',
 			'show_search'      => 'yes',
 			'show_account'     => 'yes',
 			'show_cart'        => 'yes',
-			'show_wishlist'    => 'yes',
 			'mini_cart'        => 'yes',
 			'float_cart'       => 'yes',
 			'float_cart_empty' => 'no',
@@ -228,94 +207,6 @@ class Header_Engine {
 	}
 
 	/**
-	 * Resolved wishlist page URL.
-	 *
-	 * Priority: the widget/site setting, then the first page holding the
-	 * [hkdev_wishlist] shortcode. The detection result is cached in an option
-	 * and refreshed whenever a page is saved.
-	 *
-	 * @param string $explicit Explicit URL to prefer.
-	 * @return string Empty when the site has no wishlist page.
-	 */
-	public function wishlist_url( $explicit = '' ) {
-		$explicit = trim( (string) $explicit );
-		if ( '' !== $explicit ) {
-			return $explicit;
-		}
-
-		$config = $this->get_config();
-		$url    = trim( (string) $config['wishlist_url'] );
-		if ( '' !== $url ) {
-			return $url;
-		}
-
-		$cached = get_option( self::WISHLIST_URL_OPTION, null );
-		if ( is_string( $cached ) ) {
-			return $cached;
-		}
-
-		$url = $this->find_wishlist_page_url();
-		update_option( self::WISHLIST_URL_OPTION, $url, false );
-
-		return $url;
-	}
-
-	/**
-	 * Look for a published page that renders the wishlist.
-	 *
-	 * @return string
-	 */
-	private function find_wishlist_page_url() {
-		$pages = get_posts(
-			[
-				'post_type'      => 'page',
-				'post_status'    => 'publish',
-				'posts_per_page' => 20,
-				'orderby'        => 'menu_order title',
-				'order'          => 'ASC',
-				'no_found_rows'  => true,
-				's'              => 'hkdev_wishlist',
-			]
-		);
-
-		foreach ( $pages as $page ) {
-			if ( has_shortcode( (string) $page->post_content, 'hkdev_wishlist' ) ) {
-				return (string) get_permalink( $page );
-			}
-		}
-
-		// Pages built with the Elementor widget keep their layout in post meta,
-		// where the shortcode scan above cannot see it.
-		$builder = get_posts(
-			[
-				'post_type'      => 'page',
-				'post_status'    => 'publish',
-				'posts_per_page' => 1,
-				'fields'         => 'ids',
-				'no_found_rows'  => true,
-				'meta_key'       => '_elementor_data', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_value'     => 'hkdev_wishlist', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'meta_compare'   => 'LIKE',
-			]
-		);
-
-		if ( ! empty( $builder ) ) {
-			return (string) get_permalink( (int) $builder[0] );
-		}
-
-		return '';
-	}
-
-	/**
-	 * How many products the current shopper saved.
-	 *
-	 * @return int
-	 */
-	public function wishlist_count() {
-		return class_exists( Wishlist_Engine::class ) ? Wishlist_Engine::instance()->count() : 0;
-	}
-
-	/**
 	 * Whether the site-wide floating cart button is enabled.
 	 *
 	 * @return bool
@@ -343,12 +234,6 @@ class Header_Engine {
 		wp_enqueue_style( 'hkdev-elements-header-style' );
 		wp_enqueue_style( 'hkdev-elements-fontawesome' );
 		wp_enqueue_script( 'hkdev-elements-header-js' );
-
-		// Keeps the header wishlist badge in sync after an AJAX toggle.
-		$config = $this->get_config();
-		if ( 'yes' === $config['show_wishlist'] && '' !== $this->wishlist_url() ) {
-			wp_enqueue_script( 'hkdev-elements-wishlist-js' );
-		}
 	}
 
 	/**
@@ -778,11 +663,6 @@ class Header_Engine {
 			}
 		}
 
-		// Wishlist icon: explicit URL first, else the auto-detected page.
-		$wishlist_url   = $this->wishlist_url( isset( $atts['wishlist_url'] ) ? $atts['wishlist_url'] : '' );
-		$wishlist_on    = ( 'yes' === $atts['show_wishlist'] && '' !== $wishlist_url );
-		$wishlist_count = $wishlist_on ? $this->wishlist_count() : 0;
-
 		// ---- Account / auth ---------------------------------------------
 		$is_logged_in = is_user_logged_in();
 
@@ -917,15 +797,6 @@ class Header_Engine {
 							</a>
 						<?php endif; ?>
 
-						<?php if ( $wishlist_on ) : ?>
-							<a class="hkdev-header-icon-btn hkdev-header-wishlist<?php echo $wishlist_count > 0 ? ' has-items' : ''; ?>"
-								href="<?php echo esc_url( $wishlist_url ); ?>"
-								aria-label="<?php esc_attr_e( 'Wishlist', 'hkdev-shop-elements' ); ?>">
-								<i class="<?php echo $wishlist_count > 0 ? 'fa-solid' : 'fa-regular'; ?> fa-heart"></i>
-								<span class="hkdev-header-wishlist-count"><?php echo esc_html( $wishlist_count ); ?></span>
-							</a>
-						<?php endif; ?>
-
 						<?php if ( 'yes' === $atts['show_cart'] ) : ?>
 							<a class="hkdev-header-icon-btn hkdev-header-cart" href="<?php echo esc_url( $cart_url ); ?>" data-mini-cart="<?php echo ( 'yes' === $atts['mini_cart'] ) ? '1' : '0'; ?>" aria-label="<?php esc_attr_e( 'Cart', 'hkdev-shop-elements' ); ?>">
 								<i class="fa-solid fa-cart-shopping"></i>
@@ -1043,12 +914,6 @@ class Header_Engine {
 				<?php if ( 'yes' === $atts['show_account'] ) : ?>
 					<a class="hkdev-header-panel-link" href="<?php echo esc_url( $account_url ); ?>">
 						<i class="fa-regular fa-user"></i> <?php echo $is_logged_in ? esc_html__( 'My Account', 'hkdev-shop-elements' ) : esc_html__( 'Log In / Register', 'hkdev-shop-elements' ); ?>
-					</a>
-				<?php endif; ?>
-				<?php if ( $wishlist_on ) : ?>
-					<a class="hkdev-header-panel-link hkdev-header-wishlist" href="<?php echo esc_url( $wishlist_url ); ?>">
-						<i class="<?php echo $wishlist_count > 0 ? 'fa-solid' : 'fa-regular'; ?> fa-heart"></i> <?php esc_html_e( 'Wishlist', 'hkdev-shop-elements' ); ?>
-						<span class="hkdev-header-wishlist-count-inline"><?php echo esc_html( $wishlist_count ); ?></span>
 					</a>
 				<?php endif; ?>
 			</div>

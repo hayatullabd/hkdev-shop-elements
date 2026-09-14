@@ -77,7 +77,7 @@ class Catalog_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_style_depends() {
-		return [ 'hkdev-elements-catalog-style', 'hkdev-elements-shop-style', 'hkdev-elements-wishlist-style', 'hkdev-elements-fontawesome' ];
+		return [ 'hkdev-elements-catalog-style', 'hkdev-elements-shop-style', 'hkdev-elements-fontawesome' ];
 	}
 
 	/**
@@ -86,7 +86,7 @@ class Catalog_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'hkdev-elements-catalog-js', 'hkdev-elements-shop-js', 'hkdev-elements-wishlist-js' ];
+		return [ 'hkdev-elements-catalog-js', 'hkdev-elements-shop-js' ];
 	}
 
 	/**
@@ -195,18 +195,6 @@ class Catalog_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
-			'wishlist_btn',
-			[
-				'label'        => esc_html__( 'Wishlist heart', 'hkdev-shop-elements' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'default'      => 'yes',
-				'return_value' => 'yes',
-				'separator'    => 'before',
-				'description'  => esc_html__( 'Adds a save-to-wishlist heart to every card.', 'hkdev-shop-elements' ),
-			]
-		);
-
-		$this->add_control(
 			'hover_img',
 			[
 				'label'        => esc_html__( 'Second image on hover', 'hkdev-shop-elements' ),
@@ -245,7 +233,6 @@ class Catalog_Widget extends Widget_Base {
 				'show_filters' => $settings['show_filters'],
 				'show_view'    => ( ! isset( $settings['show_view'] ) || 'yes' === $settings['show_view'] ) ? 'yes' : 'no',
 				'default_view' => ( isset( $settings['default_view'] ) && 'list' === $settings['default_view'] ) ? 'list' : 'grid',
-				'wishlist_btn' => ( ! isset( $settings['wishlist_btn'] ) || 'yes' === $settings['wishlist_btn'] ) ? 'yes' : 'no',
 				'hover_img'    => ( ! isset( $settings['hover_img'] ) || 'yes' === $settings['hover_img'] ) ? 'yes' : 'no',
 			],
 			false

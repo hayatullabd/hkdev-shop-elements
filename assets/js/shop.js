@@ -236,7 +236,6 @@ jQuery(function($) {
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
                 image_size: $wrapper.data('image_size'),
-                wishlist_btn: $wrapper.attr('data-wishlist-btn'),
                 hover_img: $wrapper.attr('data-hover-img'),
                 style: $wrapper.data('style')
             },
@@ -320,7 +319,6 @@ jQuery(function($) {
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
                 image_size: $wrapper.data('image_size'),
-                wishlist_btn: $wrapper.attr('data-wishlist-btn'),
                 hover_img: $wrapper.attr('data-hover-img')
             },
             success: function (response) {
@@ -444,8 +442,8 @@ jQuery(function($) {
 
         const $btn = $(this);
         // The modal lives inside the Shop Grid wrapper, inside the Catalog
-        // widget wrapper for [hkdev_catalog], or inside the Wishlist page.
-        const $wrapper = $btn.closest('.hkdev-shop-wrapper, .hkdev-catalog, .hkdev-wishlist');
+        // widget wrapper for [hkdev_catalog].
+        const $wrapper = $btn.closest('.hkdev-shop-wrapper, .hkdev-catalog');
         const $modal = $wrapper.find('.hkdev-variation-modal').first();
         if (!$modal.length) return;
 
