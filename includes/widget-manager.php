@@ -73,6 +73,12 @@ final class Widget_Manager {
 	 * @return void
 	 */
 	public function register_widgets( $widgets_manager ) {
+		// Safe mode: skip every widget so a problem in the controls cannot take
+		// the Elementor panel down while it is being diagnosed.
+		if ( defined( 'HKDEV_ELEMENTS_SAFE_MODE' ) && HKDEV_ELEMENTS_SAFE_MODE ) {
+			return;
+		}
+
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/heading-controls-trait.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/product-controls-trait.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/style-controls-trait.php';

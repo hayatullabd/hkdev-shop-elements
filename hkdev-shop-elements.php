@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       HKDEV Shop Elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.4.1
+ * Version:           0.4.2
  * Author:            FitForLife
  * Text Domain:       hkdev-shop-elements
  * Requires at least: 6.0
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.4.1' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.4.2' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -33,6 +33,20 @@ define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
 if ( ! defined( 'HKDEV_ELEMENTS_GITHUB_REPO' ) ) {
 	define( 'HKDEV_ELEMENTS_GITHUB_REPO', 'hayatullabd/hkdev-shop-elements' );
 }
+
+/**
+ * Safe mode. Define HKDEV_ELEMENTS_SAFE_MODE as true in wp-config.php to stop
+ * the plugin from registering its Elementor widgets — useful to check whether a
+ * broken panel/editor comes from this plugin.
+ */
+if ( ! defined( 'HKDEV_ELEMENTS_SAFE_MODE' ) ) {
+	define( 'HKDEV_ELEMENTS_SAFE_MODE', false );
+}
+
+// Fatal-error log (diagnostics). Loaded first so it also captures a crash in the
+// engine / widget bootstrap below. Written to
+// wp-content/uploads/hkdev-elements-error.log
+require_once HKDEV_ELEMENTS_PATH . 'includes/error-logger.php';
 
 
 /**
