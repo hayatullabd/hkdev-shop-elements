@@ -23,6 +23,8 @@ use Elementor\Widget_Base;
  */
 class Single_Product_Widget extends Widget_Base {
 
+	use Style_Controls;
+
 	/**
 	 * Widget name.
 	 *
@@ -189,6 +191,121 @@ class Single_Product_Widget extends Widget_Base {
 				'default'      => 'yes',
 			]
 		);
+
+		$this->end_controls_section();
+
+		$this->register_sp_style_sections();
+	}
+
+	/**
+	 * Style tab – layout, gallery, title/price, buttons, swatches and tabs.
+	 *
+	 * @return void
+	 */
+	protected function register_sp_style_sections() {
+		$scope = '{{WRAPPER}} .hkdev-sp-wrapper';
+
+		/* ---------------- Layout ---------------- */
+		$this->start_controls_section(
+			'sp_style_layout',
+			[
+				'label' => esc_html__( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_dimensions( 'sp_margin', esc_html__( 'Block Margin', 'hkdev-shop-elements' ), $scope, 'margin' );
+		$this->hkdev_dimensions( 'sp_padding', esc_html__( 'Block Padding', 'hkdev-shop-elements' ), $scope, 'padding' );
+		$this->hkdev_slider( 'sp_col_gap', esc_html__( 'Gallery / Info Gap', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-main-container', 'gap', 0, 100 );
+		$this->hkdev_color( 'sp_page_bg', esc_html__( 'Block Background', 'hkdev-shop-elements' ), $scope, 'background-color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Gallery ---------------- */
+		$this->start_controls_section(
+			'sp_style_gallery',
+			[
+				'label' => esc_html__( 'Gallery', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_dimensions( 'sp_img_radius', esc_html__( 'Main Image Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-viewport', 'border-radius' );
+		$this->hkdev_color( 'sp_view_bg', esc_html__( 'Image Area Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-viewport', 'background-color' );
+		$this->hkdev_color( 'sp_thumb_border', esc_html__( 'Thumbnail Border Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-thumb', 'border-color' );
+		$this->hkdev_dimensions( 'sp_thumb_radius', esc_html__( 'Thumbnail Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-thumb', 'border-radius' );
+		$this->hkdev_slider( 'sp_thumb_size', esc_html__( 'Thumbnail Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-thumb', 'width', 40, 140 );
+		$this->hkdev_color( 'sp_badge_bg', esc_html__( 'Sale Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-sale-badge', 'background-color' );
+		$this->hkdev_color( 'sp_badge_color', esc_html__( 'Sale Badge Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-sale-badge', 'color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Title & price ---------------- */
+		$this->start_controls_section(
+			'sp_style_text',
+			[
+				'label' => esc_html__( 'Title & Price', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'sp_title', esc_html__( 'Product Title', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-title' );
+		$this->hkdev_typography( 'sp_price', esc_html__( 'Price', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-price-box .price .amount' );
+		$this->hkdev_color( 'sp_price_old', esc_html__( 'Old (Struck) Price', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-price-box del .amount', 'color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Buttons ---------------- */
+		$this->start_controls_section(
+			'sp_style_buttons',
+			[
+				'label' => esc_html__( 'Buttons', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'sp_atc', esc_html__( 'Add to Cart Text', 'hkdev-shop-elements' ), $scope . ' .atc-btn' );
+		$this->hkdev_color( 'sp_atc_bg', esc_html__( 'Add to Cart Background', 'hkdev-shop-elements' ), $scope . ' .atc-btn', 'background-color' );
+		$this->hkdev_color( 'sp_atc_color', esc_html__( 'Add to Cart Text Colour', 'hkdev-shop-elements' ), $scope . ' .atc-btn', 'color' );
+		$this->hkdev_color( 'sp_buy_bg', esc_html__( 'Buy Now Background', 'hkdev-shop-elements' ), $scope . ' .buy-now-btn', 'background-color' );
+		$this->hkdev_color( 'sp_buy_color', esc_html__( 'Buy Now Text Colour', 'hkdev-shop-elements' ), $scope . ' .buy-now-btn', 'color' );
+		$this->hkdev_color( 'sp_wa_bg', esc_html__( 'WhatsApp Button Background', 'hkdev-shop-elements' ), $scope . ' .whatsapp-btn', 'background-color' );
+		$this->hkdev_color( 'sp_call_bg', esc_html__( 'Call Button Background', 'hkdev-shop-elements' ), $scope . ' .call-btn', 'background-color' );
+		$this->hkdev_slider( 'sp_btn_height', esc_html__( 'Button Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-btn', 'height', 34, 72 );
+		$this->hkdev_dimensions( 'sp_btn_radius', esc_html__( 'Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-btn', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Variation swatches ---------------- */
+		$this->start_controls_section(
+			'sp_style_swatch',
+			[
+				'label' => esc_html__( 'Variation Swatches', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'sp_sw_color', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-swatch-item', 'color' );
+		$this->hkdev_color( 'sp_sw_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-swatch-item', 'background-color' );
+		$this->hkdev_color( 'sp_sw_border', esc_html__( 'Border Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-swatch-item', 'border-color' );
+		$this->hkdev_color( 'sp_sw_sel_bg', esc_html__( 'Selected Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-swatch-item.selected', 'background-color' );
+		$this->hkdev_color( 'sp_sw_sel_color', esc_html__( 'Selected Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-swatch-item.selected', 'color' );
+		$this->hkdev_dimensions( 'sp_sw_radius', esc_html__( 'Swatch Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-swatch-item', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Tabs & meta ---------------- */
+		$this->start_controls_section(
+			'sp_style_tabs',
+			[
+				'label' => esc_html__( 'Tabs & Meta', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'sp_tab', esc_html__( 'Tab Label', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-tab-link' );
+		$this->hkdev_color( 'sp_tab_active', esc_html__( 'Active Tab Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-tab-link.active', 'color' );
+		$this->hkdev_typography( 'sp_meta', esc_html__( 'SKU / Stock Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-product-meta' );
 
 		$this->end_controls_section();
 	}
