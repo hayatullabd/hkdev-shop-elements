@@ -119,7 +119,11 @@ class GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'inject_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_information' ], 20, 3 );
 		add_filter( 'upgrader_source_selection', [ $this, 'fix_source_dir' ], 10, 4 );
-		add_action( 'admin_init', [ $this, 'maybe_clear_cache' ] );
+
+		// Priority 1: must run before core's _maybe_update_plugins() (priority
+		// 10), otherwise the forced re-check reads our still-cached release and
+		// the "Check again" link appears to do nothing.
+		add_action( 'admin_init', [ $this, 'maybe_clear_cache' ], 1 );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -278,23 +282,24 @@ class GitHub_Updater {
 	/**
 	 * Whether a network request to GitHub is acceptable for this request.
 	 *
-	 * WordPress re-checks plugins on admin_init, so the update transient may be
-	 * rebuilt while any admin screen loads – including the Elementor editor.
-	 * A slow or blocked GitHub endpoint must never delay those screens, so the
-	 * API is only queried from WP-Cron and the update/plugin screens. Other
-	 * screens reuse the cached result (and simply see no update until the next
-	 * real check).
+	 * The updater itself only loads for admin screens and WP-Cron, and the
+	 * GitHub response below is cached for six hours, so a cold cache is the
+	 * only case that ever reaches the network. WordPress rebuilds the update
+	 * transient at most every 12 hours, which bounds this to roughly two
+	 * requests a day per site.
+	 *
+	 * This used to be limited to the update / plugins screens, which looked
+	 * safer but hid real updates: WordPress checks for updates from *every*
+	 * admin screen, so a request on any other screen (Dashboard, a post, the
+	 * Elementor editor) wrote "no update" into the transient together with a
+	 * fresh timestamp. For the next 12 hours `_maybe_update_plugins()` then
+	 * considered the check recent and never asked again — the Plugins screen
+	 * showed nothing even though a newer release existed.
 	 *
 	 * @return bool
 	 */
 	private function may_fetch() {
-		if ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) {
-			return true;
-		}
-
-		$pagenow = isset( $GLOBALS['pagenow'] ) ? (string) $GLOBALS['pagenow'] : '';
-
-		return in_array( $pagenow, [ 'plugins.php', 'plugin-install.php', 'update-core.php', 'update.php' ], true );
+		return true;
 	}
 
 	/**
@@ -427,7 +432,21 @@ class GitHub_Updater {
 		}
 
 		$response = wp_remote_get( self::API_BASE . $path, $args );
+
 		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			// A silent failure here is invisible from the admin, so record why
+			// the check produced nothing (request failures are cached for only
+			// 30 minutes, which also bounds how often this can be written).
+			if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
+				\HkdevShopElements\hkdev_elements_log_message(
+					sprintf(
+						'GitHub updater: request to %s failed (%s)',
+						$path,
+						is_wp_error( $response ) ? $response->get_error_message() : 'HTTP ' . (int) wp_remote_retrieve_response_code( $response )
+					)
+				);
+			}
+
 			return null;
 		}
 
