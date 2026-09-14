@@ -22,6 +22,8 @@ use Elementor\Widget_Base;
  */
 class Header_Widget extends Widget_Base {
 
+	use Style_Controls;
+
 	/**
 	 * Widget name.
 	 *
@@ -349,6 +351,125 @@ class Header_Widget extends Widget_Base {
 				'condition' => [ 'show_topbar' => 'yes' ],
 			]
 		);
+
+		$this->end_controls_section();
+
+		$this->register_hd_style_sections();
+	}
+
+	/**
+	 * Style tab – bars, logo, search, actions and navigation.
+	 *
+	 * @return void
+	 */
+	protected function register_hd_style_sections() {
+		$scope = '{{WRAPPER}} .hkdev-header-wrap';
+
+		/* ---------------- Bars ---------------- */
+		$this->start_controls_section(
+			'hd_style_bars',
+			[
+				'label' => esc_html__( 'Header Bars', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'hd_bg', esc_html__( 'Header Background', 'hkdev-shop-elements' ), $scope, 'background-color' );
+		$this->hkdev_dimensions( 'hd_padding', esc_html__( 'Header Padding', 'hkdev-shop-elements' ), $scope, 'padding' );
+		$this->hkdev_color( 'hd_top_bg', esc_html__( 'Top Bar Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-topbar', 'background-color' );
+		$this->hkdev_dimensions( 'hd_top_padding', esc_html__( 'Top Bar Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-topbar .hkdev-header-container', 'padding' );
+		$this->hkdev_color( 'hd_main_bg', esc_html__( 'Main Bar Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-main', 'background-color' );
+		$this->hkdev_dimensions( 'hd_main_padding', esc_html__( 'Main Bar Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-main .hkdev-header-container', 'padding' );
+		$this->hkdev_slider( 'hd_main_gap', esc_html__( 'Main Bar Gap', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-main .hkdev-header-container', 'gap', 0, 60 );
+
+		$this->end_controls_section();
+
+		/* ---------------- Top bar text ---------------- */
+		$this->start_controls_section(
+			'hd_style_toptext',
+			[
+				'label' => esc_html__( 'Top Bar Text & Social', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'hd_tb', esc_html__( 'Announcement / Links', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-announcement' );
+		$this->hkdev_color( 'hd_social_bg', esc_html__( 'Social Icon Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-social', 'background-color' );
+		$this->hkdev_color( 'hd_social_color', esc_html__( 'Social Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-social', 'color' );
+		$this->hkdev_dimensions( 'hd_social_radius', esc_html__( 'Social Icon Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-social', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Logo ---------------- */
+		$this->start_controls_section(
+			'hd_style_logo',
+			[
+				'label' => esc_html__( 'Logo', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'hd_logo_text', esc_html__( 'Logo Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-logo-text' );
+		$this->hkdev_dimensions( 'hd_logo_radius', esc_html__( 'Logo Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-logo img', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Search ---------------- */
+		$this->start_controls_section(
+			'hd_style_search',
+			[
+				'label' => esc_html__( 'Search Box', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'hd_search_bg', esc_html__( 'Field Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-input', 'background-color' );
+		$this->hkdev_color( 'hd_search_border', esc_html__( 'Field Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-input', 'border-color' );
+		$this->hkdev_color( 'hd_search_color', esc_html__( 'Field Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-input', 'color' );
+		$this->hkdev_dimensions( 'hd_search_radius', esc_html__( 'Field Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-input', 'border-radius' );
+		$this->hkdev_color( 'hd_search_btn_bg', esc_html__( 'Button Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-btn', 'background-color' );
+		$this->hkdev_color( 'hd_search_btn_color', esc_html__( 'Button Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-btn', 'color' );
+		$this->hkdev_dimensions( 'hd_search_btn_radius', esc_html__( 'Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-search-btn', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Actions ---------------- */
+		$this->start_controls_section(
+			'hd_style_actions',
+			[
+				'label' => esc_html__( 'Cart & Account', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'hd_icon_bg', esc_html__( 'Icon Button Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-icon-btn', 'background-color' );
+		$this->hkdev_color( 'hd_icon_color', esc_html__( 'Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-icon-btn', 'color' );
+		$this->hkdev_dimensions( 'hd_icon_radius', esc_html__( 'Icon Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-icon-btn', 'border-radius' );
+		$this->hkdev_color( 'hd_count_bg', esc_html__( 'Cart Count Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cart-count', 'background-color' );
+		$this->hkdev_color( 'hd_count_color', esc_html__( 'Cart Count Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cart-count', 'color' );
+		$this->hkdev_typography( 'hd_login', esc_html__( 'Login Link', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-login' );
+		$this->hkdev_color( 'hd_reg_bg', esc_html__( 'Register Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-register', 'background-color' );
+		$this->hkdev_color( 'hd_reg_color', esc_html__( 'Register Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-register', 'color' );
+		$this->hkdev_dimensions( 'hd_reg_radius', esc_html__( 'Register Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-register', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Navigation ---------------- */
+		$this->start_controls_section(
+			'hd_style_nav',
+			[
+				'label' => esc_html__( 'Navigation Bar', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'hd_navbar_bg', esc_html__( 'Navbar Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-navbar', 'background-color' );
+		$this->hkdev_dimensions( 'hd_navbar_padding', esc_html__( 'Navbar Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-navbar .hkdev-header-container', 'padding' );
+		$this->hkdev_typography( 'hd_nav_link', esc_html__( 'Menu Link', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-nav .hkdev-header-menu > li > a' );
+		$this->hkdev_color( 'hd_nav_link_hover', esc_html__( 'Menu Link Hover Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-nav .hkdev-header-menu > li > a:hover', 'color' );
+		$this->hkdev_color( 'hd_cats_bg', esc_html__( 'Categories Button Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cats-btn', 'background-color' );
+		$this->hkdev_color( 'hd_cats_color', esc_html__( 'Categories Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cats-btn', 'color' );
+		$this->hkdev_dimensions( 'hd_cats_radius', esc_html__( 'Categories Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cats-btn', 'border-radius' );
 
 		$this->end_controls_section();
 	}

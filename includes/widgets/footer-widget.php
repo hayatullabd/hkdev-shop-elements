@@ -22,6 +22,8 @@ use Elementor\Widget_Base;
  */
 class Footer_Widget extends Widget_Base {
 
+	use Style_Controls;
+
 	/**
 	 * Widget name.
 	 *
@@ -404,6 +406,119 @@ class Footer_Widget extends Widget_Base {
 				'default'      => 'yes',
 			]
 		);
+
+		$this->end_controls_section();
+
+		$this->register_ft_style_sections();
+	}
+
+	/**
+	 * Style tab – columns, titles, links, newsletter, social and bottom bar.
+	 *
+	 * @return void
+	 */
+	protected function register_ft_style_sections() {
+		$scope = '{{WRAPPER}} .hkdev-footer-wrap';
+
+		/* ---------------- Layout ---------------- */
+		$this->start_controls_section(
+			'ft_style_layout',
+			[
+				'label' => esc_html__( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'ft_bg', esc_html__( 'Footer Background', 'hkdev-shop-elements' ), $scope, 'background-color' );
+		$this->hkdev_dimensions( 'ft_padding', esc_html__( 'Footer Padding', 'hkdev-shop-elements' ), $scope, 'padding' );
+		$this->hkdev_color( 'ft_main_bg', esc_html__( 'Main Area Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-main', 'background-color' );
+		$this->hkdev_dimensions( 'ft_main_padding', esc_html__( 'Main Area Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-main', 'padding' );
+		$this->hkdev_slider( 'ft_grid_gap', esc_html__( 'Column Gap', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-grid', 'gap', 0, 90 );
+		$this->hkdev_dimensions( 'ft_col_padding', esc_html__( 'Column Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-col', 'padding' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Text ---------------- */
+		$this->start_controls_section(
+			'ft_style_text',
+			[
+				'label' => esc_html__( 'Titles & About', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ft_title', esc_html__( 'Column Title', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-title' );
+		$this->hkdev_typography( 'ft_about', esc_html__( 'About Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-about' );
+		$this->hkdev_typography( 'ft_contact', esc_html__( 'Contact Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-contact li' );
+		$this->hkdev_color( 'ft_contact_icon', esc_html__( 'Contact Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-contact-icon i', 'color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Links ---------------- */
+		$this->start_controls_section(
+			'ft_style_links',
+			[
+				'label' => esc_html__( 'Link Lists', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ft_link', esc_html__( 'Link', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a, ' . $scope . ' .hkdev-footer-links li a' );
+		$this->hkdev_color( 'ft_link_hover', esc_html__( 'Link Hover Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a:hover, ' . $scope . ' .hkdev-footer-links li a:hover', 'color' );
+		$this->hkdev_dimensions( 'ft_link_gap', esc_html__( 'Link Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a, ' . $scope . ' .hkdev-footer-links li a', 'padding' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Newsletter ---------------- */
+		$this->start_controls_section(
+			'ft_style_news',
+			[
+				'label' => esc_html__( 'Newsletter', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'ft_news_bg', esc_html__( 'Field Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'background-color' );
+		$this->hkdev_color( 'ft_news_border', esc_html__( 'Field Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'border-color' );
+		$this->hkdev_color( 'ft_news_color', esc_html__( 'Field Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'color' );
+		$this->hkdev_dimensions( 'ft_news_radius', esc_html__( 'Field Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'border-radius' );
+		$this->hkdev_typography( 'ft_news_btn', esc_html__( 'Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn' );
+		$this->hkdev_color( 'ft_news_btn_bg', esc_html__( 'Button Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'background-color' );
+		$this->hkdev_color( 'ft_news_btn_color', esc_html__( 'Button Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'color' );
+		$this->hkdev_color( 'ft_news_btn_hover', esc_html__( 'Button Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn:hover', 'background-color' );
+		$this->hkdev_dimensions( 'ft_news_btn_radius', esc_html__( 'Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Social ---------------- */
+		$this->start_controls_section(
+			'ft_style_social',
+			[
+				'label' => esc_html__( 'Social Icons', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'ft_social_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 'background-color' );
+		$this->hkdev_color( 'ft_social_color', esc_html__( 'Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 'color' );
+		$this->hkdev_dimensions( 'ft_social_radius', esc_html__( 'Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Bottom bar ---------------- */
+		$this->start_controls_section(
+			'ft_style_bottom',
+			[
+				'label' => esc_html__( 'Bottom Bar', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'ft_bottom_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-bottom', 'background-color' );
+		$this->hkdev_dimensions( 'ft_bottom_padding', esc_html__( 'Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-bottom .hkdev-footer-container', 'padding' );
+		$this->hkdev_typography( 'ft_copy', esc_html__( 'Copyright Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-copy' );
+		$this->hkdev_color( 'ft_top_bg', esc_html__( 'Back-to-Top Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-top', 'background-color' );
+		$this->hkdev_color( 'ft_top_color', esc_html__( 'Back-to-Top Icon', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-top', 'color' );
 
 		$this->end_controls_section();
 	}
