@@ -202,6 +202,11 @@ trait Style_Controls {
 	 * @return void
 	 */
 	protected function hkdev_shadow( $id, $label, $selector, $condition = [] ) {
+		// The box-shadow control type is only available when Elementor provides it.
+		if ( ! defined( 'Elementor\Controls_Manager::BOX_SHADOW' ) ) {
+			return;
+		}
+
 		$this->add_control(
 			$id,
 			$this->hkdev_args(

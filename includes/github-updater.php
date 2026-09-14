@@ -137,7 +137,7 @@ class GitHub_Updater {
 			return $transient;
 		}
 
-		$release = $this->get_release();
+		$release = $this->get_release( $this->may_fetch() );
 		if ( empty( $release['version'] ) || empty( $release['package'] ) ) {
 			return $transient;
 		}
@@ -276,14 +276,41 @@ class GitHub_Updater {
 	 * ------------------------------------------------------------------- */
 
 	/**
+	 * Whether a network request to GitHub is acceptable for this request.
+	 *
+	 * WordPress re-checks plugins on admin_init, so the update transient may be
+	 * rebuilt while any admin screen loads – including the Elementor editor.
+	 * A slow or blocked GitHub endpoint must never delay those screens, so the
+	 * API is only queried from WP-Cron and the update/plugin screens. Other
+	 * screens reuse the cached result (and simply see no update until the next
+	 * real check).
+	 *
+	 * @return bool
+	 */
+	private function may_fetch() {
+		if ( function_exists( 'wp_doing_cron' ) && wp_doing_cron() ) {
+			return true;
+		}
+
+		$pagenow = isset( $GLOBALS['pagenow'] ) ? (string) $GLOBALS['pagenow'] : '';
+
+		return in_array( $pagenow, [ 'plugins.php', 'plugin-install.php', 'update-core.php', 'update.php' ], true );
+	}
+
+	/**
 	 * Latest release (or tag) as a normalized array. Cached in a transient.
 	 *
+	 * @param bool $allow_fetch Whether a network request may be made on a cache miss.
 	 * @return array
 	 */
-	private function get_release() {
+	private function get_release( $allow_fetch = true ) {
 		$cached = get_transient( $this->cache_key );
 		if ( is_array( $cached ) ) {
 			return $cached;
+		}
+
+		if ( ! $allow_fetch ) {
+			return [];
 		}
 
 		$release = $this->request( '/repos/' . $this->repository . '/releases/latest' );
@@ -387,7 +414,7 @@ class GitHub_Updater {
 	 */
 	private function request( $path ) {
 		$args = [
-			'timeout' => 10,
+			'timeout' => 5,
 			'headers' => [
 				'Accept'     => 'application/vnd.github+json',
 				'User-Agent' => 'hkdev-shop-elements/' . $this->version,
