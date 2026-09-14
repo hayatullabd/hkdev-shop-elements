@@ -18,6 +18,8 @@ use Elementor\Widget_Base;
 
 class Account_Widget extends Widget_Base {
 
+	use Style_Controls;
+
 	public function get_name() {
 		return 'hkdev_account';
 	}
@@ -112,6 +114,75 @@ class Account_Widget extends Widget_Base {
 				'max'     => 50,
 			]
 		);
+
+		$this->end_controls_section();
+
+		$this->register_ac_style_sections();
+	}
+
+	/**
+	 * Style tab – panels, navigation, forms and tables.
+	 *
+	 * @return void
+	 */
+	protected function register_ac_style_sections() {
+		$scope = '{{WRAPPER}} .hkdev-account-wrap';
+
+		/* ---------------- Layout ---------------- */
+		$this->start_controls_section(
+			'ac_style_layout',
+			[
+				'label' => esc_html__( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_slider( 'ac_gap', esc_html__( 'Column Gap', 'hkdev-shop-elements' ), $scope, 'gap', 0, 80 );
+		$this->hkdev_color( 'ac_side_bg', esc_html__( 'Sidebar Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-sidebar', 'background-color' );
+		$this->hkdev_dimensions( 'ac_side_radius', esc_html__( 'Sidebar Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-sidebar', 'border-radius' );
+		$this->hkdev_dimensions( 'ac_side_padding', esc_html__( 'Sidebar Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-sidebar', 'padding' );
+		$this->hkdev_color( 'ac_content_bg', esc_html__( 'Content Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-content', 'background-color' );
+		$this->hkdev_dimensions( 'ac_content_radius', esc_html__( 'Content Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-content', 'border-radius' );
+		$this->hkdev_dimensions( 'ac_content_padding', esc_html__( 'Content Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-content', 'padding' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Navigation ---------------- */
+		$this->start_controls_section(
+			'ac_style_nav',
+			[
+				'label' => esc_html__( 'Sidebar Navigation', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ac_nav', esc_html__( 'Nav Link', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-nav a' );
+		$this->hkdev_color( 'ac_nav_active_color', esc_html__( 'Active Link Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-nav li.active a', 'color' );
+		$this->hkdev_color( 'ac_nav_active_bg', esc_html__( 'Active Link Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-nav li.active a', 'background-color' );
+		$this->hkdev_dimensions( 'ac_nav_radius', esc_html__( 'Link Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-nav a', 'border-radius' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Forms & tables ---------------- */
+		$this->start_controls_section(
+			'ac_style_forms',
+			[
+				'label' => esc_html__( 'Forms & Tables', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ac_label', esc_html__( 'Field Label', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-field label' );
+		$this->hkdev_color( 'ac_input_bg', esc_html__( 'Input Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-field input', 'background-color' );
+		$this->hkdev_color( 'ac_input_border', esc_html__( 'Input Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-field input', 'border-color' );
+		$this->hkdev_color( 'ac_input_color', esc_html__( 'Input Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-field input', 'color' );
+		$this->hkdev_dimensions( 'ac_input_radius', esc_html__( 'Input Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-field input', 'border-radius' );
+		$this->hkdev_typography( 'ac_submit', esc_html__( 'Submit Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-submit' );
+		$this->hkdev_color( 'ac_submit_bg', esc_html__( 'Submit Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-submit', 'background-color' );
+		$this->hkdev_color( 'ac_submit_color', esc_html__( 'Submit Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-submit', 'color' );
+		$this->hkdev_dimensions( 'ac_submit_radius', esc_html__( 'Submit Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-submit', 'border-radius' );
+		$this->hkdev_typography( 'ac_th', esc_html__( 'Table Heading', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-orders-table th' );
+		$this->hkdev_typography( 'ac_td', esc_html__( 'Table Cell', 'hkdev-shop-elements' ), $scope . ' .hkdev-account-orders-table td' );
 
 		$this->end_controls_section();
 	}
