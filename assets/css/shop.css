@@ -454,11 +454,11 @@ button.hkdev-order-btn{
     flex: 1;
     height: 46px !important;
     color: #ffffff !important;
-    background: var(--hkdev-brand-dark) !important;
-    border: 1px solid var(--hkdev-brand-dark) !important;
-}.hkdev-order-btn:hover{
     background: var(--hkdev-brand-primary) !important;
-    border-color: var(--hkdev-brand-primary) !important;
+    border: 1px solid var(--hkdev-brand-primary) !important;
+}.hkdev-order-btn:hover{
+    background: #028a40 !important;
+    border-color: #028a40 !important;
     box-shadow: 0 8px 18px rgba(3, 165, 80, 0.3) !important;
 }.hkdev-btn-full{
     width: 100% !important;

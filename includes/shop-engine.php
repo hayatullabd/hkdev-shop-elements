@@ -244,11 +244,11 @@ class Shop_Engine {
 							<?php if ( $is_variable ) : ?>
 								<button type="button"
 									class="hkdev-order-btn hkdev-open-variation"
-									data-product-id="<?php echo esc_attr( $post_id ); ?>"><?php echo esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></button>
+									data-product-id="<?php echo esc_attr( $post_id ); ?>"><i class="fa-solid fa-bolt" aria-hidden="true"></i> <?php echo esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></button>
 							<?php else : ?>
 								<a href="<?php echo esc_url( add_query_arg( [ 'add-to-cart' => $post_id, 'hkdev_buy_now' => 'yes' ], $checkout_url ) ); ?>"
 									class="hkdev-order-btn"
-									data-checkout_url="<?php echo esc_url( $checkout_url ); ?>"><?php echo esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></a>
+									data-checkout_url="<?php echo esc_url( $checkout_url ); ?>"><i class="fa-solid fa-bolt" aria-hidden="true"></i> <?php echo esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></a>
 							<?php endif; ?>
 						</div>
 					<?php else : ?>
