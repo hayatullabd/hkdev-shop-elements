@@ -64,6 +64,82 @@
     color: var(--hkdev-text-muted, #5f6e66) !important;
 }
 
+/* ------------------------------------------ Add All to Cart (page) ---- */
+.hkdev-wishlist-actions{
+    display: flex !important;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+    gap: 12px !important;
+    margin-left: auto !important;
+}
+.hkdev-wishlist-notice{
+    max-width: 320px !important;
+    margin: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    color: var(--hkdev-brand-primary, #03a550) !important;
+    text-align: right !important;
+}
+.hkdev-wishlist-notice[hidden]{
+    display: none !important;
+}
+.hkdev-wishlist-add-all{
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 44px !important;
+    padding: 0 22px !important;
+    font-family: var(--hkdev-font, 'Hind Siliguri', sans-serif) !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    color: #ffffff !important;
+    background: var(--hkdev-brand-primary, #03a550) !important;
+    border: 1px solid var(--hkdev-brand-primary, #03a550) !important;
+    border-radius: 50px !important;
+    box-shadow: 0 6px 18px rgba(3, 165, 80, 0.22) !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: background .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease !important;
+}
+.hkdev-wishlist-add-all:hover{
+    background: #028a40 !important;
+    border-color: #028a40 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 24px rgba(3, 165, 80, 0.3) !important;
+}
+.hkdev-wishlist-add-all:focus-visible{
+    outline: 2px solid var(--hkdev-brand-primary, #03a550) !important;
+    outline-offset: 3px !important;
+}
+.hkdev-wishlist-add-all.is-loading{
+    opacity: .7 !important;
+    transform: none !important;
+    pointer-events: none !important;
+}
+.hkdev-wishlist-add-all.is-done{
+    background: #028a40 !important;
+    border-color: #028a40 !important;
+    transform: none !important;
+}
+.hkdev-wishlist-add-all-spinner{
+    display: none !important;
+    width: 14px !important;
+    height: 14px !important;
+    border: 2px solid rgba(255, 255, 255, .45) !important;
+    border-top-color: #ffffff !important;
+    border-radius: 50% !important;
+    animation: hkdev-wishlist-spin .7s linear infinite !important;
+}
+.hkdev-wishlist-add-all.is-loading .hkdev-wishlist-add-all-spinner{
+    display: inline-block !important;
+}
+@keyframes hkdev-wishlist-spin{
+    to { transform: rotate(360deg); }
+}
+
 /* ------------------------------------------------------ Button base ---- */
 .hkdev-wishlist-btn{
     display: inline-flex !important;
@@ -300,5 +376,20 @@
     }
     .hkdev-sp-purchase-buttons .hkdev-wishlist-btn--button{
         padding: 0 13px !important;
+    }
+    .hkdev-wishlist-head{
+        flex-wrap: wrap !important;
+    }
+    .hkdev-wishlist-actions{
+        width: 100% !important;
+        margin-left: 0 !important;
+        justify-content: space-between !important;
+    }
+    .hkdev-wishlist-notice{
+        max-width: none !important;
+        text-align: left !important;
+    }
+    .hkdev-wishlist-add-all{
+        padding: 0 18px !important;
     }
 }

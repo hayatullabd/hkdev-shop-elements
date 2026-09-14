@@ -13,6 +13,7 @@
 	var AJAX_URL = cfg.ajaxUrl || '/wp-admin/admin-ajax.php';
 	var ACTION = cfg.action || 'hkdev_elements_wishlist_toggle';
 	var MOVE_ACTION = cfg.moveAction || 'hkdev_elements_wishlist_move';
+	var ADD_ALL_ACTION = cfg.addAllAction || 'hkdev_elements_wishlist_add_all';
 	var NONCE = cfg.nonce || '';
 
 	/* ------------------------------------------------------------ helpers -- */
@@ -125,6 +126,57 @@
 			}
 
 			$(document.body).trigger('hkdev_wishlist_updated', [response.data]);
+		}).always(function () {
+			$btn.removeClass('is-loading');
+		});
+	});
+
+	/* ------------------------------------------------ add all to cart -- */
+
+	$(document).on('click', '.hkdev-wishlist-add-all', function (event) {
+		event.preventDefault();
+
+		var $btn = $(this);
+
+		if ($btn.hasClass('is-loading')) {
+			return;
+		}
+
+		var $notice = $btn.closest('.hkdev-wishlist-actions').find('.hkdev-wishlist-notice');
+
+		$btn.addClass('is-loading');
+
+		$.ajax({
+			url: AJAX_URL,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: ADD_ALL_ACTION,
+				nonce: NONCE
+			}
+		}).done(function (response) {
+			var data = (response && response.data) ? response.data : null;
+			var message = (data && data.message) ? data.message : (cfg.error || 'Something went wrong. Please try again.');
+
+			if ($notice.length) {
+				$notice.text(message).prop('hidden', !message);
+			}
+
+			if (!response || !response.success || !data) {
+				return;
+			}
+
+			// WooCommerce's own fragment handler updates the mini cart and the
+			// header count from these fragments.
+			if (data.fragments) {
+				$(document.body).trigger('added_to_cart', [data.fragments, data.cart_hash, $btn]);
+			}
+
+			if (typeof data.cart_count !== 'undefined') {
+				$('.hkdev-header-cart-count').text(data.cart_count);
+			}
+
+			$btn.addClass('is-done');
 		}).always(function () {
 			$btn.removeClass('is-loading');
 		});

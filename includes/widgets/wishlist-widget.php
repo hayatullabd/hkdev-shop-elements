@@ -130,6 +130,17 @@ class Wishlist_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'add_all',
+			[
+				'label'        => esc_html__( 'Add All to Cart Button', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Adds every saved product to the cart in one click. Variable products are skipped because they need options.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
 			'columns',
 			[
 				'label'   => esc_html__( 'Columns', 'hkdev-shop-elements' ),
@@ -188,6 +199,7 @@ class Wishlist_Widget extends Widget_Base {
 				'title'      => isset( $settings['title'] ) ? $settings['title'] : '',
 				'subtitle'   => isset( $settings['subtitle'] ) ? $settings['subtitle'] : '',
 				'show_count' => ( isset( $settings['show_count'] ) && 'yes' === $settings['show_count'] ) ? 'yes' : 'no',
+				'add_all'    => ( ! isset( $settings['add_all'] ) || 'yes' === $settings['add_all'] ) ? 'yes' : 'no',
 				'empty_text' => isset( $settings['empty_text'] ) ? $settings['empty_text'] : '',
 				'empty_btn'  => isset( $settings['empty_btn'] ) ? $settings['empty_btn'] : '',
 			]

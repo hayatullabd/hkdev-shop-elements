@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       HKDEV Shop Elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.4.6
+ * Version:           0.4.7
  * Author:            FitForLife
  * Text Domain:       hkdev-shop-elements
  * Requires at least: 6.0
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.4.6' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.4.7' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -461,11 +461,12 @@ function hkdev_elements_register_assets() {
 		'hkdev-elements-wishlist-js',
 		'hkdevWishlistL10n',
 		[
-			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-			'action'     => 'hkdev_elements_wishlist_toggle',
-			'moveAction' => 'hkdev_elements_wishlist_move',
-			'nonce'      => wp_create_nonce( 'hkdev_elements_wishlist' ),
-			'error'      => esc_html__( 'Something went wrong. Please try again.', 'hkdev-shop-elements' ),
+			'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+			'action'       => 'hkdev_elements_wishlist_toggle',
+			'moveAction'   => 'hkdev_elements_wishlist_move',
+			'addAllAction' => 'hkdev_elements_wishlist_add_all',
+			'nonce'        => wp_create_nonce( 'hkdev_elements_wishlist' ),
+			'error'        => esc_html__( 'Something went wrong. Please try again.', 'hkdev-shop-elements' ),
 		]
 	);
 
