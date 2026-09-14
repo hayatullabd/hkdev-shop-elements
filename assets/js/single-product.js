@@ -7,7 +7,7 @@ jQuery(document).ready(function($) {
             'off_text': 'Off!',
             'in_stock': 'In Stock',
             'out_of_stock': 'Out Of Stock',
-            'select_variation_alert': 'Please select variations before ordering!',
+            'select_variation_alert': 'Please select the product options first.',
             'add_to_cart_fail': 'Could not add product to cart. Try again.',
             'server_error': 'Server error occurred. Please try again.',
             'complete_order': 'Complete Order'
@@ -26,6 +26,32 @@ jQuery(document).ready(function($) {
     const addToCartNonce = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.nonces)
         ? (hkdev_elements_ajax.nonces.add_to_cart || '')
         : ((typeof hkdev_ajax_obj !== 'undefined') ? hkdev_ajax_obj.cart_nonce : '');
+
+    // Nice in-page toast (replaces the native browser alert()).
+    function showToast(message, type) {
+        type = type || 'error';
+        let $toast = $('#hkdev-shop-toast');
+        if (!$toast.length) {
+            $toast = $(
+                '<div id="hkdev-shop-toast" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);z-index:999999;display:flex;align-items:center;gap:12px;padding:16px 22px;border-radius:14px;background:#fff;color:#141a14;font-family:inherit;font-size:15px;font-weight:600;line-height:1.3;box-shadow:0 12px 40px rgba(0,0,0,.18);border-left:5px solid #e5533d;opacity:0;visibility:hidden;transition:all .35s cubic-bezier(.175,.885,.32,1.275);max-width:90vw;">' +
+                    '<span class="hkdev-shop-toast-icon" style="font-size:22px;color:#e5533d;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-circle-xmark"></i></span>' +
+                    '<span class="hkdev-shop-toast-msg"></span>' +
+                '</div>'
+            );
+            $('body').append($toast);
+        }
+        $toast.find('.hkdev-shop-toast-msg').text(message);
+        const isError = type === 'error';
+        const color = isError ? '#e5533d' : '#03a550';
+        $toast.css('borderLeftColor', color);
+        $toast.find('.hkdev-shop-toast-icon').css('color', color);
+        $toast.find('.hkdev-shop-toast-icon i').attr('class', isError ? 'fa-solid fa-circle-xmark' : 'fa-solid fa-circle-check');
+        $toast.css({ opacity: 1, visibility: 'visible', transform: 'translate(-50%,-50%) scale(1)' });
+        clearTimeout($toast.data('timer'));
+        $toast.data('timer', setTimeout(function () {
+            $toast.css({ opacity: 0, visibility: 'hidden', transform: 'translate(-50%,-50%) scale(.9)' });
+        }, 3500));
+    }
 
     // 1. Quantity Plus/Minus Buttons
     $(document).on('click', '.hkdev-sp-qty-btn', function() {
@@ -181,7 +207,7 @@ jQuery(document).ready(function($) {
         let qty = $('#hkdev-sp-qty-field').val() || 1;
 
         if ($('.hkdev-sp-variable-options').length > 0 && (!vId || vId == 0 || vId === "0")) {
-            alert(hkdevJsT('select_variation_alert'));
+            showToast(hkdevJsT('select_variation_alert'), 'error');
             return;
         }
 
@@ -210,12 +236,12 @@ jQuery(document).ready(function($) {
                         }
                     }
                 } else {
-                    alert(hkdevJsT('add_to_cart_fail'));
+                    showToast(hkdevJsT('add_to_cart_fail'), 'error');
                 }
             },
             error: function() {
                 $btn.prop('disabled', false).css('opacity', '1');
-                alert(hkdevJsT('server_error'));
+                showToast(hkdevJsT('server_error'), 'error');
             }
         });
     });
