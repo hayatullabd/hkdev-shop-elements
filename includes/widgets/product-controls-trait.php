@@ -25,19 +25,22 @@ trait Product_Controls {
 	/**
 	 * Register the card + carousel control sections.
 	 *
+	 * @param bool $with_wishlist Include the wishlist heart control (listings of
+	 *                            products only – category cards have none).
 	 * @return void
 	 */
-	protected function register_product_controls() {
-		$this->register_card_controls();
+	protected function register_product_controls( $with_wishlist = true ) {
+		$this->register_card_controls( $with_wishlist );
 		$this->register_carousel_controls();
 	}
 
 	/**
 	 * Content tab – product card options.
 	 *
+	 * @param bool $with_wishlist Include the wishlist heart control.
 	 * @return void
 	 */
-	protected function register_card_controls() {
+	protected function register_card_controls( $with_wishlist = true ) {
 		$this->start_controls_section(
 			'section_card',
 			[
@@ -60,6 +63,22 @@ trait Product_Controls {
 				'description' => esc_html__( 'Long titles are trimmed with "...". Cards stay aligned because every title keeps the same height.', 'hkdev-shop-elements' ),
 			]
 		);
+
+		if ( $with_wishlist ) {
+			$this->add_control(
+				'wishlist_btn',
+				[
+					'label'        => esc_html__( 'Wishlist Heart', 'hkdev-shop-elements' ),
+					'type'         => Controls_Manager::SWITCHER,
+					'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+					'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+					'default'      => 'yes',
+					'return_value' => 'yes',
+					'separator'    => 'before',
+					'description'  => esc_html__( 'Adds a save-to-wishlist heart to every card in this listing.', 'hkdev-shop-elements' ),
+				]
+			);
+		}
 
 		$this->end_controls_section();
 	}
@@ -242,6 +261,17 @@ trait Product_Controls {
 	 */
 	protected function get_title_lines( $settings ) {
 		return isset( $settings['title_lines'] ) ? absint( $settings['title_lines'] ) : 0;
+	}
+
+	/**
+	 * Whether the cards carry the wishlist heart (on by default, so widgets
+	 * saved before the control existed also get it).
+	 *
+	 * @param array $settings Widget settings.
+	 * @return string "yes" or "no".
+	 */
+	protected function get_wishlist_btn( $settings ) {
+		return ( ! isset( $settings['wishlist_btn'] ) || 'yes' === $settings['wishlist_btn'] ) ? 'yes' : 'no';
 	}
 
 	/**

@@ -76,6 +76,9 @@ class Account_Engine {
 						<?php if ( 'yes' === $atts['show_downloads'] ) : ?>
 							<li><a href="#hkdev-account-downloads" data-tab="downloads"><i class="fa-solid fa-download"></i> <?php esc_html_e( 'Downloads', 'hkdev-shop-elements' ); ?></a></li>
 						<?php endif; ?>
+						<?php if ( class_exists( Wishlist_Engine::class ) ) : ?>
+							<li><a href="#hkdev-account-wishlist" data-tab="wishlist"><i class="fa-solid fa-heart"></i> <?php esc_html_e( 'Wishlist', 'hkdev-shop-elements' ); ?> <span class="hkdev-account-wishlist-count"><?php echo esc_html( Wishlist_Engine::instance()->count() ); ?></span></a></li>
+						<?php endif; ?>
 						<li><a href="<?php echo esc_url( wp_logout_url( home_url() ) ); ?>"><i class="fa-solid fa-right-from-bracket"></i> <?php esc_html_e( 'Logout', 'hkdev-shop-elements' ); ?></a></li>
 					</ul>
 				</nav>
@@ -173,6 +176,19 @@ class Account_Engine {
 					<div class="hkdev-account-tab" id="hkdev-account-downloads">
 						<h3><?php esc_html_e( 'Downloads', 'hkdev-shop-elements' ); ?></h3>
 						<?php echo $this->get_downloads_html( $user->ID ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( class_exists( Wishlist_Engine::class ) ) : ?>
+					<div class="hkdev-account-tab" id="hkdev-account-wishlist">
+						<h3><?php esc_html_e( 'My Wishlist', 'hkdev-shop-elements' ); ?></h3>
+						<?php echo Wishlist_Engine::instance()->wishlist_shortcode( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							[
+								'title'      => '',
+								'show_count' => 'no',
+								'columns'    => 3,
+							]
+						); ?>
 					</div>
 				<?php endif; ?>
 			</div>

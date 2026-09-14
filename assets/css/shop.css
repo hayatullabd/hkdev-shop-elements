@@ -22,12 +22,14 @@
     --hkdev-border-color: rgba(0, 0, 0, 0.08);
     --hkdev-hover-border: rgba(3, 165, 80, 0.22);
 
-    --hkdev-radius: 20px;
-    --hkdev-mobile-radius: 15px;
-    --hkdev-btn-radius: 12px;
+    --hkdev-radius: 16px;
+    --hkdev-mobile-radius: 13px;
+    --hkdev-btn-radius: 10px;
 
-    --hkdev-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    --hkdev-hover-shadow: 0 18px 45px rgba(0, 0, 0, 0.14);
+    --hkdev-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    --hkdev-hover-shadow: 0 14px 34px rgba(0, 0, 0, 0.10);
+
+    --hkdev-list-img: 200px;
 
     --hkdev-transition: 0.3s ease;
 
@@ -174,6 +176,8 @@
     margin-bottom: 26px !important;
 }.hkdev-tabs-scroll{
     display: flex;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
     gap: 10px !important;
     overflow-x: auto !important;
     padding: 4px 2px 10px !important;
@@ -271,7 +275,7 @@
         border-radius: var(--hkdev-radius) !important;
     }
 }.hkdev-product-card:hover{
-    transform: translateY(-6px);
+    transform: translateY(-4px);
     box-shadow: var(--hkdev-hover-shadow) !important;
     border-color: var(--hkdev-hover-border) !important;
 }/* --- Image box --- */.hkdev-img-box{
@@ -285,7 +289,7 @@
     object-fit: cover !important;
     transition: transform 0.45s ease;
 }.hkdev-product-card:hover .hkdev-img-box img{
-    transform: scale(1.06);
+    transform: scale(1.05);
 }/* --- Badges --- */.hkdev-badge-container{
     position: absolute !important;
     top: 12px !important;
@@ -299,13 +303,14 @@
 }.hkdev-badge{
     display: inline-flex;
     align-items: center !important;
-    padding: 4px 10px !important;
-    font-size: 12px !important;
+    padding: 3px 9px !important;
+    font-size: 11px !important;
     font-weight: 700 !important;
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
+    letter-spacing: 0.01em !important;
     color: #ffffff !important;
-    border-radius: 999px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.16) !important;
 }.hkdev-sale-badge{
     background: var(--hkdev-brand-primary) !important;
 }.hkdev-trending-badge{
@@ -316,18 +321,18 @@
     display: flex;
     flex-direction: column !important;
     flex: 1;
-    padding: 14px 14px 16px !important;
+    padding: 12px 12px 14px !important;
 }@media (min-width: 768px){.hkdev-content-box{
-        padding: 16px 16px 18px !important;
+        padding: 14px 15px 16px !important;
     }
 }.hkdev-meta-row{
     display: flex;
     align-items: center !important;
     justify-content: space-between !important;
     gap: 8px !important;
-    margin-bottom: 8px !important;
+    margin-bottom: 6px !important;
 }.hkdev-cat-label{
-    font-size: 12px !important;
+    font-size: 11.5px !important;
     font-weight: 600 !important;
     color: var(--hkdev-text-muted) !important;
     overflow: hidden !important;
@@ -351,8 +356,8 @@
     background: #e5533d !important;
     box-shadow: 0 0 0 4px rgba(229, 83, 61, 0.15) !important;
 }/* --- Title --- */.hkdev-title{
-    margin: 0 0 8px !important;
-    font-size: 14.5px !important;
+    margin: 0 0 6px !important;
+    font-size: 14px !important;
     font-weight: 600 !important;
     line-height: 1.45 !important;
     color: var(--hkdev-text-color) !important;
@@ -385,7 +390,7 @@
     align-items: center !important;
     flex-wrap: nowrap !important;
     gap: 8px !important;
-    margin-bottom: 14px !important;
+    margin-bottom: 12px !important;
     white-space: nowrap !important;
 }.hkdev-price-container .price{
     display: flex;
@@ -396,21 +401,37 @@
     font-family: var(--hkdev-font) !important;
     color: var(--hkdev-brand-primary) !important;
     white-space: nowrap !important;
-}.hkdev-price-container .price .woocommerce-Price-amount,
+}/* Regular price (no sale running): brand green, semi-bold. */
+.hkdev-price-container .price .woocommerce-Price-amount,
 .hkdev-price-container .price .amount{
-    font-size: 17px !important;
+    font-size: 16px !important;
     font-weight: 700 !important;
+    line-height: 1.2 !important;
     color: var(--hkdev-brand-primary) !important;
-}.hkdev-price-container .price ins{
+    font-variant-numeric: tabular-nums !important;
+    letter-spacing: .01em !important;
+}/* On sale the discount price leads and the old price follows, struck
+   through — the order WooCommerce prints them in is reversed visually. */.hkdev-price-container .price ins{
+    order: 1 !important;
     text-decoration: none !important;
+}.hkdev-price-container .price ins .woocommerce-Price-amount,
+.hkdev-price-container .price ins .amount{
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: var(--hkdev-brand-primary) !important;
 }.hkdev-price-container .price del{
-    opacity: 1;
+    order: 2 !important;
+    opacity: 1 !important;
+}/* A slightly smaller currency mark keeps the digits the hero of the row. */.hkdev-price-container .price .woocommerce-Price-currencySymbol{
+    font-size: .82em !important;
+    font-weight: 700 !important;
 }.hkdev-price-container .price del .woocommerce-Price-amount,
 .hkdev-price-container .price del .amount{
-    font-size: 14px !important;
+    font-size: 13.5px !important;
     font-weight: 600 !important;
     color: var(--hkdev-text-muted) !important;
     text-decoration: line-through !important;
+    text-decoration-thickness: 1px !important;
 }/* --- Footer actions --- */.hkdev-footer-actions{
     margin-top: auto !important;
 }.hkdev-action-group{
@@ -428,7 +449,7 @@ button.hkdev-order-btn{
     justify-content: center !important;
     gap: 6px !important;
     font-family: var(--hkdev-font) !important;
-    font-size: 14px !important;
+    font-size: 13.5px !important;
     font-weight: 700 !important;
     text-decoration: none !important;
     border-radius: var(--hkdev-btn-radius) !important;
@@ -452,7 +473,7 @@ button.hkdev-order-btn{
     color: #ffffff !important;
 }.hkdev-order-btn{
     flex: 1;
-    height: 42px !important;
+    height: 40px !important;
     color: #ffffff !important;
     background: var(--hkdev-brand-primary) !important;
     border: 1px solid var(--hkdev-brand-primary) !important;
@@ -690,6 +711,7 @@ button.hkdev-order-btn{
     font-weight: 600 !important;
     color: var(--hkdev-text-muted) !important;
     text-decoration: line-through !important;
+    text-decoration-thickness: 1px !important;
 }.hkdev-vm-price .price ins{
     text-decoration: none !important;
 }/* Sale price clarity: show the discount price first, then the old price. */
@@ -721,6 +743,7 @@ button.hkdev-order-btn{
     font-weight: 600 !important;
     color: var(--hkdev-text-muted) !important;
     text-decoration: line-through !important;
+    text-decoration-thickness: 1px !important;
 }/* Never let WooCommerce screen-reader helper text break the price row. */
 .hkdev-vm-price .screen-reader-text,
 .hkdev-price-container .screen-reader-text{
@@ -1048,5 +1071,131 @@ button.hkdev-order-btn{
     .hkdev-load-more{
         width: 100% !important;
         padding: 13px 20px !important;
+    }
+}
+
+/* ==========================================================
+   VIEW SWITCH (grid ⇄ list)
+   Shared by the Shop Grid and the Catalog widget.
+========================================================== */
+.hkdev-view-switch{
+    display: inline-flex;
+    align-items: center !important;
+    flex: 0 0 auto !important;
+    gap: 4px !important;
+    padding: 4px !important;
+    margin-left: auto !important;
+    background: var(--hkdev-bg-soft, #f2f9f3) !important;
+    border: 1px solid var(--hkdev-border-color, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 12px !important;
+}.hkdev-view-btn{
+    width: 34px !important;
+    height: 34px !important;
+    display: inline-flex;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    color: var(--hkdev-text-muted, #5f6e66) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: color .2s ease, background .2s ease, box-shadow .2s ease !important;
+}.hkdev-view-btn:hover{
+    color: var(--hkdev-brand-primary, #03a550) !important;
+}.hkdev-view-btn.is-active{
+    color: #ffffff !important;
+    background: var(--hkdev-brand-primary, #03a550) !important;
+    box-shadow: 0 4px 10px rgba(3, 165, 80, 0.28) !important;
+}.hkdev-view-btn:focus-visible{
+    outline: 2px solid var(--hkdev-brand-primary, #03a550) !important;
+    outline-offset: 2px !important;
+}.hkdev-shop-toolbar{
+    display: flex;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin-bottom: 16px !important;
+}/* The switch is optional, and meaningless on a carousel. */.hkdev-shop-wrapper[data-view-toggle="0"] .hkdev-view-switch,
+.hkdev-catalog[data-view-toggle="0"] .hkdev-view-switch,
+.hkdev-shop-wrapper[data-style="carousel"] .hkdev-view-switch{
+    display: none !important;
+}
+
+/* ==========================================================
+   LIST VIEW
+   One product per row: image on the left, category / title /
+   price in the middle, Buy Now on the right. Driven by the
+   .hkdev-view-list class on the block root.
+========================================================== */
+.hkdev-view-list .hkdev-shop-grid:not(.swiper-wrapper){
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 12px !important;
+}.hkdev-view-list .hkdev-product-card{
+    flex-direction: row !important;
+    align-items: stretch !important;
+}.hkdev-view-list .hkdev-product-card:hover{
+    transform: none !important;
+}.hkdev-view-list .hkdev-img-box{
+    flex: 0 0 var(--hkdev-list-img, 200px) !important;
+    width: var(--hkdev-list-img, 200px) !important;
+    max-width: var(--hkdev-list-img, 200px) !important;
+    align-self: stretch !important;
+    aspect-ratio: auto !important;
+    min-height: 130px !important;
+}.hkdev-view-list .hkdev-img-box a{
+    display: block !important;
+    height: 100% !important;
+}.hkdev-view-list .hkdev-img-box img{
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: auto !important;
+}.hkdev-view-list .hkdev-content-box{
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px 18px !important;
+    padding: 16px 20px !important;
+}.hkdev-view-list .hkdev-meta-row{
+    flex: 1 1 100% !important;
+    margin-bottom: 0 !important;
+}.hkdev-view-list .hkdev-title{
+    flex: 1 1 45% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+}.hkdev-view-list .hkdev-price-container{
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+}.hkdev-view-list .hkdev-footer-actions{
+    flex: 0 0 auto !important;
+    margin: 0 0 0 auto !important;
+}.hkdev-view-list .hkdev-action-group{
+    width: auto !important;
+}.hkdev-view-list .hkdev-order-btn,
+.hkdev-view-list .hkdev-btn-disabled{
+    flex: 0 0 auto !important;
+    width: auto !important;
+    padding: 0 22px !important;
+}@media (max-width: 767px){.hkdev-shop-wrapper.hkdev-view-list,
+    .hkdev-catalog.hkdev-view-list{
+        --hkdev-list-img: 116px;
+    }.hkdev-view-list .hkdev-img-box{
+        min-height: 116px !important;
+    }.hkdev-view-list .hkdev-content-box{
+        gap: 4px 12px !important;
+        padding: 12px !important;
+    }.hkdev-view-list .hkdev-title{
+        flex: 1 1 100% !important;
+        font-size: 14.5px !important;
+    }.hkdev-view-list .hkdev-price-container{
+        flex: 1 1 auto !important;
+    }.hkdev-view-list .hkdev-footer-actions{
+        margin-left: 0 !important;
+    }.hkdev-view-list .hkdev-order-btn,
+    .hkdev-view-list .hkdev-btn-disabled{
+        padding: 0 16px !important;
     }
 }

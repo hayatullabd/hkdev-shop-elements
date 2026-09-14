@@ -84,7 +84,7 @@ class Header_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'hkdev-elements-header-js' ];
+		return [ 'hkdev-elements-header-js', 'hkdev-elements-wishlist-js' ];
 	}
 
 	/**
@@ -259,6 +259,17 @@ class Header_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'show_wishlist',
+			[
+				'label'        => esc_html__( 'Show Wishlist Icon', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'yes',
+				'description'  => esc_html__( 'Heart icon with a live saved-items count. Hidden automatically when the site has no wishlist page.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
 			'mini_cart',
 			[
 				'label'        => esc_html__( 'Mini Cart on Icon Click', 'hkdev-shop-elements' ),
@@ -286,7 +297,7 @@ class Header_Widget extends Widget_Base {
 				'label'       => esc_html__( 'Wishlist URL', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::URL,
 				'default'     => [ 'url' => '' ],
-				'description' => esc_html__( 'Leave empty to hide the wishlist icon.', 'hkdev-shop-elements' ),
+				'description' => esc_html__( 'Leave empty to auto-detect the page that holds the wishlist.', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -522,6 +533,7 @@ class Header_Widget extends Widget_Base {
 			'show_search'      => ( isset( $settings['show_search'] ) && 'yes' === $settings['show_search'] ) ? 'yes' : 'no',
 			'show_account'     => ( isset( $settings['show_account'] ) && 'yes' === $settings['show_account'] ) ? 'yes' : 'no',
 			'show_cart'        => ( isset( $settings['show_cart'] ) && 'yes' === $settings['show_cart'] ) ? 'yes' : 'no',
+			'show_wishlist'    => ( ! isset( $settings['show_wishlist'] ) || 'yes' === $settings['show_wishlist'] ) ? 'yes' : 'no',
 			'mini_cart'        => ( isset( $settings['mini_cart'] ) && 'yes' === $settings['mini_cart'] ) ? 'yes' : 'no',
 			'show_categories'  => ( isset( $settings['show_categories'] ) && 'yes' === $settings['show_categories'] ) ? 'yes' : 'no',
 			'categories_label' => isset( $settings['categories_label'] ) ? $settings['categories_label'] : '',

@@ -317,6 +317,10 @@ class Single_Product_Engine {
 								<i class="fa-solid fa-bolt"></i>
 								<span class="btn-text"><?php echo $is_in_cart ? esc_html__( 'Order Completed', 'hkdev-shop-elements' ) : esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></span>
 							</button>
+
+							<?php if ( class_exists( Wishlist_Engine::class ) ) : ?>
+								<?php echo Wishlist_Engine::instance()->button_html( $product_id, [ 'style' => 'button' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							<?php endif; ?>
 						</div>
 
 						<?php if ( $show_whatsapp || $show_call ) : ?>

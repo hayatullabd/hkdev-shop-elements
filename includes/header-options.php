@@ -152,6 +152,7 @@ final class Header_Options {
 				'show_search'      => $yes_no( 'hkdev_hd_show_search' ),
 				'show_account'     => $yes_no( 'hkdev_hd_show_account' ),
 				'show_cart'        => $yes_no( 'hkdev_hd_show_cart' ),
+				'show_wishlist'    => $yes_no( 'hkdev_hd_show_wishlist' ),
 				'mini_cart'        => $yes_no( 'hkdev_hd_mini_cart' ),
 				'float_cart'       => $yes_no( 'hkdev_hd_float_cart' ),
 				'float_cart_empty' => $yes_no( 'hkdev_hd_float_cart_empty' ),
@@ -436,6 +437,7 @@ final class Header_Options {
 											<label class="hd-check"><input type="checkbox" name="hkdev_hd_show_search" value="yes" <?php checked( 'yes', $config['show_search'] ); ?>><span class="hd-check-box" aria-hidden="true"></span><span class="hd-check-label"><?php esc_html_e( 'Product Search', 'hkdev-shop-elements' ); ?></span></label>
 											<label class="hd-check"><input type="checkbox" name="hkdev_hd_show_account" value="yes" <?php checked( 'yes', $config['show_account'] ); ?>><span class="hd-check-box" aria-hidden="true"></span><span class="hd-check-label"><?php esc_html_e( 'Log In / Register', 'hkdev-shop-elements' ); ?></span></label>
 											<label class="hd-check"><input type="checkbox" name="hkdev_hd_show_cart" value="yes" <?php checked( 'yes', $config['show_cart'] ); ?>><span class="hd-check-box" aria-hidden="true"></span><span class="hd-check-label"><?php esc_html_e( 'Cart Icon', 'hkdev-shop-elements' ); ?></span></label>
+											<label class="hd-check"><input type="checkbox" name="hkdev_hd_show_wishlist" value="yes" <?php checked( 'yes', $config['show_wishlist'] ); ?>><span class="hd-check-box" aria-hidden="true"></span><span class="hd-check-label"><?php esc_html_e( 'Wishlist Icon', 'hkdev-shop-elements' ); ?></span></label>
 											<label class="hd-check"><input type="checkbox" name="hkdev_hd_mini_cart" value="yes" <?php checked( 'yes', $config['mini_cart'] ); ?>><span class="hd-check-box" aria-hidden="true"></span><span class="hd-check-label"><?php esc_html_e( 'Mini Cart Drawer', 'hkdev-shop-elements' ); ?></span></label>
 										</div>
 									</div>
@@ -454,7 +456,7 @@ final class Header_Options {
 								<div class="hd-field">
 									<div class="hd-field-info">
 										<label class="hd-field-title" for="hkdev-hd-wishlist-url"><?php esc_html_e( 'Wishlist URL', 'hkdev-shop-elements' ); ?></label>
-										<p class="hd-field-help"><?php esc_html_e( 'Leave empty to hide the wishlist icon.', 'hkdev-shop-elements' ); ?></p>
+										<p class="hd-field-help"><?php esc_html_e( 'Leave empty to auto-detect the page that holds the wishlist. The icon hides itself when no wishlist page exists.', 'hkdev-shop-elements' ); ?></p>
 									</div>
 									<div class="hd-field-input">
 										<input type="url" id="hkdev-hd-wishlist-url" name="hkdev_hd_wishlist_url" value="<?php echo esc_attr( $config['wishlist_url'] ); ?>" placeholder="https://example.com/wishlist/">

@@ -136,6 +136,74 @@ jQuery(function($) {
         });
     })();
 
+    // ==========================================================
+    // GRID / LIST VIEW SWITCH
+    // ==========================================================
+    const viewStoreKey = 'hkdevShopView';
+
+    function hkdevStoredView() {
+        try {
+            const stored = window.localStorage.getItem(viewStoreKey);
+            return (stored === 'list' || stored === 'grid') ? stored : '';
+        } catch (e) {
+            return '';
+        }
+    }
+
+    function hkdevApplyView($wrapper, view, persist) {
+        const isList = (view === 'list');
+
+        $wrapper.toggleClass('hkdev-view-list', isList);
+        $wrapper.find('.hkdev-view-btn')
+            .removeClass('is-active')
+            .attr('aria-pressed', 'false')
+            .filter('[data-view="' + (isList ? 'list' : 'grid') + '"]')
+            .addClass('is-active')
+            .attr('aria-pressed', 'true');
+
+        if (persist) {
+            try {
+                window.localStorage.setItem(viewStoreKey, isList ? 'list' : 'grid');
+            } catch (e) {
+                // Storage blocked (private mode) – keep the switch visual only.
+            }
+        }
+    }
+
+    // A remembered choice wins over the widget default so the listing never
+    // flips back to grid on the next page view.
+    function hkdevInitView(scope) {
+        $('.hkdev-shop-wrapper', scope ? $(scope) : document).each(function () {
+            const $wrapper = $(this);
+            if ('0' === String($wrapper.data('view-toggle'))) return;
+
+            const fallback = ('list' === String($wrapper.data('default-view'))) ? 'list' : 'grid';
+            hkdevApplyView($wrapper, hkdevStoredView() || fallback, false);
+        });
+    }
+
+    hkdevInitView();
+
+    $(document).on('click', '.hkdev-shop-wrapper .hkdev-view-btn', function () {
+        hkdevApplyView($(this).closest('.hkdev-shop-wrapper'), $(this).data('view'), true);
+    });
+
+    (function registerElementorViews() {
+        if (typeof window.elementorFrontend === 'undefined' || !window.elementorFrontend.hooks) {
+            $(window).on('elementor/frontend/init', registerElementorViews);
+            return;
+        }
+
+        ['hkdev_shop_grid', 'hkdev_related_products'].forEach(function (widget) {
+            window.elementorFrontend.hooks.addAction(
+                'frontend/element_ready/' + widget + '.default',
+                function ($scope) {
+                    hkdevInitView($scope);
+                }
+            );
+        });
+    })();
+
     // Category Tabs Filter AJAX
     $('.hkdev-tab-item').on('click', function() {
         var $btn = $(this), 
@@ -168,6 +236,7 @@ jQuery(function($) {
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
                 image_size: $wrapper.data('image_size'),
+                wishlist_btn: $wrapper.attr('data-wishlist-btn'),
                 style: $wrapper.data('style')
             },
             success: function(response) { 
@@ -249,7 +318,8 @@ jQuery(function($) {
                 on_sale: $wrapper.data('on_sale'),
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
-                image_size: $wrapper.data('image_size')
+                image_size: $wrapper.data('image_size'),
+                wishlist_btn: $wrapper.attr('data-wishlist-btn')
             },
             success: function (response) {
                 const data = (response && response.success && response.data) ? response.data : null;
@@ -371,9 +441,9 @@ jQuery(function($) {
         e.preventDefault();
 
         const $btn = $(this);
-        // The modal lives inside the Shop Grid wrapper, or inside the
-        // Catalog widget wrapper when the card comes from [hkdev_catalog].
-        const $wrapper = $btn.closest('.hkdev-shop-wrapper, .hkdev-catalog');
+        // The modal lives inside the Shop Grid wrapper, inside the Catalog
+        // widget wrapper for [hkdev_catalog], or inside the Wishlist page.
+        const $wrapper = $btn.closest('.hkdev-shop-wrapper, .hkdev-catalog, .hkdev-wishlist');
         const $modal = $wrapper.find('.hkdev-variation-modal').first();
         if (!$modal.length) return;
 

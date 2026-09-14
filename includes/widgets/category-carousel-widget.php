@@ -130,7 +130,7 @@ class Category_Carousel_Widget extends Widget_Base {
 	 */
 	protected function register_controls() {
 		$this->register_query_controls();
-		$this->register_product_controls();
+		$this->register_product_controls( false );
 		$this->register_heading_controls();
 		$this->register_card_style_controls();
 

@@ -1,0 +1,304 @@
+/* ==========================================================
+   HKDEV WISHLIST
+   Button (product card / cart / single product) + wishlist page.
+   Brand: green #03A550 / orange #F06724.
+========================================================== */
+
+.hkdev-wishlist{
+    font-family: var(--hkdev-font, 'Hind Siliguri', sans-serif) !important;
+    max-width: var(--hkdev-container-width, 1240px) !important;
+    margin: 40px auto !important;
+    padding: 0 20px !important;
+    color: var(--hkdev-text-color, #141a14) !important;
+    box-sizing: border-box !important;
+}
+
+/* ----------------------------------------------------------- Header ---- */
+.hkdev-wishlist-head{
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 22px !important;
+}
+.hkdev-wishlist-accent{
+    flex: 0 0 auto !important;
+    width: 5px !important;
+    height: 22px !important;
+    border-radius: 999px !important;
+    background: var(--hkdev-brand-primary, #03a550) !important;
+}
+.hkdev-wishlist-head-texts{
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    min-width: 0 !important;
+}
+.hkdev-wishlist-title{
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    line-height: 1.3 !important;
+    color: var(--hkdev-text-color, #141a14) !important;
+}
+.hkdev-wishlist-count{
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    color: var(--hkdev-brand-primary, #03a550) !important;
+    background: rgba(3, 165, 80, 0.12) !important;
+    border-radius: 999px !important;
+}
+.hkdev-wishlist-sub{
+    display: block !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--hkdev-text-muted, #5f6e66) !important;
+}
+
+/* ------------------------------------------------------ Button base ---- */
+.hkdev-wishlist-btn{
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    font-family: var(--hkdev-font, 'Hind Siliguri', sans-serif) !important;
+    font-weight: 700 !important;
+    color: var(--hkdev-text-muted, #5f6e66) !important;
+    background: #ffffff !important;
+    border: 1px solid var(--hkdev-border-color, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: color .2s ease, background .2s ease, border-color .2s ease, opacity .2s ease !important;
+}
+.hkdev-wishlist-btn:hover{
+    color: var(--hkdev-brand-secondary, #f06724) !important;
+    border-color: var(--hkdev-brand-secondary, #f06724) !important;
+}
+.hkdev-wishlist-btn.is-active{
+    color: var(--hkdev-brand-secondary, #f06724) !important;
+    background: rgba(240, 103, 36, 0.08) !important;
+    border-color: rgba(240, 103, 36, 0.45) !important;
+}
+.hkdev-wishlist-btn.is-loading{
+    opacity: .6 !important;
+    pointer-events: none !important;
+}
+.hkdev-wishlist-btn:focus-visible{
+    outline: 2px solid var(--hkdev-brand-primary, #03a550) !important;
+    outline-offset: 2px !important;
+}
+.hkdev-wishlist-btn--icon{
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    font-size: 15px !important;
+}
+.hkdev-wishlist-btn--button{
+    height: 46px !important;
+    padding: 0 20px !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+}
+.hkdev-wishlist-btn .screen-reader-text{
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(1px, 1px, 1px, 1px) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* ------------------------------------------- Button on product card ---- */
+/* Sits in the top-right corner of the image; unsaves the product. */
+.hkdev-wishlist-card-btn{
+    position: absolute !important;
+    top: 10px !important;
+    right: 10px !important;
+    z-index: 4 !important;
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10) !important;
+}
+.hkdev-wishlist-card-btn.is-active{
+    background: #ffffff !important;
+}
+
+/* ----------------------------------------------- Button inside cart ---- */
+/* Matches the trash button: a quiet icon in the row's action cluster. */
+.hkdev-cart-item-row .hkdev-wishlist-btn{
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    font-size: 17px !important;
+    color: var(--hkdev-cart-remove-color, var(--hkdev-text-muted, #5f6e66)) !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 8px !important;
+}
+.hkdev-cart-item-row .hkdev-wishlist-btn:hover{
+    color: var(--hkdev-brand-secondary, #f06724) !important;
+    background: rgba(240, 103, 36, 0.08) !important;
+}
+.hkdev-cart-item-row .hkdev-wishlist-btn.is-active{
+    color: var(--hkdev-brand-secondary, #f06724) !important;
+    background: transparent !important;
+}
+
+/* --------------------------------------- Move to Wishlist (cart row) ---- */
+/* Saves the product and drops the cart row in one step. */
+.hkdev-item-move-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    align-self: flex-start !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+    padding: 0 !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    color: var(--hkdev-text-muted, #5f6e66) !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: color .2s ease, opacity .2s ease !important;
+}
+
+.hkdev-item-move-btn i {
+    font-size: 12px !important;
+}
+
+.hkdev-item-move-btn:hover {
+    color: var(--hkdev-brand-secondary, #f06724) !important;
+}
+
+.hkdev-item-move-btn.is-loading {
+    opacity: .6 !important;
+    pointer-events: none !important;
+}
+
+/* ----------------------------------------- Button on single product ---- */
+.hkdev-sp-purchase-buttons .hkdev-wishlist-btn{
+    flex: 0 0 auto !important;
+    height: var(--sp-btn-height, 46px) !important;
+}
+.hkdev-sp-purchase-buttons .hkdev-wishlist-btn--button{
+    padding: 0 18px !important;
+    white-space: nowrap !important;
+}
+
+/* ----------------------------------------------------- Empty state ---- */
+.hkdev-wishlist-empty{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 60px 24px !important;
+    text-align: center !important;
+    background: #ffffff !important;
+    border: 1px dashed var(--hkdev-border-color, rgba(0, 0, 0, 0.12)) !important;
+    border-radius: var(--hkdev-radius, 16px) !important;
+}
+.hkdev-wishlist-empty h3{
+    margin: 0 !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    color: var(--hkdev-text-color, #141a14) !important;
+}
+.hkdev-wishlist-empty-icon{
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 64px !important;
+    height: 64px !important;
+    font-size: 26px !important;
+    color: var(--hkdev-brand-primary, #03a550) !important;
+    background: var(--hkdev-bg-soft, #f2f9f3) !important;
+    border-radius: 50% !important;
+}
+.hkdev-wishlist-empty-btn{
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 46px !important;
+    padding: 0 28px !important;
+    margin-top: 4px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    background: var(--hkdev-brand-primary, #03a550) !important;
+    border: 1px solid var(--hkdev-brand-primary, #03a550) !important;
+    border-radius: 50px !important;
+    text-decoration: none !important;
+    transition: background .2s ease, box-shadow .2s ease !important;
+}
+.hkdev-wishlist-empty-btn:hover{
+    background: #028a40 !important;
+    border-color: #028a40 !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 18px rgba(3, 165, 80, 0.28) !important;
+}
+
+/* The [hidden] attribute must beat the grid / flex display rules above. */
+.hkdev-wishlist-empty[hidden],
+.hkdev-wishlist-grid[hidden]{
+    display: none !important;
+}
+
+/* -------------------------------------------------- Account tab chip ---- */
+/* Inside the My Account tab the page already provides the spacing. */
+.hkdev-account-tab .hkdev-wishlist{
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.hkdev-account-nav .hkdev-account-wishlist-count{
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    padding: 0 6px !important;
+    margin-left: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    color: var(--hkdev-brand-primary, #03a550) !important;
+    background: rgba(3, 165, 80, 0.12) !important;
+    border-radius: 999px !important;
+}
+
+@media (max-width: 767px){
+    .hkdev-wishlist{
+        margin: 24px auto !important;
+        padding: 0 14px !important;
+    }
+    .hkdev-wishlist-title{
+        font-size: 19px !important;
+    }
+    .hkdev-wishlist-empty{
+        padding: 40px 18px !important;
+    }
+    .hkdev-sp-purchase-buttons .hkdev-wishlist-btn--button{
+        padding: 0 13px !important;
+    }
+}

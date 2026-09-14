@@ -78,7 +78,7 @@ class Shop_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_style_depends() {
-		return [ 'hkdev-elements-shop-style', 'hkdev-elements-swiper-css', 'hkdev-elements-fontawesome' ];
+		return [ 'hkdev-elements-shop-style', 'hkdev-elements-wishlist-style', 'hkdev-elements-swiper-css', 'hkdev-elements-fontawesome' ];
 	}
 
 	/**
@@ -87,7 +87,7 @@ class Shop_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'hkdev-elements-shop-js', 'hkdev-elements-swiper-js' ];
+		return [ 'hkdev-elements-shop-js', 'hkdev-elements-wishlist-js', 'hkdev-elements-swiper-js' ];
 	}
 
 	/**
@@ -340,11 +340,39 @@ class Shop_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'view_toggle',
+			[
+				'label'        => esc_html__( 'Grid / List Switch', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'separator'    => 'before',
+				'description'  => esc_html__( 'Lets shoppers switch between the grid and a compact list layout. Not used by the carousel.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'default_view',
+			[
+				'label'     => esc_html__( 'Default View', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'grid',
+				'options'   => [
+					'grid' => esc_html__( 'Grid', 'hkdev-shop-elements' ),
+					'list' => esc_html__( 'List', 'hkdev-shop-elements' ),
+				],
+				'condition' => [ 'view_toggle' => 'yes' ],
+			]
+		);
+
 		$this->end_controls_section();
 
 		$this->register_product_controls();
 		$this->register_heading_controls();
-		$this->register_style_sections();
+		$this->register_style_sections( '{{WRAPPER}} .hkdev-shop-wrapper', true );
 	}
 
 	/**
@@ -387,8 +415,11 @@ class Shop_Widget extends Widget_Base {
 			'show_tabs'        => $yes_no( 'show_tabs' ),
 			'include_children' => $yes_no( 'include_children' ),
 			'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
+			'view_toggle'      => ( ! isset( $settings['view_toggle'] ) || 'yes' === $settings['view_toggle'] ) ? 'yes' : 'no',
+			'default_view'     => ( isset( $settings['default_view'] ) && 'list' === $settings['default_view'] ) ? 'list' : 'grid',
 			'load_more'        => isset( $settings['load_more'] ) ? $yes_no( 'load_more' ) : 'yes',
 			'load_more_text'   => isset( $settings['load_more_text'] ) && '' !== $settings['load_more_text'] ? sanitize_text_field( $settings['load_more_text'] ) : __( 'Load More', 'hkdev-shop-elements' ),
+			'wishlist_btn'     => $this->get_wishlist_btn( $settings ),
 			'heading'          => $this->get_heading_config( $settings ),
 			'carousel'         => $this->get_carousel_config( $settings ),
 			'title_lines'      => $this->get_title_lines( $settings ),

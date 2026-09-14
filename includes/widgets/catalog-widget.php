@@ -77,7 +77,7 @@ class Catalog_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_style_depends() {
-		return [ 'hkdev-elements-catalog-style', 'hkdev-elements-shop-style', 'hkdev-elements-fontawesome' ];
+		return [ 'hkdev-elements-catalog-style', 'hkdev-elements-shop-style', 'hkdev-elements-wishlist-style', 'hkdev-elements-fontawesome' ];
 	}
 
 	/**
@@ -86,7 +86,7 @@ class Catalog_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_script_depends() {
-		return [ 'hkdev-elements-catalog-js', 'hkdev-elements-shop-js' ];
+		return [ 'hkdev-elements-catalog-js', 'hkdev-elements-shop-js', 'hkdev-elements-wishlist-js' ];
 	}
 
 	/**
@@ -169,10 +169,47 @@ class Catalog_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'show_view',
+			[
+				'label'        => esc_html__( 'Grid / List switch', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'separator'    => 'before',
+			]
+		);
+
+		$this->add_control(
+			'default_view',
+			[
+				'label'     => esc_html__( 'Default view', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'grid',
+				'options'   => [
+					'grid' => esc_html__( 'Grid', 'hkdev-shop-elements' ),
+					'list' => esc_html__( 'List', 'hkdev-shop-elements' ),
+				],
+				'condition' => [ 'show_view' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'wishlist_btn',
+			[
+				'label'        => esc_html__( 'Wishlist heart', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'separator'    => 'before',
+				'description'  => esc_html__( 'Adds a save-to-wishlist heart to every card.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->end_controls_section();
 
 		// Product card styling (same controls as the Shop Grid widget).
-		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog' );
+		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog', true );
 	}
 
 	/**
@@ -195,6 +232,9 @@ class Catalog_Widget extends Widget_Base {
 				'show_search'  => $settings['show_search'],
 				'show_sort'    => $settings['show_sort'],
 				'show_filters' => $settings['show_filters'],
+				'show_view'    => ( ! isset( $settings['show_view'] ) || 'yes' === $settings['show_view'] ) ? 'yes' : 'no',
+				'default_view' => ( isset( $settings['default_view'] ) && 'list' === $settings['default_view'] ) ? 'list' : 'grid',
+				'wishlist_btn' => ( ! isset( $settings['wishlist_btn'] ) || 'yes' === $settings['wishlist_btn'] ) ? 'yes' : 'no',
 			],
 			false
 		);

@@ -325,10 +325,11 @@ trait Style_Controls {
 	 * Style sections for a product grid: layout, card, image, text, button and
 	 * badges. Shared by every widget that renders the product card.
 	 *
-	 * @param string $scope CSS scope of the widget wrapper (must contain {{WRAPPER}}).
+	 * @param string $scope        CSS scope of the widget wrapper (must contain {{WRAPPER}}).
+	 * @param bool   $include_view Add the Grid / List switch section.
 	 * @return void
 	 */
-	protected function register_style_sections( $scope = '{{WRAPPER}} .hkdev-shop-wrapper' ) {
+	protected function register_style_sections( $scope = '{{WRAPPER}} .hkdev-shop-wrapper', $include_view = false ) {
 		/* ---------------- Layout & spacing ---------------- */
 		$this->start_controls_section(
 			'hkdev_style_layout',
@@ -455,6 +456,29 @@ trait Style_Controls {
 		$this->hkdev_color( 'sk_sale_color', esc_html__( 'Sale Badge Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sale-badge', 'color' );
 		$this->hkdev_color( 'sk_trend_bg', esc_html__( 'Trending Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-trending-badge', 'background-color' );
 		$this->hkdev_color( 'sk_best_bg', esc_html__( 'Best Seller Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-best-seller-badge', 'background-color' );
+
+		$this->end_controls_section();
+
+		if ( ! $include_view ) {
+			return;
+		}
+
+		/* ---------------- Grid / List switch ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_view',
+			[
+				'label' => esc_html__( 'Grid / List Switch', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'sk_view_bg', esc_html__( 'Container Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-switch', 'background-color' );
+		$this->hkdev_color( 'sk_view_border', esc_html__( 'Container Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-switch', 'border-color' );
+		$this->hkdev_dimensions( 'sk_view_radius', esc_html__( 'Container Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-switch', 'border-radius' );
+		$this->hkdev_color( 'sk_view_icon', esc_html__( 'Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-btn', 'color' );
+		$this->hkdev_color( 'sk_view_icon_hover', esc_html__( 'Icon Hover Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-btn:hover', 'color' );
+		$this->hkdev_color( 'sk_view_active_bg', esc_html__( 'Active Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-btn.is-active', 'background-color' );
+		$this->hkdev_color( 'sk_view_active_color', esc_html__( 'Active Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-view-btn.is-active', 'color' );
 
 		$this->end_controls_section();
 	}
