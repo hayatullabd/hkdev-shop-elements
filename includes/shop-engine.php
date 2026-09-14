@@ -136,9 +136,10 @@ class Shop_Engine {
 	 * @param int  $post_id Product ID.
 	 * @param int  $trending_days Trending lookback days.
 	 * @param bool $is_carousel Whether inside a carousel slide.
+	 * @param string $image_size WooCommerce image size for the card image.
 	 * @return void
 	 */
-	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false ) {
+	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false, $image_size = 'woocommerce_thumbnail' ) {
 		global $product;
 		$product = wc_get_product( $post_id );
 		if ( ! $product ) {
@@ -175,7 +176,7 @@ class Shop_Engine {
 				<?php do_action( 'woocommerce_before_shop_loop_item_title' ); ?>
 
 				<a href="<?php echo esc_url( $permalink ); ?>">
-					<?php echo $product->get_image( 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo $product->get_image( $image_size ? sanitize_key( $image_size ) : 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</a>
 
 				<div class="hkdev-badge-container">
@@ -600,6 +601,7 @@ class Shop_Engine {
 			'on_sale'          => ( isset( $_POST['on_sale'] ) && 'yes' === $_POST['on_sale'] ) ? 'yes' : 'no', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'featured'         => ( isset( $_POST['featured'] ) && 'yes' === $_POST['featured'] ) ? 'yes' : 'no', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'stock_status'     => isset( $_POST['stock_status'] ) ? sanitize_key( wp_unslash( $_POST['stock_status'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			'image_size'       => isset( $_POST['image_size'] ) ? sanitize_key( wp_unslash( $_POST['image_size'] ) ) : 'woocommerce_thumbnail', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		];
 
 		if ( $with_paged ) {
@@ -625,7 +627,7 @@ class Shop_Engine {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ) );
+				$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'] );
 			}
 			wp_reset_postdata();
 		} else {
@@ -651,7 +653,7 @@ class Shop_Engine {
 		ob_start();
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$this->render_single_product_card( get_the_ID(), $params['days'], false );
+			$this->render_single_product_card( get_the_ID(), $params['days'], false, $params['image_size'] );
 		}
 		wp_reset_postdata();
 		$html = ob_get_clean();
@@ -855,6 +857,7 @@ class Shop_Engine {
 			[
 				'limit'            => 12,
 				'columns'          => 4,
+				'image_size'       => 'woocommerce_thumbnail',
 				'category'         => '',
 				'exclude'          => '',
 				'tags'             => '',
@@ -958,6 +961,7 @@ class Shop_Engine {
 		<div class="hkdev-shop-wrapper" id="<?php echo esc_attr( $unique_id ); ?>"
 			 data-limit="<?php echo esc_attr( $atts['limit'] ); ?>"
 			 data-columns="<?php echo esc_attr( $atts['columns'] ); ?>"
+			 data-image_size="<?php echo esc_attr( $atts['image_size'] ); ?>"
 			 data-type="<?php echo esc_attr( $atts['type'] ); ?>"
 			 data-days="<?php echo esc_attr( $atts['days'] ); ?>"
 			 data-order_by="<?php echo esc_attr( $atts['order_by'] ); ?>"
@@ -1036,7 +1040,7 @@ class Shop_Engine {
 								<?php
 								while ( $query->have_posts() ) {
 									$query->the_post();
-									$this->render_single_product_card( get_the_ID(), (int) $atts['days'], true );
+									$this->render_single_product_card( get_the_ID(), (int) $atts['days'], true, $atts['image_size'] );
 								}
 								wp_reset_postdata();
 								?>
@@ -1054,7 +1058,7 @@ class Shop_Engine {
 							<?php
 							while ( $query->have_posts() ) {
 								$query->the_post();
-								$this->render_single_product_card( get_the_ID(), (int) $atts['days'], false );
+								$this->render_single_product_card( get_the_ID(), (int) $atts['days'], false, $atts['image_size'] );
 							}
 							wp_reset_postdata();
 							?>

@@ -75,6 +75,7 @@ final class Widget_Manager {
 	public function register_widgets( $widgets_manager ) {
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/heading-controls-trait.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/product-controls-trait.php';
+		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/style-controls-trait.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/shop-widget.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/single-product-widget.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/related-widget.php';

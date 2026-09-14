@@ -167,6 +167,7 @@ jQuery(function($) {
                 on_sale: $wrapper.data('on_sale'),
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
+                image_size: $wrapper.data('image_size'),
                 style: $wrapper.data('style')
             },
             success: function(response) { 
@@ -247,7 +248,8 @@ jQuery(function($) {
                 brands: $wrapper.data('brands'),
                 on_sale: $wrapper.data('on_sale'),
                 featured: $wrapper.data('featured'),
-                stock_status: $wrapper.data('stock_status')
+                stock_status: $wrapper.data('stock_status'),
+                image_size: $wrapper.data('image_size')
             },
             success: function (response) {
                 const data = (response && response.success && response.data) ? response.data : null;

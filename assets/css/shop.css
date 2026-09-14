@@ -351,9 +351,9 @@
     background: #e5533d !important;
     box-shadow: 0 0 0 4px rgba(229, 83, 61, 0.15) !important;
 }/* --- Title --- */.hkdev-title{
-    margin: 0 0 10px !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
+    margin: 0 0 8px !important;
+    font-size: 14.5px !important;
+    font-weight: 600 !important;
     line-height: 1.45 !important;
     color: var(--hkdev-text-color) !important;
 }.hkdev-title a{
@@ -398,8 +398,8 @@
     white-space: nowrap !important;
 }.hkdev-price-container .price .woocommerce-Price-amount,
 .hkdev-price-container .price .amount{
-    font-size: 19px !important;
-    font-weight: 800 !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
     color: var(--hkdev-brand-primary) !important;
 }.hkdev-price-container .price ins{
     text-decoration: none !important;
@@ -452,7 +452,7 @@ button.hkdev-order-btn{
     color: #ffffff !important;
 }.hkdev-order-btn{
     flex: 1;
-    height: 46px !important;
+    height: 42px !important;
     color: #ffffff !important;
     background: var(--hkdev-brand-primary) !important;
     border: 1px solid var(--hkdev-brand-primary) !important;
