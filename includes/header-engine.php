@@ -874,9 +874,17 @@ class Header_Engine {
 						<?php endif; ?>
 
 						<?php if ( $menu_html ) : ?>
-							<nav class="hkdev-header-nav" aria-label="<?php esc_attr_e( 'Primary menu', 'hkdev-shop-elements' ); ?>">
-								<?php echo $menu_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-							</nav>
+							<div class="hkdev-header-nav-wrap">
+								<button type="button" class="hkdev-header-nav-arrow is-prev" aria-label="<?php esc_attr_e( 'Scroll menu left', 'hkdev-shop-elements' ); ?>">
+									<i class="fa-solid fa-chevron-left"></i>
+								</button>
+								<nav class="hkdev-header-nav" aria-label="<?php esc_attr_e( 'Primary menu', 'hkdev-shop-elements' ); ?>">
+									<?php echo $menu_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								</nav>
+								<button type="button" class="hkdev-header-nav-arrow is-next" aria-label="<?php esc_attr_e( 'Scroll menu right', 'hkdev-shop-elements' ); ?>">
+									<i class="fa-solid fa-chevron-right"></i>
+								</button>
+							</div>
 						<?php endif; ?>
 					</div>
 				</div>

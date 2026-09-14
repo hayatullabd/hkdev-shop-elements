@@ -275,7 +275,7 @@ class Shop_Engine {
 							<?php endif; ?>
 						</div>
 					<?php else : ?>
-						<button disabled class="hkdev-btn-disabled"><?php echo esc_html__( 'Stock Out', 'hkdev-shop-elements' ); ?></button>
+						<button disabled class="hkdev-btn-disabled"><?php echo esc_html__( 'Out of Stock', 'hkdev-shop-elements' ); ?></button>
 					<?php endif; ?>
 				</div>
 			</div>
@@ -894,6 +894,7 @@ class Shop_Engine {
 				'days'             => 0,
 				'order_by'         => 'DESC',
 				'show_tabs'        => 'yes',
+				'tabs'             => '',
 				'include_children' => 'yes',
 				'is_related'       => 'no',
 				'id'               => 0,
@@ -1016,37 +1017,52 @@ class Shop_Engine {
 
 			<?php if ( 'yes' === $atts['show_tabs'] ) : ?>
 				<?php
-				$get_terms_args = [ 'taxonomy' => 'product_cat', 'hide_empty' => true ];
+				$excluded_slugs = ! empty( $atts['exclude'] ) ? array_map( 'trim', explode( ',', $atts['exclude'] ) ) : [];
+				$manual_tabs    = array_values( array_filter( array_map( 'trim', explode( ',', (string) $atts['tabs'] ) ) ) );
+				$categories     = [];
 
-				if ( ! empty( $atts['category'] ) ) {
-					$first_slug  = array_map( 'trim', explode( ',', $atts['category'] ) )[0];
-					$parent_term = get_term_by( 'slug', $first_slug, 'product_cat' );
-					if ( $parent_term ) {
-						$get_terms_args['parent'] = $parent_term->term_id;
-					}
-				} else {
-					if ( $current_cat_id > 0 ) {
-						$get_terms_args['parent'] = $current_cat_id;
-					} else {
-						$get_terms_args['parent'] = 0;
-					}
-				}
-
-				if ( ! empty( $atts['exclude'] ) ) {
-					$ex_slugs = array_map( 'trim', explode( ',', $atts['exclude'] ) );
-					$ex_ids   = [];
-					foreach ( $ex_slugs as $es ) {
-						$t = get_term_by( 'slug', $es, 'product_cat' );
-						if ( $t ) {
-							$ex_ids[] = $t->term_id;
+				if ( ! empty( $manual_tabs ) ) {
+					foreach ( $manual_tabs as $slug ) {
+						if ( in_array( $slug, $excluded_slugs, true ) ) {
+							continue;
+						}
+						$term = get_term_by( 'slug', $slug, 'product_cat' );
+						if ( $term && ! is_wp_error( $term ) ) {
+							$categories[] = $term;
 						}
 					}
-					if ( ! empty( $ex_ids ) ) {
-						$get_terms_args['exclude'] = $ex_ids;
-					}
-				}
+				} else {
+					$get_terms_args = [ 'taxonomy' => 'product_cat', 'hide_empty' => true ];
 
-				$categories = get_terms( $get_terms_args );
+					if ( ! empty( $atts['category'] ) ) {
+						$first_slug  = array_map( 'trim', explode( ',', $atts['category'] ) )[0];
+						$parent_term = get_term_by( 'slug', $first_slug, 'product_cat' );
+						if ( $parent_term ) {
+							$get_terms_args['parent'] = $parent_term->term_id;
+						}
+					} else {
+						if ( $current_cat_id > 0 ) {
+							$get_terms_args['parent'] = $current_cat_id;
+						} else {
+							$get_terms_args['parent'] = 0;
+						}
+					}
+
+					if ( ! empty( $excluded_slugs ) ) {
+						$ex_ids = [];
+						foreach ( $excluded_slugs as $es ) {
+							$t = get_term_by( 'slug', $es, 'product_cat' );
+							if ( $t ) {
+								$ex_ids[] = $t->term_id;
+							}
+						}
+						if ( ! empty( $ex_ids ) ) {
+							$get_terms_args['exclude'] = $ex_ids;
+						}
+					}
+
+					$categories = get_terms( $get_terms_args );
+				}
 				if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) :
 					?>
 					<div class="hkdev-tabs-container">

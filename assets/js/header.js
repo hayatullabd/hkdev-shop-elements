@@ -450,6 +450,57 @@
 			});
 		}
 
+		// ---- Horizontal menu arrows -----------------------------------
+		$('.hkdev-header-nav-wrap').each(function () {
+			var $wrap = $(this);
+			var $nav = $wrap.find('.hkdev-header-nav');
+			var nav = $nav[0];
+			var $prev = $wrap.find('.hkdev-header-nav-arrow.is-prev');
+			var $next = $wrap.find('.hkdev-header-nav-arrow.is-next');
+
+			if (!nav) {
+				return;
+			}
+
+			function navMax() {
+				return Math.max(0, nav.scrollWidth - nav.clientWidth);
+			}
+
+			function navSync() {
+				if (navMax() <= 1) {
+					$prev.addClass('is-hidden');
+					$next.addClass('is-hidden');
+					return;
+				}
+
+				$prev.removeClass('is-hidden');
+				$next.removeClass('is-hidden');
+				$prev.toggleClass('is-disabled', nav.scrollLeft <= 1);
+				$next.toggleClass('is-disabled', nav.scrollLeft >= navMax() - 1);
+			}
+
+			function navStep(direction) {
+				nav.scrollBy({
+					left: direction * Math.max(200, Math.round(nav.clientWidth * 0.7)),
+					behavior: 'smooth'
+				});
+			}
+
+			$prev.on('click', function (e) {
+				e.preventDefault();
+				navStep(-1);
+			});
+
+			$next.on('click', function (e) {
+				e.preventDefault();
+				navStep(1);
+			});
+
+			$nav.on('scroll', navSync);
+			$(window).on('resize orientationchange load', navSync);
+			navSync();
+		});
+
 		// ---- Sticky shadow + auto-hide on scroll ----------------------
 		var $sticky = $('.hkdev-header-wrap.hkdev-header-sticky').first();
 

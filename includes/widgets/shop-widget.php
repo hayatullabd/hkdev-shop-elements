@@ -304,6 +304,27 @@ class Shop_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'tabs',
+			[
+				'label'       => esc_html__( 'Category Tabs', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::REPEATER,
+				'fields'      => [
+					[
+						'name'        => 'category',
+						'label'       => esc_html__( 'Category', 'hkdev-shop-elements' ),
+						'type'        => Controls_Manager::SELECT2,
+						'options'     => Shop_Engine::term_options( 'product_cat' ),
+						'label_block' => true,
+					],
+				],
+				'title_field' => '{{{ category }}}',
+				'default'     => [],
+				'condition'   => [ 'show_tabs' => 'yes' ],
+				'description' => esc_html__( 'Add categories to set the tab order, then drag to rearrange. Leave empty to list categories automatically.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
 			'style',
 			[
 				'label'       => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
@@ -370,6 +391,15 @@ class Shop_Widget extends Widget_Base {
 			return sanitize_text_field( is_array( $value ) ? implode( ',', $value ) : (string) $value );
 		};
 
+		$tab_slugs = [];
+		if ( ! empty( $settings['tabs'] ) && is_array( $settings['tabs'] ) ) {
+			foreach ( $settings['tabs'] as $item ) {
+				if ( ! empty( $item['category'] ) ) {
+					$tab_slugs[] = sanitize_text_field( $item['category'] );
+				}
+			}
+		}
+
 		$atts = [
 			'limit'            => isset( $settings['limit'] ) ? absint( $settings['limit'] ) : 12,
 			'columns'          => isset( $settings['columns'] ) ? $settings['columns'] : '4',
@@ -385,6 +415,7 @@ class Shop_Widget extends Widget_Base {
 			'days'             => isset( $settings['days'] ) ? absint( $settings['days'] ) : 0,
 			'order_by'         => isset( $settings['order_by'] ) ? $settings['order_by'] : 'DESC',
 			'show_tabs'        => $yes_no( 'show_tabs' ),
+			'tabs'             => implode( ',', $tab_slugs ),
 			'include_children' => $yes_no( 'include_children' ),
 			'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
 			'load_more'        => isset( $settings['load_more'] ) ? $yes_no( 'load_more' ) : 'yes',
