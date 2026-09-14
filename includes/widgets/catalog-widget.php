@@ -24,6 +24,8 @@ use HkdevShopElements\Includes\Catalog_Engine;
  */
 class Catalog_Widget extends Widget_Base {
 
+	use Style_Controls;
+
 	/**
 	 * Widget name.
 	 *
@@ -168,6 +170,9 @@ class Catalog_Widget extends Widget_Base {
 		);
 
 		$this->end_controls_section();
+
+		// Product card styling (same controls as the Shop Grid widget).
+		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog' );
 	}
 
 	/**

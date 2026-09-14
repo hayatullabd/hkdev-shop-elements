@@ -23,6 +23,7 @@ use Elementor\Widget_Base;
 class Related_Widget extends Widget_Base {
 
 	use Product_Controls;
+	use Style_Controls;
 
 	/**
 	 * Widget name.
@@ -169,6 +170,16 @@ class Related_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'image_size',
+			[
+				'label'   => esc_html__( 'Image Size', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'woocommerce_thumbnail',
+				'options' => $this->hkdev_image_size_options(),
+			]
+		);
+
+		$this->add_control(
 			'style',
 			[
 				'label'   => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
@@ -197,6 +208,7 @@ class Related_Widget extends Widget_Base {
 		$this->end_controls_section();
 
 		$this->register_product_controls();
+		$this->register_style_sections();
 	}
 
 	/**
@@ -225,6 +237,7 @@ class Related_Widget extends Widget_Base {
 		$atts = [
 			'limit'            => $limit,
 			'columns'          => isset( $settings['columns'] ) ? $settings['columns'] : '4',
+			'image_size'       => isset( $settings['image_size'] ) ? sanitize_key( $settings['image_size'] ) : 'woocommerce_thumbnail',
 			'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
 			'show_tabs'        => 'no',
 			'include_children' => 'yes',

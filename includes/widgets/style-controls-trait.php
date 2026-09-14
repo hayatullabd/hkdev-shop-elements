@@ -317,4 +317,142 @@ trait Style_Controls {
 			'full'                  => esc_html__( 'Full (original)', 'hkdev-shop-elements' ),
 		];
 	}
+
+	/**
+	 * Style sections for a product grid: layout, card, image, text, button and
+	 * badges. Shared by every widget that renders the product card.
+	 *
+	 * @param string $scope CSS scope of the widget wrapper (must contain {{WRAPPER}}).
+	 * @return void
+	 */
+	protected function register_style_sections( $scope = '{{WRAPPER}} .hkdev-shop-wrapper' ) {
+		/* ---------------- Layout & spacing ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_layout',
+			[
+				'label' => esc_html__( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_dimensions( 'sk_wrapper_margin', esc_html__( 'Block Margin', 'hkdev-shop-elements' ), $scope, 'margin' );
+		$this->hkdev_dimensions( 'sk_wrapper_padding', esc_html__( 'Block Padding', 'hkdev-shop-elements' ), $scope, 'padding' );
+		$this->hkdev_slider( 'sk_grid_gap', esc_html__( 'Gap Between Cards', 'hkdev-shop-elements' ), $scope . ' .hkdev-shop-grid', 'gap', 0, 60 );
+		$this->hkdev_color( 'sk_page_bg', esc_html__( 'Block Background', 'hkdev-shop-elements' ), $scope, 'background-color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Card ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_card',
+			[
+				'label' => esc_html__( 'Product Card', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'sk_card_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'background-color' );
+		$this->hkdev_color( 'sk_card_border', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'border-color' );
+		$this->hkdev_slider( 'sk_card_border_w', esc_html__( 'Border Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'border-width', 0, 8 );
+		$this->hkdev_dimensions( 'sk_card_radius', esc_html__( 'Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'border-radius' );
+		$this->hkdev_shadow( 'sk_card_shadow', esc_html__( 'Box Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card' );
+		$this->hkdev_dimensions( 'sk_card_content_pad', esc_html__( 'Content Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-content-box', 'padding' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Image ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_image',
+			[
+				'label' => esc_html__( 'Product Image', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_select(
+			'sk_img_ratio',
+			esc_html__( 'Image Shape', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-img-box img',
+			'aspect-ratio',
+			[
+				''       => esc_html__( 'Default (square)', 'hkdev-shop-elements' ),
+				'1 / 1'  => esc_html__( 'Square (1:1)', 'hkdev-shop-elements' ),
+				'4 / 3'  => esc_html__( 'Landscape (4:3)', 'hkdev-shop-elements' ),
+				'3 / 2'  => esc_html__( 'Landscape (3:2)', 'hkdev-shop-elements' ),
+				'16 / 9' => esc_html__( 'Wide (16:9)', 'hkdev-shop-elements' ),
+				'3 / 4'  => esc_html__( 'Portrait (3:4)', 'hkdev-shop-elements' ),
+				'4 / 5'  => esc_html__( 'Portrait (4:5)', 'hkdev-shop-elements' ),
+				'auto'   => esc_html__( 'Original', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->hkdev_select(
+			'sk_img_fit',
+			esc_html__( 'Image Fit', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-img-box img',
+			'object-fit',
+			[
+				'cover'   => esc_html__( 'Cover (crop)', 'hkdev-shop-elements' ),
+				'contain' => esc_html__( 'Contain (whole image)', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->hkdev_slider( 'sk_img_zoom', esc_html__( 'Hover Zoom', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card:hover .hkdev-img-box img', 'transform', 1, 1.3 );
+		$this->hkdev_dimensions( 'sk_img_radius', esc_html__( 'Image Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-img-box img', 'border-radius' );
+		$this->hkdev_color( 'sk_img_box_bg', esc_html__( 'Image Area Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-img-box', 'background-color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Text ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_text',
+			[
+				'label' => esc_html__( 'Card Text', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'sk_cat', esc_html__( 'Category / Brand', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-label' );
+		$this->hkdev_typography( 'sk_title', esc_html__( 'Product Title', 'hkdev-shop-elements' ), $scope . ' .hkdev-title' );
+		$this->hkdev_typography( 'sk_price', esc_html__( 'Price', 'hkdev-shop-elements' ), $scope . ' .hkdev-price-container .price .amount' );
+		$this->hkdev_color( 'sk_price_old', esc_html__( 'Old (Struck) Price', 'hkdev-shop-elements' ), $scope . ' .hkdev-price-container .price del .amount', 'color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Button ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_button',
+			[
+				'label' => esc_html__( 'Buy Now Button', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'sk_btn', esc_html__( 'Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn' );
+		$this->hkdev_color( 'sk_btn_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'background-color' );
+		$this->hkdev_color( 'sk_btn_border', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'border-color' );
+		$this->hkdev_color( 'sk_btn_bg_hover', esc_html__( 'Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'background-color' );
+		$this->hkdev_color( 'sk_btn_color_hover', esc_html__( 'Hover Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'color' );
+		$this->hkdev_slider( 'sk_btn_height', esc_html__( 'Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'height', 30, 70 );
+		$this->hkdev_dimensions( 'sk_btn_radius', esc_html__( 'Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'border-radius' );
+		$this->hkdev_dimensions( 'sk_btn_padding', esc_html__( 'Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'padding' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Badges ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_badges',
+			[
+				'label' => esc_html__( 'Badges', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'sk_sale_bg', esc_html__( 'Sale Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sale-badge', 'background-color' );
+		$this->hkdev_color( 'sk_sale_color', esc_html__( 'Sale Badge Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sale-badge', 'color' );
+		$this->hkdev_color( 'sk_trend_bg', esc_html__( 'Trending Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-trending-badge', 'background-color' );
+		$this->hkdev_color( 'sk_best_bg', esc_html__( 'Best Seller Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-best-seller-badge', 'background-color' );
+
+		$this->end_controls_section();
+	}
 }
