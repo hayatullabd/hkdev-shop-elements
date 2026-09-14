@@ -33,15 +33,15 @@ No wordpress.org, no manual re-upload.
 
 ### One-time setup
 
-Point the plugin at your repository. Open `hkdev-shop-elements.php` and set:
+This repository is already wired up:
 
 ```php
-define( 'HKDEV_ELEMENTS_GITHUB_REPO', 'your-username/hkdev-shop-elements' );
+define( 'HKDEV_ELEMENTS_GITHUB_REPO', 'hayatullabd/hkdev-shop-elements' );
 ```
 
-…and the same URL in the `Update URI:` header at the top of the file. The
-repository must be **public** (or define `HKDEV_ELEMENTS_GITHUB_TOKEN` with a
-token that can read it). Remove `includes/github-updater.php`, its loader in
+…and the matching `Update URI:` header at the top of `hkdev-shop-elements.php`.
+The repository is **public**. To point the plugin at a different repository,
+change both values. Remove `includes/github-updater.php`, its loader in
 `hkdev-shop-elements.php` and the `Update URI:` header if you don't want the
 feature.
 
