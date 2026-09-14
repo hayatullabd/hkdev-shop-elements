@@ -117,8 +117,17 @@ final class Widget_Manager {
 		];
 
 		foreach ( $widgets as $widget_class ) {
-			if ( class_exists( $widget_class ) ) {
+			if ( ! class_exists( $widget_class ) ) {
+				continue;
+			}
+
+			// A single broken widget must never take down the editor / admin.
+			try {
 				$widgets_manager->register( new $widget_class() );
+			} catch ( \Throwable $e ) {
+				\HkdevShopElements\hkdev_elements_log_message(
+					sprintf( 'Widget %s failed to register: %s (%s:%d)', $widget_class, $e->getMessage(), $e->getFile(), $e->getLine() )
+				);
 			}
 		}
 	}

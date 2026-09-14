@@ -202,20 +202,18 @@ trait Style_Controls {
 	 * @return void
 	 */
 	protected function hkdev_shadow( $id, $label, $selector, $condition = [] ) {
-		// The box-shadow control type is only available when Elementor provides it.
-		if ( ! defined( 'Elementor\Controls_Manager::BOX_SHADOW' ) ) {
-			return;
-		}
-
+		// A plain text field is used on purpose: the dedicated box-shadow control
+		// type is only meant to be used through Elementor's group control, and
+		// using it standalone can break the editor panel.
 		$this->add_control(
 			$id,
 			$this->hkdev_args(
 				[
-					'label'     => $label,
-					'type'      => Controls_Manager::BOX_SHADOW,
-					'selectors' => [
-						$selector => 'box-shadow: {{HORIZONTAL}}px {{VERTICAL}}px {{BLUR}}px {{SPREAD}}px {{COLOR}} !important;',
-					],
+					'label'       => $label,
+					'type'        => Controls_Manager::TEXT,
+					'placeholder' => '0 10px 30px rgba(0, 0, 0, 0.12)',
+					'description' => esc_html__( 'Standard CSS box-shadow value. Leave empty for the default.', 'hkdev-shop-elements' ),
+					'selectors'   => [ $selector => 'box-shadow: {{VALUE}} !important;' ],
 				],
 				$condition
 			)

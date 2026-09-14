@@ -70,3 +70,22 @@ function hkdev_elements_log_fatal() {
 }
 
 register_shutdown_function( __NAMESPACE__ . '\\hkdev_elements_log_fatal' );
+
+/**
+ * Append a plain diagnostic line to the same log file.
+ *
+ * Used so a widget that fails to register is recorded instead of taking the
+ * whole admin/editor request down.
+ *
+ * @param string $message Message.
+ * @return void
+ */
+function hkdev_elements_log_message( $message ) {
+	$file = hkdev_elements_error_log_file();
+
+	if ( file_exists( $file ) && filesize( $file ) > 64000 ) {
+		@unlink( $file ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+	}
+
+	@file_put_contents( $file, sprintf( "[%s] %s\n", gmdate( 'Y-m-d H:i:s' ), $message ), FILE_APPEND ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+}
