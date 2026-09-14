@@ -370,7 +370,7 @@ class Wishlist_Engine {
 
 			$quantity = 1;
 
-			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity ) ) {
+			if ( ! apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, 0, [] ) ) {
 				$skipped++;
 				continue;
 			}

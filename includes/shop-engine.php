@@ -143,8 +143,10 @@ class Shop_Engine {
 	 */
 	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false, $image_size = 'woocommerce_thumbnail', $show_wishlist = false, $show_hover_image = false ) {
 		global $product;
-		$product = wc_get_product( $post_id );
+		$previous_product = $product;
+		$product          = wc_get_product( $post_id );
 		if ( ! $product ) {
+			$product = $previous_product;
 			return;
 		}
 
@@ -209,6 +211,9 @@ class Shop_Engine {
 							$prices      = $product->get_variation_prices();
 							$percentages = array();
 							foreach ( $prices['regular_price'] as $key => $regular_price ) {
+								if ( ! isset( $prices['sale_price'][ $key ] ) ) {
+									continue;
+								}
 								$sale_price = $prices['sale_price'][ $key ];
 								if ( $sale_price < $regular_price && (float) $regular_price > 0 ) {
 									$percentages[] = round( ( ( $regular_price - $sale_price ) / $regular_price ) * 100 );
@@ -284,6 +289,8 @@ class Shop_Engine {
 		foreach ( $wc_defaults as $hook ) {
 			add_action( $hook[0], $hook[1], $hook[2] );
 		}
+
+		$product = $previous_product;
 	}
 
 	/**
@@ -615,7 +622,7 @@ class Shop_Engine {
 			'exclude'          => isset( $_POST['exclude'] ) ? sanitize_text_field( wp_unslash( $_POST['exclude'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'tags'             => isset( $_POST['tags'] ) ? sanitize_text_field( wp_unslash( $_POST['tags'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'brands'           => isset( $_POST['brands'] ) ? sanitize_text_field( wp_unslash( $_POST['brands'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			'limit'            => isset( $_POST['limit'] ) ? intval( wp_unslash( $_POST['limit'] ) ) : 12, // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			'limit'            => isset( $_POST['limit'] ) ? max( 1, min( 100, intval( wp_unslash( $_POST['limit'] ) ) ) ) : 12, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'type'             => isset( $_POST['type'] ) ? sanitize_text_field( wp_unslash( $_POST['type'] ) ) : 'recent', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'days'             => isset( $_POST['days'] ) ? intval( wp_unslash( $_POST['days'] ) ) : 0, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'order_by'         => isset( $_POST['order_by'] ) ? strtoupper( sanitize_text_field( wp_unslash( $_POST['order_by'] ) ) ) : 'DESC', // phpcs:ignore WordPress.Security.NonceVerification.Missing

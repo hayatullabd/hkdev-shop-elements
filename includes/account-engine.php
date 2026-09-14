@@ -367,7 +367,8 @@ class Account_Engine {
 		$fields = [ 'first_name', 'last_name', 'phone', 'email', 'address_1', 'city', 'postcode' ];
 		foreach ( $fields as $field ) {
 			$meta_key = $type . '_' . $field;
-			$value    = isset( $_POST[ $meta_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $meta_key ] ) ) : '';
+			$raw      = isset( $_POST[ $meta_key ] ) ? wp_unslash( $_POST[ $meta_key ] ) : '';
+			$value    = ( 'address_1' === $field ) ? sanitize_textarea_field( $raw ) : sanitize_text_field( $raw );
 			update_user_meta( $user_id, $meta_key, $value );
 		}
 		wp_send_json_success( [ 'message' => esc_html__( 'Address updated successfully.', 'hkdev-shop-elements' ) ] );

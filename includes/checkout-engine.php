@@ -1445,8 +1445,8 @@ class Checkout_Engine {
 				$item = new \WC_Order_Item_Coupon();
 				$item->set_props(
 					[
-						'code'        => $code,
-						'discount'    => $coupon->get_amount(),
+						'code'         => $code,
+						'discount'     => WC()->cart->get_coupon_discount_amount( $code ),
 						'discount_tax' => 0,
 					]
 				);

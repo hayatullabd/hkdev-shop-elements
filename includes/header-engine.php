@@ -404,7 +404,8 @@ class Header_Engine {
 		$term = isset( $_POST['term'] ) ? sanitize_text_field( wp_unslash( $_POST['term'] ) ) : '';
 		$term = trim( $term );
 
-		if ( mb_strlen( $term ) < 2 ) {
+		$term_length = function_exists( 'mb_strlen' ) ? mb_strlen( $term ) : strlen( $term );
+		if ( $term_length < 2 ) {
 			wp_send_json_success(
 				[
 					'term'  => $term,

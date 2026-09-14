@@ -75,6 +75,7 @@ class Single_Product_Engine {
 		);
 
 		global $product, $post;
+		$previous_product = $product;
 
 		if ( ! empty( $atts['id'] ) ) {
 			$product_id = absint( $atts['id'] );
@@ -87,6 +88,7 @@ class Single_Product_Engine {
 		}
 
 		if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+			$product = $previous_product;
 			return '<div style="text-align:center; padding: 60px; color: #e5533d; font-family: \'Hind Siliguri\', sans-serif; background: #fff; border-radius: 12px; border: 1px solid #eee;">' . esc_html__( 'Product not found.', 'hkdev-shop-elements' ) . '</div>';
 		}
 
@@ -406,6 +408,7 @@ class Single_Product_Engine {
 			add_action( $hook[0], $hook[1], $hook[2] );
 		}
 		wp_reset_postdata();
+		$product = $previous_product;
 
 		return ob_get_clean();
 	}

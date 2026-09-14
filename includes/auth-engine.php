@@ -144,9 +144,11 @@ class Auth_Engine {
 								<label>
 									<input type="checkbox" name="terms" value="1" required>
 									<?php
+									$terms_page_id = (int) get_option( 'woocommerce_terms_page_id' );
+									$terms_url     = $terms_page_id ? get_permalink( $terms_page_id ) : '';
 									printf(
 										esc_html__( 'I agree to the %s', 'hkdev-shop-elements' ),
-										'<a href="' . esc_url( get_permalink( get_option( 'woocommerce_terms_page_id' ) ) ) . '" target="_blank">' . esc_html__( 'Terms & Conditions', 'hkdev-shop-elements' ) . '</a>'
+										'<a href="' . esc_url( $terms_url ? $terms_url : '#' ) . '" target="_blank">' . esc_html__( 'Terms & Conditions', 'hkdev-shop-elements' ) . '</a>'
 									);
 									?>
 								</label>
