@@ -119,6 +119,7 @@ class GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'inject_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_information' ], 20, 3 );
 		add_filter( 'upgrader_source_selection', [ $this, 'fix_source_dir' ], 10, 4 );
+		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 4 );
 
 		// Priority 1: must run before core's _maybe_update_plugins() (priority
 		// 10), otherwise the forced re-check reads our still-cached release and
@@ -208,6 +209,43 @@ class GitHub_Updater {
 				'changelog'   => $changelog,
 			],
 		];
+	}
+
+	/**
+	 * Add a "View details" link to the plugin row on the Plugins screen.
+	 *
+	 * WordPress only renders that modal link for wordpress.org-hosted plugins.
+	 * For this external plugin we append our own link so the GitHub release
+	 * notes (served by plugin_information above) open in the standard details
+	 * popup.
+	 *
+	 * @param string[] $plugin_meta Existing row meta links.
+	 * @param string   $plugin_file Plugin basename.
+	 * @param array    $plugin_data Plugin header data.
+	 * @param string   $status      Current list status.
+	 * @return string[]
+	 */
+	public function plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $status ) {
+		if ( $plugin_file !== $this->plugin_basename ) {
+			return $plugin_meta;
+		}
+
+		$plugin_name = isset( $plugin_data['Name'] ) && '' !== $plugin_data['Name'] ? $plugin_data['Name'] : 'HKDEV Shop Elements';
+
+		$details_url = self_admin_url(
+			'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $this->slug ) . '&section=changelog&TB_iframe=true&width=600&height=800'
+		);
+
+		$plugin_meta[] = sprintf(
+			'<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
+			esc_url( $details_url ),
+			/* translators: %s: Plugin name. */
+			esc_attr( sprintf( __( 'More information about %s', 'hkdev-shop-elements' ), $plugin_name ) ),
+			esc_attr( $plugin_name ),
+			esc_html__( 'View details', 'hkdev-shop-elements' )
+		);
+
+		return $plugin_meta;
 	}
 
 	/**
