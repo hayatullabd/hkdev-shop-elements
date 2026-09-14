@@ -28,6 +28,7 @@ class Category_Carousel_Widget extends Widget_Base {
 
 	use Heading_Controls;
 	use Product_Controls;
+	use Style_Controls;
 
 	/**
 	 * Widget name.
@@ -143,6 +144,75 @@ class Category_Carousel_Widget extends Widget_Base {
 				],
 			]
 		);
+
+		$this->register_cc_extra_style_controls();
+	}
+
+	/**
+	 * Extra Style controls that the card sections did not cover yet.
+	 *
+	 * @return void
+	 */
+	protected function register_cc_extra_style_controls() {
+		$scope = '{{WRAPPER}} .hkdev-cat-carousel';
+
+		$this->start_controls_section(
+			'cc_style_extra',
+			[
+				'label' => esc_html__( 'Card Details', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_shadow( 'cc_card_shadow', esc_html__( 'Card Box Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-card' );
+		$this->hkdev_slider( 'cc_card_border_w', esc_html__( 'Card Border Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-card', 'border-width', 0, 6 );
+		$this->hkdev_slider( 'cc_gap', esc_html__( 'Gap Between Cards', 'hkdev-shop-elements' ), $scope . ' .hkdev-shop-grid', 'gap', 0, 60 );
+
+		$this->hkdev_select(
+			'cc_img_fit',
+			esc_html__( 'Image Fit', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-cat-thumb img',
+			'object-fit',
+			[
+				'cover'   => esc_html__( 'Cover (crop)', 'hkdev-shop-elements' ),
+				'contain' => esc_html__( 'Contain (whole image)', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->hkdev_color( 'cc_icon_color', esc_html__( 'Placeholder Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-thumb i', 'color' );
+		$this->hkdev_slider( 'cc_icon_size', esc_html__( 'Placeholder Icon Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-thumb i', 'font-size', 12, 70 );
+
+		$this->hkdev_slider_raw( 'cc_name_lh', esc_html__( 'Name Line Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-name', 'line-height', 0.8, 3, 0.05 );
+		$this->hkdev_slider( 'cc_name_ls', esc_html__( 'Name Letter Spacing', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-name', 'letter-spacing', -3, 12 );
+		$this->hkdev_select(
+			'cc_name_tt',
+			esc_html__( 'Name Text Transform', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-cat-name',
+			'text-transform',
+			[
+				''           => esc_html__( 'Default', 'hkdev-shop-elements' ),
+				'none'       => esc_html__( 'None', 'hkdev-shop-elements' ),
+				'uppercase'  => esc_html__( 'Uppercase', 'hkdev-shop-elements' ),
+				'lowercase'  => esc_html__( 'Lowercase', 'hkdev-shop-elements' ),
+				'capitalize' => esc_html__( 'Capitalize', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->hkdev_select(
+			'cc_count_weight',
+			esc_html__( 'Count Font Weight', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-cat-count',
+			'font-weight',
+			[
+				''    => esc_html__( 'Default', 'hkdev-shop-elements' ),
+				'400' => '400',
+				'500' => '500',
+				'600' => '600',
+				'700' => '700',
+			]
+		);
+
+		$this->end_controls_section();
 	}
 
 	/**
