@@ -22,6 +22,8 @@ use Elementor\Widget_Base;
  */
 class Cart_Widget extends Widget_Base {
 
+	use Style_Controls;
+
 	/**
 	 * Widget name.
 	 *
@@ -344,6 +346,118 @@ class Cart_Widget extends Widget_Base {
 				'default' => '',
 			]
 		);
+
+		$this->end_controls_section();
+
+		$this->register_cart_style_sections();
+	}
+
+	/**
+	 * Style tab – container, header, summary, coupon and buttons.
+	 *
+	 * @return void
+	 */
+	protected function register_cart_style_sections() {
+		$scope = '{{WRAPPER}} .hkdev-cart-scope';
+
+		/* ---------------- Container ---------------- */
+		$this->start_controls_section(
+			'ct_style_layout',
+			[
+				'label' => esc_html__( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_dimensions( 'ct_margin', esc_html__( 'Block Margin', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-container', 'margin' );
+		$this->hkdev_dimensions( 'ct_padding', esc_html__( 'Block Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-container', 'padding' );
+		$this->hkdev_slider( 'ct_grid_gap', esc_html__( 'Column Gap', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-grid', 'gap', 0, 80 );
+
+		$this->end_controls_section();
+
+		/* ---------------- Cards ---------------- */
+		$this->start_controls_section(
+			'ct_style_card',
+			[
+				'label' => esc_html__( 'Cards', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'ct_card_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-card', 'background-color' );
+		$this->hkdev_color( 'ct_card_border', esc_html__( 'Border Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-card', 'border-color' );
+		$this->hkdev_slider( 'ct_card_border_w', esc_html__( 'Border Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-card', 'border-width', 0, 6 );
+		$this->hkdev_dimensions( 'ct_card_radius', esc_html__( 'Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-card', 'border-radius' );
+		$this->hkdev_dimensions( 'ct_card_padding', esc_html__( 'Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-card', 'padding' );
+		$this->hkdev_shadow( 'ct_card_shadow', esc_html__( 'Box Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-card' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Header ---------------- */
+		$this->start_controls_section(
+			'ct_style_header',
+			[
+				'label' => esc_html__( 'Page Header', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ct_head', esc_html__( 'Heading', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-header h2' );
+		$this->hkdev_typography( 'ct_head_sub', esc_html__( 'Subtitle', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-header p' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Summary ---------------- */
+		$this->start_controls_section(
+			'ct_style_summary',
+			[
+				'label' => esc_html__( 'Cart Summary', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ct_calc', esc_html__( 'Total Lines', 'hkdev-shop-elements' ), $scope . ' .calc-line' );
+		$this->hkdev_slider( 'ct_calc_pad', esc_html__( 'Line Padding', 'hkdev-shop-elements' ), $scope . ' .calc-line', 'padding-top', 0, 40 );
+		$this->hkdev_typography( 'ct_grand', esc_html__( 'Grand Total', 'hkdev-shop-elements' ), $scope . ' .grand-total-line strong' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Coupon ---------------- */
+		$this->start_controls_section(
+			'ct_style_coupon',
+			[
+				'label' => esc_html__( 'Coupon', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_color( 'ct_cp_bg', esc_html__( 'Field Background', 'hkdev-shop-elements' ), $scope . ' .coupon-box', 'background-color' );
+		$this->hkdev_color( 'ct_cp_border', esc_html__( 'Field Border', 'hkdev-shop-elements' ), $scope . ' .coupon-box', 'border-color' );
+		$this->hkdev_dimensions( 'ct_cp_radius', esc_html__( 'Field Radius', 'hkdev-shop-elements' ), $scope . ' .coupon-box', 'border-radius' );
+		$this->hkdev_color( 'ct_cp_btn_bg', esc_html__( 'Button Background', 'hkdev-shop-elements' ), $scope . ' .coupon-box button', 'background-color' );
+		$this->hkdev_color( 'ct_cp_btn_color', esc_html__( 'Button Text Colour', 'hkdev-shop-elements' ), $scope . ' .coupon-box button', 'color' );
+		$this->hkdev_color( 'ct_cp_btn_bg_hover', esc_html__( 'Button Hover Background', 'hkdev-shop-elements' ), $scope . ' .coupon-box button:hover', 'background-color' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Buttons ---------------- */
+		$this->start_controls_section(
+			'ct_style_buttons',
+			[
+				'label' => esc_html__( 'Buttons', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'ct_btn', esc_html__( 'Primary Button', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-primary-btn' );
+		$this->hkdev_color( 'ct_btn_bg', esc_html__( 'Primary Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-primary-btn', 'background-color' );
+		$this->hkdev_color( 'ct_btn_color', esc_html__( 'Primary Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-primary-btn', 'color' );
+		$this->hkdev_color( 'ct_btn_bg_hover', esc_html__( 'Primary Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-primary-btn:hover', 'background-color' );
+		$this->hkdev_dimensions( 'ct_btn_radius', esc_html__( 'Primary Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-primary-btn', 'border-radius' );
+		$this->hkdev_color( 'ct_sec_bg', esc_html__( 'Secondary Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-secondary-btn', 'background-color' );
+		$this->hkdev_color( 'ct_sec_color', esc_html__( 'Secondary Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-secondary-btn', 'color' );
+		$this->hkdev_color( 'ct_sec_border', esc_html__( 'Secondary Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-secondary-btn', 'border-color' );
+		$this->hkdev_dimensions( 'ct_sec_radius', esc_html__( 'Secondary Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-cart-secondary-btn', 'border-radius' );
 
 		$this->end_controls_section();
 	}
