@@ -872,30 +872,6 @@ class Shop_Engine {
 	}
 
 	/**
-	 * Grid ⇄ List switch markup.
-	 *
-	 * Rendered into the category tabs row (or into its own toolbar row when
-	 * tabs are hidden). The buttons are inert markup: shop.js toggles the
-	 * `hkdev-view-list` class on the wrapper and remembers the choice per
-	 * browser.
-	 *
-	 * @param string $default_view View that starts active ("grid" or "list").
-	 * @return string
-	 */
-	public function view_switch_html( $default_view = 'grid' ) {
-		$is_list = ( 'list' === $default_view );
-
-		ob_start();
-		?>
-		<div class="hkdev-view-switch" role="group" aria-label="<?php esc_attr_e( 'Product view', 'hkdev-shop-elements' ); ?>">
-			<button type="button" class="hkdev-view-btn<?php echo $is_list ? '' : ' is-active'; ?>" data-view="grid" aria-pressed="<?php echo $is_list ? 'false' : 'true'; ?>" title="<?php esc_attr_e( 'Grid view', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i></button>
-			<button type="button" class="hkdev-view-btn<?php echo $is_list ? ' is-active' : ''; ?>" data-view="list" aria-pressed="<?php echo $is_list ? 'true' : 'false'; ?>" title="<?php esc_attr_e( 'List view', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-list" aria-hidden="true"></i></button>
-		</div>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
 	 * Master shop renderer (grid + carousel + optional category tabs).
 	 *
 	 * @param array $atts Shortcode/widget attributes.
@@ -926,8 +902,6 @@ class Shop_Engine {
 				'heading'          => [],
 				'carousel'         => [],
 				'title_lines'      => 0,
-				'view_toggle'      => 'no',
-				'default_view'     => 'grid',
 				'hover_img'        => 'yes',
 				'load_more'        => 'no',
 				'load_more_text'   => __( 'Load More', 'hkdev-shop-elements' ),
@@ -953,12 +927,7 @@ class Shop_Engine {
 		$unique_id            = 'hkdev-shop-' . wp_rand( 1000, 9999 );
 		$include_children_val = ( 'no' === $atts['include_children'] ) ? false : true;
 
-		// Grid ⇄ List switch. A carousel has no list layout, so the switch is
-		// dropped there and the default view is ignored.
-		$view_toggle   = ( 'yes' === $atts['view_toggle'] && 'carousel' !== $atts['style'] ) ? '1' : '0';
-		$default_view  = ( 'list' === $atts['default_view'] ) ? 'list' : 'grid';
-		$show_view     = ( '1' === $view_toggle );
-		$wrapper_class = 'hkdev-shop-wrapper' . ( ( $show_view && 'list' === $default_view ) ? ' hkdev-view-list' : '' );
+		$wrapper_class = 'hkdev-shop-wrapper';
 
 		// Second gallery image on hover (grid, carousel and related listings).
 		$show_hover = ( 'yes' === $atts['hover_img'] );
@@ -1040,8 +1009,6 @@ class Shop_Engine {
 			 data-on_sale="<?php echo esc_attr( $atts['on_sale'] ); ?>"
 			 data-featured="<?php echo esc_attr( $atts['featured'] ); ?>"
 			 data-stock_status="<?php echo esc_attr( $atts['stock_status'] ); ?>"
-			 data-view-toggle="<?php echo esc_attr( $view_toggle ); ?>"
-			 data-default-view="<?php echo esc_attr( $default_view ); ?>"
 			 data-hover-img="<?php echo esc_attr( $atts['hover_img'] ); ?>"
 			 data-hkdev-elements="1">
 
@@ -1091,13 +1058,8 @@ class Shop_Engine {
 								</button>
 							<?php endforeach; ?>
 						</div>
-						<?php echo $show_view ? $this->view_switch_html( $default_view ) : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
-				<?php elseif ( $show_view ) : ?>
-					<div class="hkdev-shop-toolbar"><?php echo $this->view_switch_html( $default_view ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 				<?php endif; ?>
-			<?php elseif ( $show_view ) : ?>
-				<div class="hkdev-shop-toolbar"><?php echo $this->view_switch_html( $default_view ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 			<?php endif; ?>
 
 			<div class="hkdev-grid-container">

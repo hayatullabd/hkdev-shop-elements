@@ -401,8 +401,6 @@ class Catalog_Engine {
 				'show_search'  => 'yes',
 				'show_sort'    => 'yes',
 				'show_filters' => 'yes',
-				'show_view'    => 'yes',
-				'default_view' => 'grid',
 				'hover_img'    => 'yes',
 			],
 			$atts,
@@ -440,11 +438,6 @@ class Catalog_Engine {
 		$show_sort    = ( ! isset( $atts['show_sort'] ) || 'yes' === $atts['show_sort'] );
 		$show_filters = ( ! isset( $atts['show_filters'] ) || 'yes' === $atts['show_filters'] );
 
-		// The grid / list switch only works on our own product grid, so it is
-		// never offered on the archive bar (that loop belongs to the theme).
-		$show_view    = ( ! $is_archive ) && ( ! isset( $atts['show_view'] ) || 'yes' === $atts['show_view'] );
-		$default_view = ( isset( $atts['default_view'] ) && 'list' === $atts['default_view'] ) ? 'list' : 'grid';
-
 		// Second gallery image on hover.
 		$show_hover = ( ! isset( $atts['hover_img'] ) || 'yes' === $atts['hover_img'] );
 
@@ -471,10 +464,8 @@ class Catalog_Engine {
 
 		ob_start();
 		?>
-		<div class="hkdev-catalog<?php echo ( $show_view && 'list' === $default_view ) ? ' hkdev-view-list' : ''; ?>" data-catalog="1"
+		<div class="hkdev-catalog" data-catalog="1"
 			data-archive="<?php echo $is_archive ? '1' : '0'; ?>"
-			data-view-toggle="<?php echo $show_view ? '1' : '0'; ?>"
-			data-default-view="<?php echo esc_attr( $default_view ); ?>"
 			data-hover-img="<?php echo $show_hover ? 'yes' : 'no'; ?>"
 			data-columns="<?php echo esc_attr( $columns ); ?>"
 			data-per-page="<?php echo esc_attr( $per_page ); ?>"
@@ -482,7 +473,7 @@ class Catalog_Engine {
 			data-locked-tags="<?php echo esc_attr( implode( ',', $locks['tags'] ) ); ?>"
 			data-nonce="<?php echo esc_attr( wp_create_nonce( self::NONCE_ACTION ) ); ?>">
 			<?php
-			echo $this->controls_html( $params, $bounds, $show_search, $show_sort, $show_filters, $is_archive, $locks, $show_view, $default_view ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			echo $this->controls_html( $params, $bounds, $show_search, $show_sort, $show_filters, $is_archive, $locks ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 			if ( ! $is_archive ) {
 				$args          = $this->build_query_args( $params, $per_page );
@@ -524,11 +515,9 @@ class Catalog_Engine {
 	 * @param bool  $show_filters Show the filter panel.
 	 * @param bool  $is_archive   Archive mode.
 	 * @param array $locks        Locked cats/tags (hidden from the filter panel).
-	 * @param bool  $show_view    Show the grid / list switch.
-	 * @param string $default_view View that starts active.
 	 * @return string
 	 */
-	private function controls_html( $params, $bounds, $show_search, $show_sort, $show_filters, $is_archive, $locks = [], $show_view = false, $default_view = 'grid' ) {
+	private function controls_html( $params, $bounds, $show_search, $show_sort, $show_filters, $is_archive, $locks = [] ) {
 		$sort_options = [
 			'newest'     => __( 'Newest', 'hkdev-shop-elements' ),
 			'oldest'     => __( 'Oldest', 'hkdev-shop-elements' ),
@@ -568,10 +557,6 @@ class Catalog_Engine {
 					</select>
 				</div>
 			<?php endif; ?>
-
-			<?php if ( $show_view ) : ?>
-				<?php echo Shop_Engine::instance()->view_switch_html( $default_view ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-			<?php endif; ?>
 		</div>
 
 		<?php if ( $show_filters ) : ?>
@@ -591,9 +576,7 @@ class Catalog_Engine {
 						echo $this->group_categories_html( $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					}
 					echo $this->group_price_html( $params, $bounds ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo $this->group_attributes_html( $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo $this->group_brands_html( $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-					echo $this->group_flags_html( $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+					echo $this->group_stock_html( $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					?>
 				</div>
 				<?php if ( $is_archive ) : ?>
@@ -684,89 +667,12 @@ class Catalog_Engine {
 	}
 
 	/**
-	 * Attribute filters group (pa_* taxonomies that have terms).
+	 * In-stock filter group.
 	 *
 	 * @param array $params Params.
 	 * @return string
 	 */
-	private function group_attributes_html( $params ) {
-		if ( ! function_exists( 'wc_get_attribute_taxonomies' ) ) {
-			return '';
-		}
-		$taxonomies = wc_get_attribute_taxonomies();
-		if ( empty( $taxonomies ) ) {
-			return '';
-		}
-
-		ob_start();
-		foreach ( $taxonomies as $attr ) {
-			$tax = wc_attribute_taxonomy_name( $attr->attribute_name );
-			if ( ! taxonomy_exists( $tax ) ) {
-				continue;
-			}
-			$terms = get_terms( [ 'taxonomy' => $tax, 'hide_empty' => true, 'number' => 60 ] );
-			if ( is_wp_error( $terms ) || empty( $terms ) ) {
-				continue;
-			}
-			$selected = isset( $params['attrs'][ $tax ] ) ? $params['attrs'][ $tax ] : [];
-			?>
-			<div class="hkdev-cat-group">
-				<button type="button" class="hkdev-cat-group-head"><?php echo esc_html( $attr->attribute_label ); ?><i class="fa-solid fa-chevron-down"></i></button>
-				<div class="hkdev-cat-group-body">
-					<?php foreach ( $terms as $term ) : ?>
-						<label class="hkdev-cat-check">
-							<input type="checkbox" name="<?php echo esc_attr( self::P_ATTR . '[' . $tax . '][]' ); ?>" value="<?php echo esc_attr( $term->slug ); ?>" <?php checked( in_array( $term->slug, $selected, true ) ); ?>>
-							<span><?php echo esc_html( $term->name ); ?></span>
-							<em><?php echo esc_html( $term->count ); ?></em>
-						</label>
-					<?php endforeach; ?>
-				</div>
-			</div>
-			<?php
-		}
-		return ob_get_clean();
-	}
-
-	/**
-	 * Brand filter group (WooCommerce Brands taxonomy, when present).
-	 *
-	 * @param array $params Params.
-	 * @return string
-	 */
-	private function group_brands_html( $params ) {
-		if ( ! taxonomy_exists( 'product_brand' ) ) {
-			return '';
-		}
-		$terms = get_terms( [ 'taxonomy' => 'product_brand', 'hide_empty' => true, 'number' => 60 ] );
-		if ( is_wp_error( $terms ) || empty( $terms ) ) {
-			return '';
-		}
-
-		ob_start();
-		?>
-		<div class="hkdev-cat-group">
-			<button type="button" class="hkdev-cat-group-head"><?php esc_html_e( 'Brand', 'hkdev-shop-elements' ); ?><i class="fa-solid fa-chevron-down"></i></button>
-			<div class="hkdev-cat-group-body">
-				<?php foreach ( $terms as $term ) : ?>
-					<label class="hkdev-cat-check">
-						<input type="checkbox" name="<?php echo esc_attr( self::P_BRAND ); ?>[]" value="<?php echo esc_attr( $term->slug ); ?>" <?php checked( in_array( $term->slug, $params['brands'], true ) ); ?>>
-						<span><?php echo esc_html( $term->name ); ?></span>
-						<em><?php echo esc_html( $term->count ); ?></em>
-					</label>
-				<?php endforeach; ?>
-			</div>
-		</div>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
-	 * Stock / on-sale / rating group.
-	 *
-	 * @param array $params Params.
-	 * @return string
-	 */
-	private function group_flags_html( $params ) {
+	private function group_stock_html( $params ) {
 		ob_start();
 		?>
 		<div class="hkdev-cat-group">
@@ -776,33 +682,6 @@ class Catalog_Engine {
 					<input type="checkbox" name="<?php echo esc_attr( self::P_STOCK ); ?>" value="1" <?php checked( $params['stock'] ); ?>>
 					<span><?php esc_html_e( 'In stock only', 'hkdev-shop-elements' ); ?></span>
 				</label>
-				<label class="hkdev-cat-check">
-					<input type="checkbox" name="<?php echo esc_attr( self::P_SALE ); ?>" value="1" <?php checked( $params['sale'] ); ?>>
-					<span><?php esc_html_e( 'On sale', 'hkdev-shop-elements' ); ?></span>
-				</label>
-			</div>
-		</div>
-
-		<div class="hkdev-cat-group">
-			<button type="button" class="hkdev-cat-group-head"><?php esc_html_e( 'Rating', 'hkdev-shop-elements' ); ?><i class="fa-solid fa-chevron-down"></i></button>
-			<div class="hkdev-cat-group-body">
-				<label class="hkdev-cat-check">
-					<input type="radio" name="<?php echo esc_attr( self::P_RATING ); ?>" value="" <?php checked( $params['rating'], 0 ); ?>>
-					<span><?php esc_html_e( 'Any rating', 'hkdev-shop-elements' ); ?></span>
-				</label>
-				<?php for ( $i = 5; $i >= 1; $i-- ) : ?>
-					<label class="hkdev-cat-check hkdev-cat-rating">
-						<input type="radio" name="<?php echo esc_attr( self::P_RATING ); ?>" value="<?php echo esc_attr( $i ); ?>" <?php checked( $params['rating'], $i ); ?>>
-						<span class="hkdev-cat-stars">
-							<?php for ( $s = 1; $s <= 5; $s++ ) : ?>
-								<i class="fa-solid fa-star<?php echo ( $s <= $i ) ? '' : ' is-empty'; ?>"></i>
-							<?php endfor; ?>
-							<?php if ( 5 === $i ) : ?>
-								<span class="hkdev-cat-rating-label"><?php esc_html_e( '& up', 'hkdev-shop-elements' ); ?></span>
-							<?php endif; ?>
-						</span>
-					</label>
-				<?php endfor; ?>
 			</div>
 		</div>
 		<?php

@@ -498,13 +498,3 @@
 	visibility: visible;
 }
 
-/* ----------------------------------------------------------------- View ---- */
-/* Grid / list switch closes the control bar, right after the sort dropdown. */
-.hkdev-catalog .hkdev-view-switch{
-	margin-left: 0 !important;
-}
-@media (max-width: 1024px){
-	.hkdev-catalog .hkdev-view-switch{
-		margin-left: auto !important;
-	}
-}

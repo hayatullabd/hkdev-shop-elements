@@ -170,31 +170,6 @@ class Catalog_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
-			'show_view',
-			[
-				'label'        => esc_html__( 'Grid / List switch', 'hkdev-shop-elements' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'default'      => 'yes',
-				'return_value' => 'yes',
-				'separator'    => 'before',
-			]
-		);
-
-		$this->add_control(
-			'default_view',
-			[
-				'label'     => esc_html__( 'Default view', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::SELECT,
-				'default'   => 'grid',
-				'options'   => [
-					'grid' => esc_html__( 'Grid', 'hkdev-shop-elements' ),
-					'list' => esc_html__( 'List', 'hkdev-shop-elements' ),
-				],
-				'condition' => [ 'show_view' => 'yes' ],
-			]
-		);
-
-		$this->add_control(
 			'hover_img',
 			[
 				'label'        => esc_html__( 'Second image on hover', 'hkdev-shop-elements' ),
@@ -208,7 +183,7 @@ class Catalog_Widget extends Widget_Base {
 		$this->end_controls_section();
 
 		// Product card styling (same controls as the Shop Grid widget).
-		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog', true );
+		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog' );
 	}
 
 	/**
@@ -231,8 +206,6 @@ class Catalog_Widget extends Widget_Base {
 				'show_search'  => $settings['show_search'],
 				'show_sort'    => $settings['show_sort'],
 				'show_filters' => $settings['show_filters'],
-				'show_view'    => ( ! isset( $settings['show_view'] ) || 'yes' === $settings['show_view'] ) ? 'yes' : 'no',
-				'default_view' => ( isset( $settings['default_view'] ) && 'list' === $settings['default_view'] ) ? 'list' : 'grid',
 				'hover_img'    => ( ! isset( $settings['hover_img'] ) || 'yes' === $settings['hover_img'] ) ? 'yes' : 'no',
 			],
 			false

@@ -276,48 +276,6 @@
 		$cat.removeClass('cat-open');
 	}
 
-	/* --------------------------------------------------------- view mode --- */
-
-	var VIEW_KEY = 'hkdevCatalogView';
-
-	function storedView() {
-		try {
-			var stored = window.localStorage.getItem(VIEW_KEY);
-			return (stored === 'list' || stored === 'grid') ? stored : '';
-		} catch (e) {
-			return '';
-		}
-	}
-
-	function applyView($cat, view, persist) {
-		var isList = (view === 'list');
-
-		// The class lives on the block root, so it survives the AJAX grid swap.
-		$cat.toggleClass('hkdev-view-list', isList);
-		$cat.find('.hkdev-view-btn')
-			.removeClass('is-active')
-			.attr('aria-pressed', 'false')
-			.filter('[data-view="' + (isList ? 'list' : 'grid') + '"]')
-			.addClass('is-active')
-			.attr('aria-pressed', 'true');
-
-		if (persist) {
-			try {
-				window.localStorage.setItem(VIEW_KEY, isList ? 'list' : 'grid');
-			} catch (e) {
-				// Storage blocked (private mode) – keep the switch visual only.
-			}
-		}
-	}
-
-	function initView($cat) {
-		if ('0' === String($cat.attr('data-view-toggle'))) {
-			return;
-		}
-		var fallback = ('list' === String($cat.attr('data-default-view'))) ? 'list' : 'grid';
-		applyView($cat, storedView() || fallback, false);
-	}
-
 	var searchTimer = null;
 
 	function init($cat) {
@@ -325,8 +283,6 @@
 			return;
 		}
 		$cat.data('hkcat-init', true);
-
-		initView($cat);
 
 		// Sync the form to the URL state (deep links / back button).
 		if (!isArchive($cat)) {
@@ -397,10 +353,6 @@
 			$price.find('.hkdev-cat-price-min, .hkdev-cat-price-min-range').val($price.attr('data-min'));
 			$price.find('.hkdev-cat-price-max, .hkdev-cat-price-max-range').val($price.attr('data-max'));
 			apply($cat);
-		});
-
-		$cat.on('click', '.hkdev-view-btn', function () {
-			applyView($cat, $(this).attr('data-view'), true);
 		});
 
 		$cat.on('click', '.hkdev-cat-drawer-toggle', function () {
