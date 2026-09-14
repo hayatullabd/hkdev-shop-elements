@@ -604,9 +604,7 @@ class Catalog_Engine {
 		$terms = get_terms(
 			[
 				'taxonomy'   => 'product_cat',
-				'hide_empty' => true,
-				'parent'     => 0,
-				'number'     => 60,
+				'hide_empty' => false,
 			]
 		);
 		if ( is_wp_error( $terms ) || empty( $terms ) ) {

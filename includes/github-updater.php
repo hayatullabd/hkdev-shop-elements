@@ -196,7 +196,7 @@ class GitHub_Updater {
 			'slug'          => $this->slug,
 			'plugin'        => $this->plugin_basename,
 			'version'       => $release['version'],
-			'author'        => 'FitForLife',
+			'author'        => 'Md Hayatulla Kha',
 			'homepage'      => 'https://github.com/' . $this->repository,
 			'requires'      => '6.0',
 			'tested'        => '',
