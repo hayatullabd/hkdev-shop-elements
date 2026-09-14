@@ -701,6 +701,23 @@ class Header_Engine {
 			$hide_attr     = ' data-hide-desk="' . esc_attr( $hide_desk ) . '" data-hide-mobile="' . esc_attr( $hide_mobile ) . '"';
 		}
 
+		// Sub-categories of each top-level category. Built once and reused by the
+		// desktop dropdown and the mobile panel so the terms are queried only once.
+		$cat_children = [];
+		foreach ( $cats as $cat ) {
+			$children = get_terms(
+				[
+					'taxonomy'   => 'product_cat',
+					'hide_empty' => true,
+					'parent'     => $cat->term_id,
+					'number'     => 6,
+					'orderby'    => 'name',
+					'order'      => 'ASC',
+				]
+			);
+			$cat_children[ $cat->term_id ] = ( ! is_wp_error( $children ) && ! empty( $children ) ) ? $children : [];
+		}
+
 		$socials = [
 			'facebook'  => [ 'fa-brands fa-facebook-f', trim( (string) $atts['facebook'] ) ],
 			'instagram' => [ 'fa-brands fa-instagram', trim( (string) $atts['instagram'] ) ],
@@ -835,17 +852,8 @@ class Header_Engine {
 									<ul class="hkdev-header-cats-list">
 										<?php
 										foreach ( $cats as $cat ) :
-											$children = get_terms(
-												[
-													'taxonomy'   => 'product_cat',
-													'hide_empty' => true,
-													'parent'     => $cat->term_id,
-													'number'     => 6,
-													'orderby'    => 'name',
-													'order'      => 'ASC',
-												]
-											);
-											$has_children = ( ! is_wp_error( $children ) && ! empty( $children ) );
+											$children     = isset( $cat_children[ $cat->term_id ] ) ? $cat_children[ $cat->term_id ] : [];
+											$has_children = ! empty( $children );
 											?>
 											<li class="hkdev-header-cat-item<?php echo $has_children ? ' has-children' : ''; ?>">
 												<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>">
@@ -925,21 +933,53 @@ class Header_Engine {
 
 			<?php if ( 'yes' === $atts['show_categories'] && ! empty( $cats ) ) : ?>
 				<div class="hkdev-header-panel-cats">
-					<span class="hkdev-header-panel-cats-title"><?php echo esc_html( $atts['categories_label'] ); ?></span>
-					<ul class="hkdev-header-panel-cats-list">
-						<?php foreach ( $cats as $cat ) : ?>
-							<li>
-								<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>"><?php echo esc_html( $cat->name ); ?></a>
-							</li>
-						<?php endforeach; ?>
-					</ul>
-				</div>
-			<?php endif; ?>
+					<div class="hkdev-header-panel-cats-head">
+						<span class="hkdev-header-panel-cats-icon"><i class="fa-solid fa-grip"></i></span>
+						<span class="hkdev-header-panel-cats-title"><?php echo esc_html( $atts['categories_label'] ); ?></span>
+						<span class="hkdev-header-panel-cats-total"><?php echo esc_html( count( $cats ) ); ?></span>
+					</div>
 
-			<?php if ( $menu_html ) : ?>
-				<nav class="hkdev-header-panel-nav" aria-label="<?php esc_attr_e( 'Mobile menu', 'hkdev-shop-elements' ); ?>">
-					<?php echo $this->menu_html( $atts['menu'], 'hkdev-header-menu is-mobile' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				</nav>
+					<div class="hkdev-header-panel-cats-body">
+						<?php
+						foreach ( $cats as $cat ) :
+							$cat_link = get_term_link( $cat );
+							if ( is_wp_error( $cat_link ) ) {
+								continue;
+							}
+							$children = isset( $cat_children[ $cat->term_id ] ) ? $cat_children[ $cat->term_id ] : [];
+							?>
+							<?php if ( ! empty( $children ) ) : ?>
+								<details class="hkdev-header-pcat is-parent">
+									<summary>
+										<span class="hkdev-header-pcat-name"><?php echo esc_html( $cat->name ); ?></span>
+										<span class="hkdev-header-pcat-count"><?php echo esc_html( $cat->count ); ?></span>
+										<i class="fa-solid fa-chevron-down hkdev-header-pcat-caret" aria-hidden="true"></i>
+									</summary>
+									<ul class="hkdev-header-pcat-children">
+										<li class="hkdev-header-pcat-all">
+											<a href="<?php echo esc_url( $cat_link ); ?>"><?php esc_html_e( 'All', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $cat->name ); ?></a>
+										</li>
+										<?php
+										foreach ( $children as $child ) :
+											$child_link = get_term_link( $child );
+											if ( is_wp_error( $child_link ) ) {
+												continue;
+											}
+											?>
+											<li><a href="<?php echo esc_url( $child_link ); ?>"><?php echo esc_html( $child->name ); ?></a></li>
+										<?php endforeach; ?>
+									</ul>
+								</details>
+							<?php else : ?>
+								<a class="hkdev-header-pcat" href="<?php echo esc_url( $cat_link ); ?>">
+									<span class="hkdev-header-pcat-name"><?php echo esc_html( $cat->name ); ?></span>
+									<span class="hkdev-header-pcat-count"><?php echo esc_html( $cat->count ); ?></span>
+									<i class="fa-solid fa-chevron-right hkdev-header-pcat-arrow" aria-hidden="true"></i>
+								</a>
+							<?php endif; ?>
+						<?php endforeach; ?>
+					</div>
+				</div>
 			<?php endif; ?>
 
 			<?php if ( $call_link ) : ?>
