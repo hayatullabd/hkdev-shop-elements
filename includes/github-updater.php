@@ -222,7 +222,11 @@ class GitHub_Updater {
 	 * @param array  $hook_extra  Extra hook arguments.
 	 * @return string
 	 */
-	public function fix_source_dir( $source, $remote_source, $upgrader, $hook_extra = [] ) {
+	public function fix_source_dir( $source, $remote_source, $upgrader, $args = [] ) {
+		// WordPress passes the full install-package arguments array here, not
+		// the hook_extra sub-array. Read the plugin key from the right place.
+		$hook_extra = ( isset( $args['hook_extra'] ) && is_array( $args['hook_extra'] ) ) ? $args['hook_extra'] : [];
+
 		// Only act on an update of this exact plugin.
 		if ( empty( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== $this->plugin_basename ) {
 			return $source;
