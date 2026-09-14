@@ -66,8 +66,8 @@ the "View version details" popup.
 > archive contents; otherwise GitHub's auto-generated source ZIP is used and the
 > updater renames the folder for you.
 
-If an update does not appear immediately, click **Check again** on the Plugins
-screen (the GitHub API response is cached for 6 hours).
+If an update does not appear immediately, open **Dashboard → Updates** and
+click **Check again** (the GitHub API response is cached for 6 hours).
 
 ## File layout
 

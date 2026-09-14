@@ -16,7 +16,7 @@
  *    plugin slug, because a GitHub archive unpacks to "<owner>-<repo>-<sha>/".
  *  - GitHub API responses are cached in a transient (6 hours) to stay well
  *    inside the unauthenticated rate limit. The "Check again" link on the
- *    Plugins screen bypasses the cache.
+ *    Dashboard → Updates screen bypasses the cache.
  *
  * Releasing an update: bump the Version header + HKDEV_ELEMENTS_VERSION, commit,
  * then push a tag such as v0.2.1 (and optionally publish a GitHub Release).
@@ -119,7 +119,7 @@ class GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'inject_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_information' ], 20, 3 );
 		add_filter( 'upgrader_source_selection', [ $this, 'fix_source_dir' ], 10, 4 );
-		add_action( 'load-plugins.php', [ $this, 'maybe_clear_cache' ] );
+		add_action( 'admin_init', [ $this, 'maybe_clear_cache' ] );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -259,7 +259,8 @@ class GitHub_Updater {
 	}
 
 	/**
-	 * Forget the cached release data when the "Check again" link is used.
+	 * Forget the cached release data when the "Check again" link is used
+	 * (Dashboard → Updates, or Plugins → Check again).
 	 *
 	 * @return void
 	 */
