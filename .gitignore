@@ -1,0 +1,14 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+*.bak
+*.orig
+*.tmp
+.idea/
+.vscode/
+node_modules/
+.commandcode/
+# Tooling metadata (not part of the plugin)
+.commandcode/

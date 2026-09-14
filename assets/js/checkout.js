@@ -1,0 +1,327 @@
+jQuery(document).ready(function($) {
+    "use strict";
+
+    /* =========================================================================
+     * 1. CONFIGURATIONS (plugin-scoped)
+     * ========================================================================= */
+    // AJAX config from THIS plugin (standalone). Falls back to the hkdev-shop
+    // theme object only when present, then to WP default.
+    const ajaxUrl = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.ajax_url)
+        ? hkdev_elements_ajax.ajax_url
+        : ((typeof hkdev_ajax_obj !== 'undefined' && hkdev_ajax_obj.ajax_url)
+            ? hkdev_ajax_obj.ajax_url
+            : '/wp-admin/admin-ajax.php');
+    const updateCartAction = 'hkdev_elements_co_update_cart';
+    const applyCouponAction = 'hkdev_elements_co_apply_coupon';
+    const removeCouponAction = 'hkdev_elements_co_remove_coupon';
+    const placeOrderAction = 'hkdev_elements_co_place_order';
+
+    // One nonce per operation (localized); the DOM field is a fallback.
+    const ajaxNonces = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.nonces) ? hkdev_elements_ajax.nonces : {};
+    function getUpdateNonce() {
+        return ajaxNonces.co_update_cart || $('#hkdev_co_update_nonce').val() || '';
+    }
+    function getCouponNonce() {
+        return ajaxNonces.co_apply_coupon || '';
+    }
+    function getRemoveCouponNonce() {
+        return ajaxNonces.co_remove_coupon || '';
+    }
+
+    function showToast(message, type = 'success') {
+        const $toast = $('#hkdev-co-toast');
+        $toast.find('.toast-msg').text(message);
+        if (type === 'error') {
+            $toast.addClass('error');
+            $toast.find('.toast-icon i').attr('class', 'fa-solid fa-circle-xmark');
+        } else {
+            $toast.removeClass('error');
+            $toast.find('.toast-icon i').attr('class', 'fa-solid fa-circle-check');
+        }
+        $toast.addClass('show');
+        setTimeout(() => { $toast.removeClass('show'); }, 3500);
+    }
+
+    /* =========================================================================
+     * 2. AJAX CART UPDATER (cache: false)
+     * ========================================================================= */
+    function applyCartFragments(data) {
+        if (data.cart_count !== undefined) {
+            $('.hkdev-header-cart-count, .hkdev-mini-cart-count-inline').text(data.cart_count);
+        }
+        if (data.minicart_body_html) {
+            $('div.hkdev-mini-cart-body').replaceWith(data.minicart_body_html);
+        }
+        $(document.body).trigger('wc_fragments_refreshed');
+    }
+
+    function updateCartSections() {
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            cache: false,
+            data: $('#hkdev-co-process-order').serialize() + '&action=' + updateCartAction + '&security=' + getUpdateNonce(),
+            success: function(res) {
+                if(res.success) {
+                    $('#hkdev-co-items-ajax').html(res.data.items_html);
+                    $('#hkdev-co-totals-ajax').html(res.data.totals_html);
+                    if (res.data.delivery_html) {
+                        $('#hkdev-co-delivery-ajax').html(res.data.delivery_html);
+                    }
+                    applyCartFragments(res.data);
+                }
+            }
+        });
+    }
+
+    /* =========================================================================
+     * 3. CART ITEM MODIFICATIONS (cache: false)
+     * ========================================================================= */
+    $(document).on('click', '.hkdev-co-qty-mod', function() {
+        const $btn    = $(this);
+        const $item   = $btn.closest('.hkdev-co-summary-item');
+        const key     = $item.data('key');
+        const current = parseInt($item.find('.hkdev-co-qty-val').text()) || 1;
+        const newQty  = $btn.data('act') === 'plus' ? current + 1 : current - 1;
+
+        if(newQty < 1) return;
+
+        $item.find('.hkdev-co-qty-stepper-ui').css({'opacity': '0.5', 'pointer-events': 'none'});
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            cache: false,
+            data: {
+                action: updateCartAction,
+                type: 'qty',
+                key: key,
+                qty: newQty,
+                security: getUpdateNonce()
+            },
+            success: function(res) {
+                if(res.success) {
+                    $('#hkdev-co-items-ajax').html(res.data.items_html);
+                    $('#hkdev-co-totals-ajax').html(res.data.totals_html);
+                    applyCartFragments(res.data);
+                }
+            },
+            error: function() {
+                $item.find('.hkdev-co-qty-stepper-ui').css({'opacity': '1', 'pointer-events': 'auto'});
+            }
+        });
+    });
+
+    $(document).on('click', '.hkdev-co-item-remove-trigger', function() {
+        if(!confirm('Are you sure you want to remove this item?')) return;
+
+        const key = $(this).closest('.hkdev-co-summary-item').data('key');
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            cache: false,
+            data: {
+                action: updateCartAction,
+                type: 'remove',
+                key: key,
+                security: getUpdateNonce()
+            },
+            success: function(res) {
+                if(res.data && res.data.cart_empty) {
+                    location.reload();
+                } else if (res.success) {
+                    $('#hkdev-co-items-ajax').html(res.data.items_html);
+                    $('#hkdev-co-totals-ajax').html(res.data.totals_html);
+                    applyCartFragments(res.data);
+                }
+            }
+        });
+    });
+
+    /* =========================================================================
+     * 4. COUPON MANAGEMENT (cache: false)
+     * ========================================================================= */
+    $(document).on('click', '#hkdev-co-apply-coupon', function(e) {
+        e.preventDefault();
+        const code = $('#hkdev-co-coupon-code').val().trim();
+        if (code === '') { showToast('Please enter a coupon code.', 'error'); return; }
+
+        const $btn = $(this);
+        $btn.prop('disabled', true).text('...');
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            cache: false,
+            data: {
+                action: applyCouponAction,
+                coupon_code: code,
+                security: getCouponNonce()
+            },
+            success: function(res) {
+                $btn.prop('disabled', false).text('Apply');
+                if(res.success) {
+                    $('#hkdev-co-items-ajax').html(res.data.items_html);
+                    $('#hkdev-co-totals-ajax').html(res.data.totals_html);
+                    $('#hkdev-co-coupon-code').val('');
+                    applyCartFragments(res.data);
+                    showToast(res.data.message, 'success');
+                } else {
+                    showToast(res.data.message, 'error');
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.hkdev-co-remove-coupon', function(e) {
+        e.preventDefault();
+        const code = $(this).data('coupon');
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            cache: false,
+            data: {
+                action: removeCouponAction,
+                coupon_code: code,
+                security: getRemoveCouponNonce()
+            },
+            success: function(res) {
+                if(res.success) {
+                    $('#hkdev-co-items-ajax').html(res.data.items_html);
+                    $('#hkdev-co-totals-ajax').html(res.data.totals_html);
+                    applyCartFragments(res.data);
+                    showToast(res.data.message, 'success');
+                }
+            }
+        });
+    });
+
+    /* =========================================================================
+     * 5. SHIPPING / PAYMENT SELECT TRIGGER
+     * ========================================================================= */
+    $(document).on('change', 'input[name^="shipping_method"], input[name="payment_method"], input[name="billing_country"], select[name="billing_country"], input[name="billing_state"], select[name="billing_state"], input[name="billing_city"], select[name="billing_city"], input[name="billing_postcode"], select[name="billing_postcode"]', function() {
+        if($(this).attr('type') === 'radio') {
+            $(this).closest('.hkdev-co-delivery-selection-wrap, .hkdev-co-payment-pill-list').find('label').removeClass('active');
+            $(this).parent().addClass('active');
+        }
+        updateCartSections();
+    });
+
+    /* =========================================================================
+     * 6. ORDER SUBMISSION
+     * ========================================================================= */
+    // Delegated so it also works when the checkout form is injected into the
+    // shop's checkout modal after page load (see shop.js).
+    $(document).on('submit', '#hkdev-co-process-order', function(e) {
+        e.preventDefault();
+        let hasError = false;
+
+        $('.hkdev-co-form-area').find('input:visible, select:visible, textarea:visible').each(function() {
+            const isRequired = $(this).prop('required') || $(this).closest('.validate-required').length > 0;
+            if (isRequired && $(this).val().trim() === '') {
+                showToast('Please fill in all required fields.', 'error');
+                $(this).focus();
+                hasError = true;
+                return false;
+            }
+        });
+
+        if (!hasError && !$('#hkdev-co-terms').is(':checked')) {
+            showToast('Please agree to the Terms and Conditions to place your order.', 'error');
+            hasError = true;
+        }
+
+        if (hasError) return false;
+
+        const $phoneField = $('input[name="billing_phone"]:visible');
+        if ($phoneField.length) {
+            const phone = $phoneField.val().trim();
+            const phoneRegex = /^(?:\+?88)?01[3-9]\d{8}$/;
+            if(!phoneRegex.test(phone)) {
+                showToast('Please enter a valid phone number.', 'error');
+                $phoneField.focus();
+                return false;
+            }
+        }
+
+        const $btn = $('#hkdev-co-submit-btn');
+        $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i> Processing...');
+        $('#hkdev-co-global-loader').css('display', 'flex');
+
+        // Order placement – serialize the form, then override the action.
+        const formData = $(this).serialize() + '&action=' + placeOrderAction;
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            cache: false,
+            data: formData,
+            success: function(res) {
+                if(res.success) {
+                    window.location.href = res.data.redirect;
+                } else {
+                    showToast(res.data.message || 'An error occurred processing your order. Please try again.', 'error');
+                    $btn.prop('disabled', false).html('<i class="fa-solid fa-lock" style="margin-right: 8px;"></i> Confirm Order');
+                    $('#hkdev-co-global-loader').hide();
+                }
+            },
+            error: function() {
+                showToast('An error occurred processing your order. Please try again.', 'error');
+                $btn.prop('disabled', false).html('<i class="fa-solid fa-lock" style="margin-right: 8px;"></i> Confirm Order');
+                $('#hkdev-co-global-loader').hide();
+            }
+        });
+    });
+});
+
+/* Collapsible "Shipping Details" panel shown below the Order Summary. */
+(function ($) {
+    $(document).on('click', '.hkdev-co-shipping-acc-head', function (e) {
+        e.preventDefault();
+        var $head = $(this);
+        var $acc = $head.closest('.hkdev-co-shipping-acc');
+        var open = !$acc.hasClass('is-open');
+        $acc.toggleClass('is-open', open);
+        $head.attr('aria-expanded', open ? 'true' : 'false');
+    });
+})(jQuery);
+
+/* Searchable state / country dropdowns (Select2). */
+(function ($) {
+    function initCheckoutSelect2(scope) {
+        if (!$.fn.select2) {
+            return;
+        }
+        var $scope = scope ? $(scope) : $(document);
+        $scope.find('select.state_select, select.country_select, select.country_to_state').each(function () {
+            var $select = $(this);
+            if ($select.data('select2')) {
+                return; // Already enhanced.
+            }
+            if ($select.find('option').length < 2) {
+                return; // Single choice – nothing to search through.
+            }
+            var $modal = $select.closest('.hkdev-co-modal');
+            $select.select2({
+                width: '100%',
+                // Districts always get a search box; countries only once there
+                // are enough of them for a search box to be useful.
+                minimumResultsForSearch: $select.is('.state_select') ? 0 : 6,
+                dropdownParent: $modal.length ? $modal : $(document.body)
+            });
+        });
+    }
+
+    window.hkdevInitCheckoutSelect2 = initCheckoutSelect2;
+
+    $(function () {
+        initCheckoutSelect2(document);
+    });
+
+    // WooCommerce swaps the state options out when the country changes.
+    $(document.body).on('country_to_state_changed', function (e, country, $wrapper) {
+        initCheckoutSelect2($wrapper);
+    });
+})(jQuery);
