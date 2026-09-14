@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       HKDEV Shop Elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.4.4
+ * Version:           0.4.5
  * Author:            FitForLife
  * Text Domain:       hkdev-shop-elements
  * Requires at least: 6.0
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.4.4' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.4.5' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -102,6 +102,22 @@ function hkdev_elements_theme_provides_assets() {
 }
 
 /**
+ * Print every WooCommerce price as a whole number ("100" instead of "100.00").
+ *
+ * Only the formatting is touched: `wc_price_args` is consumed by wc_price()
+ * alone, so stored prices, taxes and rounding keep their full precision.
+ * Change the number of decimals with the `hkdev_elements_price_decimals` filter.
+ *
+ * @param array $args wc_price() arguments.
+ * @return array
+ */
+function hkdev_elements_price_args( $args ) {
+	$args['decimals'] = (int) apply_filters( 'hkdev_elements_price_decimals', 0 );
+
+	return $args;
+}
+
+/**
  * Bootstrap.
  *
  * The engine only needs WooCommerce, so it loads at plugins_loaded. Elementor
@@ -114,6 +130,9 @@ function hkdev_elements_boot() {
 	if ( ! class_exists( '\WooCommerce' ) ) {
 		return;
 	}
+
+	// Whole-number pricing across every WooCommerce price output.
+	add_filter( 'wc_price_args', __NAMESPACE__ . '\\hkdev_elements_price_args' );
 
 	require_once HKDEV_ELEMENTS_PATH . 'includes/shop-engine.php';
 	Includes\Shop_Engine::instance();
