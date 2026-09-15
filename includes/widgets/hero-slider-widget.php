@@ -238,34 +238,75 @@ class Hero_Slider_Widget extends Widget_Base {
 		$this->add_control(
 			'delay',
 			[
-				'label'       => esc_html__( 'Slide Duration (ms)', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::NUMBER,
-				'default'     => 5000,
-				'min'         => 1000,
-				'max'         => 30000,
-				'step'        => 500,
-				'condition'   => [ 'autoplay' => 'yes' ],
+				'label'     => esc_html__( 'Autoplay Speed (ms)', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::NUMBER,
+				'default'   => 5000,
+				'min'       => 1000,
+				'max'       => 30000,
+				'step'      => 500,
+				'condition' => [ 'autoplay' => 'yes' ],
 			]
 		);
 
 		$this->add_control(
-			'show_arrows',
+			'transition',
 			[
-				'label'        => esc_html__( 'Show Arrows', 'hkdev-shop-elements' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'default'      => 'yes',
-				'return_value' => 'yes',
-				'separator'    => 'before',
+				'label'     => esc_html__( 'Transition', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'fade',
+				'separator' => 'before',
+				'options'   => [
+					'fade'  => esc_html__( 'Fade', 'hkdev-shop-elements' ),
+					'slide' => esc_html__( 'Slide', 'hkdev-shop-elements' ),
+				],
 			]
 		);
 
 		$this->add_control(
-			'show_dots',
+			'infinite',
 			[
-				'label'        => esc_html__( 'Show Dots', 'hkdev-shop-elements' ),
+				'label'        => esc_html__( 'Infinite Loop', 'hkdev-shop-elements' ),
 				'type'         => Controls_Manager::SWITCHER,
 				'default'      => 'yes',
 				'return_value' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'pause_on_hover',
+			[
+				'label'        => esc_html__( 'Pause on Hover', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Autoplay resumes when the pointer leaves the banner.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'pause_on_interaction',
+			[
+				'label'        => esc_html__( 'Pause on Interaction', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => '',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Stops autoplay for good once a visitor uses an arrow, dot or swipe.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'navigation',
+			[
+				'label'     => esc_html__( 'Navigation', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'both',
+				'separator' => 'before',
+				'options'   => [
+					'both'   => esc_html__( 'Arrows and Dots', 'hkdev-shop-elements' ),
+					'arrows' => esc_html__( 'Arrows', 'hkdev-shop-elements' ),
+					'dots'   => esc_html__( 'Dots', 'hkdev-shop-elements' ),
+					'none'   => esc_html__( 'None', 'hkdev-shop-elements' ),
+				],
 			]
 		);
 
@@ -294,6 +335,34 @@ class Hero_Slider_Widget extends Widget_Base {
 					'bottom-left'   => esc_html__( 'Bottom Left', 'hkdev-shop-elements' ),
 					'bottom-center' => esc_html__( 'Bottom Center', 'hkdev-shop-elements' ),
 				],
+			]
+		);
+
+		$this->add_control(
+			'content_width',
+			[
+				'label'       => esc_html__( 'Content Width', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SLIDER,
+				'size_units'  => [ '%', 'px' ],
+				'range'       => [
+					'%'  => [
+						'min' => 20,
+						'max' => 100,
+					],
+					'px' => [
+						'min' => 240,
+						'max' => 1600,
+					],
+				],
+				'default'     => [
+					'unit' => 'px',
+					'size' => 900,
+				],
+				'separator'   => 'before',
+				'selectors'   => [
+					'{{WRAPPER}} .hkdev-hero-content-inner' => 'max-width: {{SIZE}}{{UNIT}} !important;',
+				],
+				'description' => esc_html__( 'Maximum width of the slide text block.', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -645,9 +714,20 @@ class Hero_Slider_Widget extends Widget_Base {
 		$count    = count( $slides );
 		$auto     = ( ! isset( $settings['autoplay'] ) || 'yes' === $settings['autoplay'] ) && $count > 1;
 		$delay    = isset( $settings['delay'] ) ? max( 1000, absint( $settings['delay'] ) ) : 5000;
-		$arrows   = ( ! isset( $settings['show_arrows'] ) || 'yes' === $settings['show_arrows'] ) && $count > 1;
-		$dots     = ( ! isset( $settings['show_dots'] ) || 'yes' === $settings['show_dots'] ) && $count > 1;
 		$progress = ( ! isset( $settings['show_progress'] ) || 'yes' === $settings['show_progress'] ) && $auto;
+
+		$nav = isset( $settings['navigation'] ) ? $settings['navigation'] : 'both';
+		if ( ! in_array( $nav, [ 'both', 'arrows', 'dots', 'none' ], true ) ) {
+			$nav = 'both';
+		}
+
+		$arrows = ( 'both' === $nav || 'arrows' === $nav ) && $count > 1;
+		$dots   = ( 'both' === $nav || 'dots' === $nav ) && $count > 1;
+
+		$transition        = ( isset( $settings['transition'] ) && 'slide' === $settings['transition'] ) ? 'slide' : 'fade';
+		$infinite          = ( ! isset( $settings['infinite'] ) || 'yes' === $settings['infinite'] );
+		$pause_hover       = ( ! isset( $settings['pause_on_hover'] ) || 'yes' === $settings['pause_on_hover'] );
+		$pause_interaction = ( isset( $settings['pause_on_interaction'] ) && 'yes' === $settings['pause_on_interaction'] );
 
 		$positions = [ 'center', 'left', 'right', 'bottom-left', 'bottom-center' ];
 		$position  = isset( $settings['content_position'] ) ? $settings['content_position'] : 'center';
@@ -655,7 +735,7 @@ class Hero_Slider_Widget extends Widget_Base {
 			$position = 'center';
 		}
 
-		$classes = 'hkdev-hero hkdev-hero-position-' . $position;
+		$classes = 'hkdev-hero hkdev-hero-position-' . $position . ' hkdev-hero-transition-' . $transition;
 
 		if ( isset( $settings['hero_full_width'] ) && 'yes' === $settings['hero_full_width'] ) {
 			$classes .= ' hkdev-hero-full';
@@ -664,6 +744,10 @@ class Hero_Slider_Widget extends Widget_Base {
 		<div class="<?php echo esc_attr( $classes ); ?>"
 			 data-autoplay="<?php echo $auto ? '1' : '0'; ?>"
 			 data-delay="<?php echo esc_attr( $delay ); ?>"
+			 data-transition="<?php echo esc_attr( $transition ); ?>"
+			 data-loop="<?php echo $infinite ? '1' : '0'; ?>"
+			 data-pause-hover="<?php echo $pause_hover ? '1' : '0'; ?>"
+			 data-pause-interaction="<?php echo $pause_interaction ? '1' : '0'; ?>"
 			 tabindex="0"
 			 role="region"
 			 aria-label="<?php esc_attr_e( 'Image banner slider', 'hkdev-shop-elements' ); ?>">
@@ -707,21 +791,23 @@ class Hero_Slider_Widget extends Widget_Base {
 						<?php if ( $has_copy ) : ?>
 							<div class="hkdev-hero-shade" aria-hidden="true"></div>
 							<div class="hkdev-hero-content">
-								<?php if ( '' !== trim( (string) $slide['heading'] ) ) : ?>
-									<h2 class="hkdev-hero-title"><?php echo esc_html( $slide['heading'] ); ?></h2>
-								<?php endif; ?>
+								<div class="hkdev-hero-content-inner">
+									<?php if ( '' !== trim( (string) $slide['heading'] ) ) : ?>
+										<h2 class="hkdev-hero-title"><?php echo esc_html( $slide['heading'] ); ?></h2>
+									<?php endif; ?>
 
-								<?php if ( '' !== trim( (string) $slide['text'] ) ) : ?>
-									<p class="hkdev-hero-text"><?php echo esc_html( $slide['text'] ); ?></p>
-								<?php endif; ?>
+									<?php if ( '' !== trim( (string) $slide['text'] ) ) : ?>
+										<p class="hkdev-hero-text"><?php echo esc_html( $slide['text'] ); ?></p>
+									<?php endif; ?>
 
-								<?php if ( '' !== trim( (string) $slide['btn'] ) ) : ?>
-									<a class="hkdev-hero-btn"
-										href="<?php echo esc_url( '' !== $slide['btn_link'] ? $slide['btn_link'] : $slide['link'] ); ?>"
-										<?php echo $slide['btn_blank'] ? ' target="_blank" rel="noopener"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-										<?php echo esc_html( $slide['btn'] ); ?>
-									</a>
-								<?php endif; ?>
+									<?php if ( '' !== trim( (string) $slide['btn'] ) ) : ?>
+										<a class="hkdev-hero-btn"
+											href="<?php echo esc_url( '' !== $slide['btn_link'] ? $slide['btn_link'] : $slide['link'] ); ?>"
+											<?php echo $slide['btn_blank'] ? ' target="_blank" rel="noopener"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+											<?php echo esc_html( $slide['btn'] ); ?>
+										</a>
+									<?php endif; ?>
+								</div>
 							</div>
 						<?php endif; ?>
 					</div>

@@ -1,14 +1,18 @@
 /**
- * HKDEV Hero Slider — fade slides with arrows, dots, autoplay progress bar,
- * touch swipe, hover pause and keyboard navigation.
+ * HKDEV Hero Slider — fade or slide transitions with arrows, dots, autoplay
+ * progress bar, touch swipe, hover pause and keyboard navigation.
  *
- * Every instance owns its own state, so several sliders can sit on one page.
+ * Config mirrors the Elementor Slides widget: transition, infinite loop,
+ * pause on hover, pause on interaction and the navigation mode are all read
+ * from data attributes. Every instance owns its own state, so several sliders
+ * can sit on one page.
  */
 (function ($) {
     'use strict';
 
     function initHero($root) {
         const $slides = $root.find('.hkdev-hero-slide');
+        const $track = $root.find('.hkdev-hero-slides');
         const count = $slides.length;
 
         if (!count) {
@@ -17,15 +21,21 @@
 
         const $dotsWrap = $root.find('.hkdev-hero-dots');
         const $progress = $root.find('.hkdev-hero-progress');
+
+        const transition = $root.attr('data-transition') === 'slide' ? 'slide' : 'fade';
         const autoplay = String($root.attr('data-autoplay')) === '1' && count > 1;
         const delay = Math.max(1000, parseInt($root.attr('data-delay'), 10) || 5000);
+        const loop = String($root.attr('data-loop')) === '1';
+        const pauseHover = String($root.attr('data-pause-hover')) === '1';
+        const pauseInteraction = String($root.attr('data-pause-interaction')) === '1';
 
         let current = 0;
         let timer = null;
         let rafId = null;
         let progressWidth = 0;
         let lastTime = 0;
-        let paused = false;
+        let hovered = false;
+        let stoppedByInteraction = false;
 
         /* ---------------- Dots ---------------- */
         let $dots = $();
@@ -39,7 +49,7 @@
                 })
                     .on('click', function () {
                         goTo(i);
-                        restart();
+                        userAction();
                     })
                     .appendTo($dotsWrap);
             }
@@ -50,12 +60,27 @@
         /* ---------------- Rendering ---------------- */
         function render() {
             $slides.each(function (index) {
-                $(this).toggleClass('is-active', index === current);
+                const active = index === current;
+                $(this).toggleClass('is-active', active);
+
+                // Slide mode keeps every slide on screen while the track moves,
+                // so take the off-screen ones out of the tab / a11y order.
+                if (transition === 'slide') {
+                    if (active) {
+                        this.removeAttribute('inert');
+                    } else {
+                        this.setAttribute('inert', '');
+                    }
+                }
             });
 
             $dots.each(function (index) {
                 $(this).toggleClass('is-active', index === current);
             });
+
+            if (transition === 'slide' && $track.length) {
+                $track.css('transform', 'translateX(-' + (current * 100) + '%)');
+            }
 
             progressWidth = 0;
 
@@ -70,12 +95,28 @@
         }
 
         function next() {
-            current = (current + 1) % count;
+            if (current >= count - 1) {
+                if (!loop) {
+                    return;
+                }
+                current = 0;
+            } else {
+                current += 1;
+            }
+
             render();
         }
 
         function prev() {
-            current = (current - 1 + count) % count;
+            if (current <= 0) {
+                if (!loop) {
+                    return;
+                }
+                current = count - 1;
+            } else {
+                current -= 1;
+            }
+
             render();
         }
 
@@ -108,14 +149,23 @@
             }
         }
 
-        function start() {
-            stop();
-
-            if (!autoplay || paused) {
+        function tick() {
+            if (!loop && current >= count - 1) {
+                stop();
                 return;
             }
 
-            timer = setInterval(next, delay);
+            next();
+        }
+
+        function start() {
+            stop();
+
+            if (!autoplay || hovered || stoppedByInteraction) {
+                return;
+            }
+
+            timer = setInterval(tick, delay);
             startProgress();
         }
 
@@ -124,6 +174,7 @@
                 clearInterval(timer);
                 timer = null;
             }
+
             stopProgress();
         }
 
@@ -132,50 +183,73 @@
             start();
         }
 
+        // Any manual navigation either restarts autoplay or, when Pause on
+        // Interaction is on, ends it for this page view.
+        function userAction() {
+            if (pauseInteraction) {
+                stoppedByInteraction = true;
+                stop();
+                return;
+            }
+
+            restart();
+        }
+
         /* ---------------- Arrows ---------------- */
         $root.on('click', '.hkdev-hero-prev', function () {
             prev();
-            restart();
+            userAction();
         });
 
         $root.on('click', '.hkdev-hero-next', function () {
             next();
-            restart();
+            userAction();
         });
 
         /* ---------------- Pause on hover ---------------- */
-        $root.on('mouseenter', function () {
-            paused = true;
-            stop();
-        });
+        if (pauseHover) {
+            $root.on('mouseenter', function () {
+                hovered = true;
+                stop();
+            });
 
-        $root.on('mouseleave', function () {
-            paused = false;
-            start();
-        });
+            $root.on('mouseleave', function () {
+                hovered = false;
+                start();
+            });
+        }
 
         /* ---------------- Touch swipe ---------------- */
         const el = $root.get(0);
         let touchStartX = 0;
 
-        // Bound natively so the listener can be passive.
+        // Bound natively so the listeners can be passive.
         el.addEventListener('touchstart', function (e) {
             touchStartX = e.changedTouches[0].screenX;
-            paused = true;
+            hovered = true;
             stop();
         }, { passive: true });
 
         el.addEventListener('touchend', function (e) {
             const endX = e.changedTouches[0].screenX;
             const threshold = 50;
+            let swiped = false;
 
             if (endX < touchStartX - threshold) {
                 next();
+                swiped = true;
             } else if (endX > touchStartX + threshold) {
                 prev();
+                swiped = true;
             }
 
-            paused = false;
+            hovered = false;
+
+            if (swiped && pauseInteraction) {
+                stoppedByInteraction = true;
+                return;
+            }
+
             start();
         }, { passive: true });
 
@@ -183,10 +257,10 @@
         $root.on('keydown', function (e) {
             if (e.key === 'ArrowLeft') {
                 prev();
-                restart();
+                userAction();
             } else if (e.key === 'ArrowRight') {
                 next();
-                restart();
+                userAction();
             }
         });
 

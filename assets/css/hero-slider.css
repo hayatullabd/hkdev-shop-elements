@@ -118,24 +118,40 @@
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 14px !important;
     padding: 48px 28px !important;
     text-align: center !important;
     font-family: var(--hkdev-font, 'Hind Siliguri', 'Inter', sans-serif) !important;
 }
 
-.hkdev-hero-position-left .hkdev-hero-content{
+/* The text block itself: Content Width caps this. */
+.hkdev-hero-content-inner{
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 900px !important;
+}
+
+.hkdev-hero-position-left .hkdev-hero-content,
+.hkdev-hero-position-left .hkdev-hero-content-inner{
     align-items: flex-start !important;
     text-align: left !important;
 }
 
-.hkdev-hero-position-right .hkdev-hero-content{
+.hkdev-hero-position-right .hkdev-hero-content,
+.hkdev-hero-position-right .hkdev-hero-content-inner{
     align-items: flex-end !important;
     text-align: right !important;
 }
 
 .hkdev-hero-position-bottom-left .hkdev-hero-content{
     justify-content: flex-end !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+}
+
+.hkdev-hero-position-bottom-left .hkdev-hero-content-inner{
     align-items: flex-start !important;
     text-align: left !important;
 }
@@ -151,7 +167,7 @@
     font-weight: 700 !important;
     line-height: 1.15 !important;
     letter-spacing: -0.01em !important;
-    max-width: 900px !important;
+    max-width: 100% !important;
     text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28) !important;
 }
 
@@ -160,7 +176,7 @@
     color: rgba(255, 255, 255, 0.92) !important;
     font-size: clamp(15px, 1.4vw, 19px) !important;
     line-height: 1.6 !important;
-    max-width: 640px !important;
+    max-width: 100% !important;
 }
 
 .hkdev-hero-btn{
@@ -182,6 +198,29 @@
     transform: translateY(-2px) !important;
     filter: brightness(1.06) !important;
     color: #ffffff !important;
+}
+
+/* ---------------- Slide transition ----------------
+   Instead of stacking the slides, they sit in a row and the whole track is
+   translated. CSS only switches the layout; hero-slider.js moves the track. */
+.hkdev-hero-transition-slide .hkdev-hero-slides{
+    display: flex !important;
+    height: 100% !important;
+    transition: transform var(--hkdev-hero-ease, 0.8s) ease-in-out !important;
+    will-change: transform !important;
+}
+
+.hkdev-hero-transition-slide .hkdev-hero-slide,
+.hkdev-hero-transition-slide .hkdev-hero-slide.is-active{
+    position: relative !important;
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 1 !important;
+    transform: none !important;
+    visibility: visible !important;
+    transition: none !important;
+    z-index: auto !important;
 }
 
 /* ---------------- Arrows ---------------- */
