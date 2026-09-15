@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.12
+ * Version:           0.5.13
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.12' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.13' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -376,6 +376,19 @@ function hkdev_elements_register_assets() {
 		hkdev_elements_asset_ver( 'assets/js/video.js' ),
 		true
 	);
+	wp_register_style(
+		'hkdev-elements-hero-style',
+		hkdev_elements_asset_url( 'assets/css/hero-slider.css' ),
+		[],
+		hkdev_elements_asset_ver( 'assets/css/hero-slider.css' )
+	);
+	wp_register_script(
+		'hkdev-elements-hero-js',
+		hkdev_elements_asset_url( 'assets/js/hero-slider.js' ),
+		[ 'jquery' ],
+		hkdev_elements_asset_ver( 'assets/js/hero-slider.js' ),
+		true
+	);
 	wp_localize_script(
 		'hkdev-elements-header-js',
 		'hkdevHeaderL10n',
@@ -508,6 +521,7 @@ function hkdev_elements_force_style_order() {
 		'hkdev-elements-footer-style',
 		'hkdev-elements-reviews-style',
 		'hkdev-elements-video-style',
+		'hkdev-elements-hero-style',
 	];
 
 	foreach ( $handles as $handle ) {

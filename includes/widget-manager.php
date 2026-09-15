@@ -95,6 +95,7 @@ final class Widget_Manager {
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/catalog-widget.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/reviews-widget.php';
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/video-widget.php';
+		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/hero-slider-widget.php';
 
 		// Account, Tracking, 404 widgets.
 		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/account-widget.php';
@@ -115,6 +116,7 @@ final class Widget_Manager {
 			Widgets\Catalog_Widget::class,
 			Widgets\Reviews_Widget::class,
 			Widgets\Video_Widget::class,
+			Widgets\Hero_Slider_Widget::class,
 			Widgets\Account_Widget::class,
 			Widgets\Tracking_Widget::class,
 			Widgets\Page404_Widget::class,

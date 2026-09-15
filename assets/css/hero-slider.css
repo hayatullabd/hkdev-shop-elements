@@ -1,0 +1,267 @@
+/* ==========================================================
+   HKDEV SHOP — HERO / BANNER SLIDER
+   hero-slider.css (full-width image slider with arrows, dots,
+   autoplay progress bar and touch swipe)
+   Brand: green #03A550 / orange #F06724 / black / white.
+========================================================== */
+
+.hkdev-hero{
+    --hkdev-hero-height: 100vh;
+    --hkdev-hero-radius: 0px;
+    --hkdev-hero-primary: #03a550;
+    --hkdev-hero-overlay: rgba(0, 0, 0, 0.35);
+    --hkdev-hero-ease: 0.8s;
+    position: relative !important;
+    width: 100% !important;
+    height: var(--hkdev-hero-height, 100vh) !important;
+    overflow: hidden !important;
+    background: #0f1510 !important;
+    border-radius: var(--hkdev-hero-radius, 0px) !important;
+    touch-action: pan-y !important;
+    box-sizing: border-box !important;
+}
+
+.hkdev-hero *,
+.hkdev-hero *::before,
+.hkdev-hero *::after{
+    box-sizing: border-box !important;
+}
+
+/* ---------------- Slides ---------------- */
+.hkdev-hero-slides{
+    position: absolute !important;
+    inset: 0 !important;
+}
+
+.hkdev-hero-slide{
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    opacity: 0 !important;
+    transform: scale(1.05) !important;
+    /* visibility flips after the fade finishes so a hidden slide cannot be
+       focused or announced by a screen reader. */
+    visibility: hidden !important;
+    transition: opacity var(--hkdev-hero-ease, 0.8s) ease-in-out, transform var(--hkdev-hero-ease, 0.8s) ease-in-out, visibility 0s linear var(--hkdev-hero-ease, 0.8s) !important;
+    z-index: 0 !important;
+}
+
+.hkdev-hero-slide.is-active{
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    visibility: visible !important;
+    transition: opacity var(--hkdev-hero-ease, 0.8s) ease-in-out, transform var(--hkdev-hero-ease, 0.8s) ease-in-out, visibility 0s linear 0s !important;
+    z-index: 10 !important;
+}
+
+.hkdev-hero-slide img{
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.hkdev-hero-link{
+    position: absolute !important;
+    inset: 0 !important;
+    display: block !important;
+}
+
+/* ---------------- Overlay + slide copy ---------------- */
+.hkdev-hero-shade{
+    position: absolute !important;
+    inset: 0 !important;
+    background: var(--hkdev-hero-overlay, rgba(0, 0, 0, 0.35)) !important;
+    pointer-events: none !important;
+}
+
+.hkdev-hero-content{
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 48px 28px !important;
+    text-align: center !important;
+    font-family: var(--hkdev-font, 'Hind Siliguri', 'Inter', sans-serif) !important;
+}
+
+.hkdev-hero-position-left .hkdev-hero-content{
+    align-items: flex-start !important;
+    text-align: left !important;
+}
+
+.hkdev-hero-position-right .hkdev-hero-content{
+    align-items: flex-end !important;
+    text-align: right !important;
+}
+
+.hkdev-hero-position-bottom-left .hkdev-hero-content{
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+}
+
+.hkdev-hero-position-bottom-center .hkdev-hero-content{
+    justify-content: flex-end !important;
+}
+
+.hkdev-hero-title{
+    margin: 0 !important;
+    color: #ffffff !important;
+    font-size: clamp(26px, 4.4vw, 54px) !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.01em !important;
+    max-width: 900px !important;
+    text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28) !important;
+}
+
+.hkdev-hero-text{
+    margin: 0 !important;
+    color: rgba(255, 255, 255, 0.92) !important;
+    font-size: clamp(15px, 1.4vw, 19px) !important;
+    line-height: 1.6 !important;
+    max-width: 640px !important;
+}
+
+.hkdev-hero-btn{
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
+    padding: 13px 30px !important;
+    background: var(--hkdev-hero-primary, #03a550) !important;
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    border-radius: 10px !important;
+    transition: transform .25s ease, filter .25s ease !important;
+}
+
+.hkdev-hero-btn:hover{
+    transform: translateY(-2px) !important;
+    filter: brightness(1.06) !important;
+    color: #ffffff !important;
+}
+
+/* ---------------- Arrows ---------------- */
+.hkdev-hero-nav{
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: var(--hkdev-hero-arrow-size, 50px) !important;
+    height: var(--hkdev-hero-arrow-size, 50px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    background: var(--hkdev-hero-arrow-bg, rgba(255, 255, 255, 0.2)) !important;
+    color: var(--hkdev-hero-arrow-color, #ffffff) !important;
+    border: 2px solid transparent !important;
+    border-radius: 50% !important;
+    backdrop-filter: blur(5px) !important;
+    cursor: pointer !important;
+    z-index: 30 !important;
+    transition: background-color .3s ease, border-color .3s ease, transform .3s ease !important;
+}
+
+.hkdev-hero-nav svg{
+    width: 45% !important;
+    height: 45% !important;
+    display: block !important;
+}
+
+.hkdev-hero-nav:hover{
+    background: var(--hkdev-hero-arrow-hover-bg, rgba(255, 255, 255, 0.4)) !important;
+    border-color: var(--hkdev-hero-arrow-hover-border, #ffffff) !important;
+    transform: translateY(-50%) scale(1.1) !important;
+}
+
+.hkdev-hero-nav:active{
+    transform: translateY(-50%) scale(0.95) !important;
+}
+
+.hkdev-hero-prev{
+    left: var(--hkdev-hero-arrow-offset, 20px) !important;
+}
+
+.hkdev-hero-next{
+    right: var(--hkdev-hero-arrow-offset, 20px) !important;
+}
+
+/* ---------------- Dots ---------------- */
+.hkdev-hero-dots{
+    position: absolute !important;
+    bottom: var(--hkdev-hero-dots-bottom, 30px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--hkdev-hero-dots-gap, 12px) !important;
+    z-index: 30 !important;
+}
+
+.hkdev-hero-dot{
+    width: var(--hkdev-hero-dot-size, 12px) !important;
+    height: var(--hkdev-hero-dot-size, 12px) !important;
+    padding: 0 !important;
+    border: 2px solid transparent !important;
+    border-radius: 50% !important;
+    background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.4)) !important;
+    cursor: pointer !important;
+    transition: background-color .3s ease, width .3s ease, border-radius .3s ease !important;
+}
+
+.hkdev-hero-dot:hover{
+    background-color: var(--hkdev-hero-dot-hover, rgba(255, 255, 255, 0.8)) !important;
+}
+
+.hkdev-hero-dot.is-active{
+    background-color: var(--hkdev-hero-dot-active, #ffffff) !important;
+    width: var(--hkdev-hero-dot-active-width, 30px) !important;
+    border-radius: 6px !important;
+}
+
+/* ---------------- Autoplay progress ---------------- */
+.hkdev-hero-progress{
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: var(--hkdev-hero-progress-h, 4px) !important;
+    width: 0 !important;
+    background-color: var(--hkdev-hero-progress-color, #4ade80) !important;
+    z-index: 30 !important;
+    pointer-events: none !important;
+}
+
+/* ---------------- Editor placeholder ---------------- */
+.hkdev-hero-empty{
+    padding: 40px 20px !important;
+    background: #f4f7f5 !important;
+    border: 1px dashed rgba(0, 0, 0, 0.15) !important;
+    border-radius: 10px !important;
+    text-align: center !important;
+    color: #5f6e66 !important;
+    font-size: 14px !important;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 640px){
+    .hkdev-hero{
+        --hkdev-hero-arrow-size: 40px;
+        --hkdev-hero-arrow-offset: 10px;
+    }
+    .hkdev-hero-content{
+        padding: 32px 18px !important;
+    }
+}
