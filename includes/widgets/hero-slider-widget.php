@@ -105,6 +105,93 @@ class Hero_Slider_Widget extends Widget_Base {
 		$this->register_arrows_style();
 		$this->register_dots_style();
 		$this->register_progress_style();
+		$this->register_animation_style();
+	}
+
+	/**
+	 * Style tab – motion.
+	 *
+	 * @return void
+	 */
+	protected function register_animation_style() {
+		$scope = '{{WRAPPER}} .hkdev-hero';
+
+		$this->start_controls_section(
+			'hero_style_animation',
+			[
+				'label' => esc_html__( 'Animation', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_select(
+			'hero_easing',
+			esc_html__( 'Easing', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-hero-curve',
+			[
+				'cubic-bezier(0.4, 0, 0.2, 1)'   => esc_html__( 'Smooth (default)', 'hkdev-shop-elements' ),
+				'cubic-bezier(0.22, 1, 0.36, 1)' => esc_html__( 'Soft - long settle', 'hkdev-shop-elements' ),
+				'cubic-bezier(0.65, 0, 0.35, 1)' => esc_html__( 'Balanced ease in / out', 'hkdev-shop-elements' ),
+				'ease-out'                       => esc_html__( 'Gentle', 'hkdev-shop-elements' ),
+				'linear'                         => esc_html__( 'Linear', 'hkdev-shop-elements' ),
+			],
+			[],
+			esc_html__( 'How a slide change accelerates. Smooth starts quickly and settles softly.', 'hkdev-shop-elements' )
+		);
+
+		$this->hkdev_slider_raw(
+			'hero_image_zoom',
+			esc_html__( 'Image Drift', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-hero-kb-scale',
+			1,
+			1.3,
+			0.01,
+			[],
+			esc_html__( 'The active image zooms very slowly from 1 to this value while its slide is on screen. Leave at 1.00 to switch the drift off. The speed follows the autoplay timing automatically.', 'hkdev-shop-elements' )
+		);
+
+		$this->add_control(
+			'hero_text_anim',
+			[
+				'label'        => esc_html__( 'Animate Slide Text', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'separator'    => 'before',
+				'description'  => esc_html__( 'Heading, description and button rise into place one after another.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->hkdev_slider(
+			'hero_text_rise',
+			esc_html__( 'Text Rise Distance', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-hero-anim-y',
+			0,
+			60,
+			[ 'hero_text_anim' => 'yes' ]
+		);
+
+		$this->add_control(
+			'hero_text_stagger',
+			[
+				'label'     => esc_html__( 'Text Stagger (ms)', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SLIDER,
+				'range'     => [
+					'px' => [
+						'min'  => 0,
+						'max'  => 400,
+						'step' => 10,
+					],
+				],
+				'condition' => [ 'hero_text_anim' => 'yes' ],
+				'selectors' => [ $scope => '--hkdev-hero-stagger: {{SIZE}}ms !important;' ],
+			]
+		);
+
+		$this->end_controls_section();
 	}
 
 	/**
@@ -478,7 +565,24 @@ class Hero_Slider_Widget extends Widget_Base {
 
 		$this->hkdev_dimensions( 'hero_radius', esc_html__( 'Corner Radius', 'hkdev-shop-elements' ), $scope, 'border-radius' );
 		$this->hkdev_dimensions( 'hero_margin', esc_html__( 'Margin', 'hkdev-shop-elements' ), $scope, 'margin' );
-		$this->hkdev_slider_raw( 'hero_ease', esc_html__( 'Transition Speed (s)', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-ease', 0.2, 2, 0.1 );
+		// Written as a plain SLIDER rather than hkdev_slider_raw: a duration has
+		// to carry its unit, and that helper emits a unit-less value.
+		$this->add_control(
+			'hero_ease',
+			[
+				'label'       => esc_html__( 'Transition Speed (s)', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SLIDER,
+				'range'       => [
+					'px' => [
+						'min'  => 0.2,
+						'max'  => 2,
+						'step' => 0.1,
+					],
+				],
+				'selectors'   => [ $scope => '--hkdev-hero-ease: {{SIZE}}s !important;' ],
+				'description' => esc_html__( 'How long a single slide change takes.', 'hkdev-shop-elements' ),
+			]
+		);
 
 		$this->end_controls_section();
 
@@ -740,8 +844,17 @@ class Hero_Slider_Widget extends Widget_Base {
 		if ( isset( $settings['hero_full_width'] ) && 'yes' === $settings['hero_full_width'] ) {
 			$classes .= ' hkdev-hero-full';
 		}
+
+		if ( ! isset( $settings['hero_text_anim'] ) || 'yes' === $settings['hero_text_anim'] ) {
+			$classes .= ' hkdev-hero-text-anim';
+		}
+
+		// The image drift should finish roughly as the slide changes, so its
+		// duration follows the autoplay timing rather than a fixed guess.
+		$drift_ms = $auto ? ( $delay + 800 ) : 8000;
 		?>
 		<div class="<?php echo esc_attr( $classes ); ?>"
+			 style="--hkdev-hero-kb-dur:<?php echo esc_attr( $drift_ms ); ?>ms;"
 			 data-autoplay="<?php echo $auto ? '1' : '0'; ?>"
 			 data-delay="<?php echo esc_attr( $delay ); ?>"
 			 data-transition="<?php echo esc_attr( $transition ); ?>"

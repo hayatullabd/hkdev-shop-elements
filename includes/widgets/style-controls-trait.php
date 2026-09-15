@@ -114,29 +114,30 @@ trait Style_Controls {
 	 * @param string $property  CSS property.
 	 * @param float  $min       Minimum.
 	 * @param float  $max       Maximum.
-	 * @param float  $step      Step.
-	 * @param array  $condition Elementor condition.
+	 * @param float  $step        Step.
+	 * @param array  $condition   Elementor condition.
+	 * @param string $description Optional help text under the control.
 	 * @return void
 	 */
-	protected function hkdev_slider_raw( $id, $label, $selector, $property, $min, $max, $step = 0.1, $condition = [] ) {
-		$this->add_control(
-			$id,
-			$this->hkdev_args(
-				[
-					'label'     => $label,
-					'type'      => Controls_Manager::SLIDER,
-					'range'     => [
-						'px' => [
-							'min'  => $min,
-							'max'  => $max,
-							'step' => $step,
-						],
-					],
-					'selectors' => [ $selector => $property . ': {{SIZE}} !important;' ],
+	protected function hkdev_slider_raw( $id, $label, $selector, $property, $min, $max, $step = 0.1, $condition = [], $description = '' ) {
+		$args = [
+			'label'     => $label,
+			'type'      => Controls_Manager::SLIDER,
+			'range'     => [
+				'px' => [
+					'min'  => $min,
+					'max'  => $max,
+					'step' => $step,
 				],
-				$condition
-			)
-		);
+			],
+			'selectors' => [ $selector => $property . ': {{SIZE}} !important;' ],
+		];
+
+		if ( '' !== $description ) {
+			$args['description'] = $description;
+		}
+
+		$this->add_control( $id, $this->hkdev_args( $args, $condition ) );
 	}
 
 	/**

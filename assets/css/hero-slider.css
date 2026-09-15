@@ -14,6 +14,13 @@
     --hkdev-hero-bg: #0f1510;
     --hkdev-hero-img-fit: cover;
     --hkdev-hero-img-pos: center;
+    /* Animation tokens. The curve is a soft ease-out-cubic: quick to start,
+       long tail, which reads as "expensive" instead of mechanical. */
+    --hkdev-hero-curve: cubic-bezier(0.4, 0, 0.2, 1);
+    --hkdev-hero-kb-scale: 1.08;
+    --hkdev-hero-kb-dur: 8000ms;
+    --hkdev-hero-anim-y: 20px;
+    --hkdev-hero-stagger: 90ms;
     position: relative !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -55,20 +62,35 @@
     width: 100% !important;
     height: 100% !important;
     opacity: 0 !important;
-    transform: scale(1.05) !important;
+    /* No scale on the slide itself: scaling the whole layer (text included)
+       looks cheap. The motion lives on the image, see Ken Burns below. */
+    transform: none !important;
     /* visibility flips after the fade finishes so a hidden slide cannot be
        focused or announced by a screen reader. */
     visibility: hidden !important;
-    transition: opacity var(--hkdev-hero-ease, 0.8s) ease-in-out, transform var(--hkdev-hero-ease, 0.8s) ease-in-out, visibility 0s linear var(--hkdev-hero-ease, 0.8s) !important;
+    transition: opacity var(--hkdev-hero-ease, 0.8s) var(--hkdev-hero-curve, cubic-bezier(0.4, 0, 0.2, 1)), visibility 0s linear var(--hkdev-hero-ease, 0.8s) !important;
     z-index: 0 !important;
 }
 
 .hkdev-hero-slide.is-active{
     opacity: 1 !important;
-    transform: scale(1) !important;
+    transform: none !important;
     visibility: visible !important;
-    transition: opacity var(--hkdev-hero-ease, 0.8s) ease-in-out, transform var(--hkdev-hero-ease, 0.8s) ease-in-out, visibility 0s linear 0s !important;
+    transition: opacity var(--hkdev-hero-ease, 0.8s) var(--hkdev-hero-curve, cubic-bezier(0.4, 0, 0.2, 1)), visibility 0s linear 0s !important;
     z-index: 10 !important;
+}
+
+/* Ken Burns: the active image drifts in very slowly for the whole time the
+   slide is on screen. The reset is delayed until the slide has finished
+   fading / moving out, so the snap-back is never visible. */
+.hkdev-hero-slide img{
+    transform: scale(1) !important;
+    transition: transform 0s linear var(--hkdev-hero-ease, 0.8s) !important;
+}
+
+.hkdev-hero-slide.is-active img{
+    transform: scale(var(--hkdev-hero-kb-scale, 1.08)) !important;
+    transition: transform var(--hkdev-hero-kb-dur, 8000ms) ease-out !important;
 }
 
 .hkdev-hero-slide img{
@@ -131,6 +153,31 @@
     gap: 14px !important;
     width: 100% !important;
     max-width: 900px !important;
+}
+
+/* Staggered text reveal - only active when the option is switched on, so the
+   markup stays identical and the default is a plain static block. */
+.hkdev-hero-text-anim .hkdev-hero-content-inner > *{
+    opacity: 0 !important;
+    transform: translateY(var(--hkdev-hero-anim-y, 20px)) !important;
+    transition: opacity 0.7s var(--hkdev-hero-curve, cubic-bezier(0.4, 0, 0.2, 1)), transform 0.7s var(--hkdev-hero-curve, cubic-bezier(0.4, 0, 0.2, 1)) !important;
+}
+
+.hkdev-hero-text-anim .hkdev-hero-slide.is-active .hkdev-hero-content-inner > *{
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+.hkdev-hero-text-anim .hkdev-hero-slide.is-active .hkdev-hero-content-inner > *:nth-child(1){
+    transition-delay: 140ms !important;
+}
+
+.hkdev-hero-text-anim .hkdev-hero-slide.is-active .hkdev-hero-content-inner > *:nth-child(2){
+    transition-delay: calc(140ms + var(--hkdev-hero-stagger, 90ms)) !important;
+}
+
+.hkdev-hero-text-anim .hkdev-hero-slide.is-active .hkdev-hero-content-inner > *:nth-child(3){
+    transition-delay: calc(140ms + (var(--hkdev-hero-stagger, 90ms) * 2)) !important;
 }
 
 .hkdev-hero-position-left .hkdev-hero-content,
@@ -206,7 +253,7 @@
 .hkdev-hero-transition-slide .hkdev-hero-slides{
     display: flex !important;
     height: 100% !important;
-    transition: transform var(--hkdev-hero-ease, 0.8s) ease-in-out !important;
+    transition: transform var(--hkdev-hero-ease, 0.8s) var(--hkdev-hero-curve, cubic-bezier(0.4, 0, 0.2, 1)) !important;
     will-change: transform !important;
 }
 
@@ -311,6 +358,27 @@
     background-color: var(--hkdev-hero-progress-color, #4ade80) !important;
     z-index: 30 !important;
     pointer-events: none !important;
+}
+
+/* ---------------- Reduced motion ----------------
+   Honour the OS "reduce motion" preference: swap instantly, no drift. */
+@media (prefers-reduced-motion: reduce){
+    .hkdev-hero-slide,
+    .hkdev-hero-slides,
+    .hkdev-hero-slide img,
+    .hkdev-hero-text-anim .hkdev-hero-content-inner > *{
+        transition-duration: 1ms !important;
+        transition-delay: 0s !important;
+    }
+
+    .hkdev-hero-slide.is-active img{
+        transform: none !important;
+    }
+
+    .hkdev-hero-text-anim .hkdev-hero-content-inner > *{
+        opacity: 1 !important;
+        transform: none !important;
+    }
 }
 
 /* ---------------- Editor placeholder ---------------- */
