@@ -146,6 +146,18 @@ class Category_Carousel_Widget extends Widget_Base {
 			]
 		);
 
+		// The card trait registers this as "Title Lines" with a 0 default; for
+		// category names one line is the better default and the wording should
+		// match. Updating keeps a single control id in the panel.
+		$this->update_control(
+			'title_lines',
+			[
+				'label'       => esc_html__( 'Name Lines', 'hkdev-shop-elements' ),
+				'default'     => '1',
+				'description' => esc_html__( 'Long category names are trimmed with "..." so every card stays the same height.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->register_cc_extra_style_controls();
 	}
 
@@ -422,22 +434,9 @@ class Category_Carousel_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'title_lines',
-			[
-				'label'   => esc_html__( 'Name Lines', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '1',
-				'options' => [
-					'0' => esc_html__( 'Unlimited', 'hkdev-shop-elements' ),
-					'1' => esc_html__( '1 Line', 'hkdev-shop-elements' ),
-					'2' => esc_html__( '2 Lines', 'hkdev-shop-elements' ),
-					'3' => esc_html__( '3 Lines', 'hkdev-shop-elements' ),
-				],
-				'description' => esc_html__( 'Long category names are trimmed with "..." so every card stays the same height.', 'hkdev-shop-elements' ),
-			]
-		);
-
+		// The line-limit control comes from the shared card trait (registered by
+		// register_product_controls); it is relabelled for category names in
+		// register_controls() rather than registered a second time here.
 		$this->end_controls_section();
 	}
 
