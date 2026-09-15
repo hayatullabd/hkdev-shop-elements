@@ -468,11 +468,13 @@ class Shop_Engine {
 			$args['orderby'] = [
 				'hkdev_total_sales' => $order,
 				'date'              => 'DESC',
+				'ID'                => $order,
 			];
 		} elseif ( 'trending' === $type ) {
 			$args['orderby'] = [
 				'hkdev_total_sales' => 'DESC',
 				'date'              => 'DESC',
+				'ID'                => 'DESC',
 			];
 
 			// Trending = recently published products that sell the most. A zero
@@ -483,7 +485,13 @@ class Shop_Engine {
 			}
 			$args['date_query'] = [ [ 'after' => $days . ' days ago' ] ];
 		} else {
-			$args['orderby'] = [ 'date' => $order ];
+			// ID is the tiebreaker: products often share the same post_date, and
+			// MySQL gives no order guarantee for ties — which made the paginated
+			// "Load More" batches overlap and repeat the same products.
+			$args['orderby'] = [
+				'date' => $order,
+				'ID'   => $order,
+			];
 		}
 
 		if ( 'yes' === $params['on_sale'] && function_exists( 'wc_get_product_ids_on_sale' ) ) {
@@ -569,6 +577,36 @@ class Shop_Engine {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Count the products a listing would show.
+	 *
+	 * Runs the exact same query arguments as the grid, so a category tab badge
+	 * always matches the products that appear when the tab is clicked. The
+	 * stored WooCommerce term count cannot be used for this: it ignores the
+	 * widget filters (on sale, featured, stock, exclusions) and the products of
+	 * child categories, which is why some tabs showed a wrong number.
+	 *
+	 * @param array  $params   Base listing parameters; the category is overridden.
+	 * @param string $category Category slug(s) to count, comma separated.
+	 * @return int
+	 */
+	protected function count_listing_products( $params, $category = '' ) {
+		$params['category'] = $category;
+		$params['paged']    = 1;
+
+		$args = $this->build_product_query_args( $params );
+
+		// Only the row count matters: skip the post / term / meta object caches.
+		$args['posts_per_page']         = 1;
+		$args['fields']                 = 'ids';
+		$args['update_post_meta_cache'] = false;
+		$args['update_post_term_cache'] = false;
+
+		$query = new \WP_Query( $args );
+
+		return (int) $query->found_posts;
 	}
 
 	/**
@@ -673,12 +711,13 @@ class Shop_Engine {
 		check_ajax_referer( self::NONCE_ACTION, 'nonce' );
 
 		$params = $this->listing_params_from_request( true );
+		$style  = isset( $_POST['style'] ) ? sanitize_text_field( wp_unslash( $_POST['style'] ) ) : 'grid'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$query  = new \WP_Query( $this->build_product_query_args( $params ) );
 
 		ob_start();
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$this->render_single_product_card( get_the_ID(), $params['days'], false, $params['image_size'], 'yes' === $params['hover_img'] );
+			$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['hover_img'] );
 		}
 		wp_reset_postdata();
 		$html = ob_get_clean();
@@ -956,23 +995,23 @@ class Shop_Engine {
 			}
 		}
 
-		$args = $this->build_product_query_args(
-			[
-				'category'         => $atts['category'],
-				'exclude'          => $atts['exclude'],
-				'tags'             => $atts['tags'],
-				'brands'           => $atts['brands'],
-				'exclude_ids'      => $exclude_ids,
-				'limit'            => $atts['limit'],
-				'type'             => $atts['type'],
-				'days'             => $atts['days'],
-				'order_by'         => $atts['order_by'],
-				'include_children' => $include_children_val,
-				'on_sale'          => $atts['on_sale'],
-				'featured'         => $atts['featured'],
-				'stock_status'     => $atts['stock_status'],
-			]
-		);
+		$listing_params = [
+			'category'         => $atts['category'],
+			'exclude'          => $atts['exclude'],
+			'tags'             => $atts['tags'],
+			'brands'           => $atts['brands'],
+			'exclude_ids'      => $exclude_ids,
+			'limit'            => $atts['limit'],
+			'type'             => $atts['type'],
+			'days'             => $atts['days'],
+			'order_by'         => $atts['order_by'],
+			'include_children' => $include_children_val,
+			'on_sale'          => $atts['on_sale'],
+			'featured'         => $atts['featured'],
+			'stock_status'     => $atts['stock_status'],
+		];
+
+		$args = $this->build_product_query_args( $listing_params );
 
 		// Explicit product ID list (used by the Related Products widget).
 		$product_ids = array_values( array_filter( array_map( 'absint', explode( ',', (string) $atts['product_ids'] ) ) ) );
@@ -1067,10 +1106,10 @@ class Shop_Engine {
 					?>
 					<div class="hkdev-tabs-container">
 						<div class="hkdev-tabs-scroll">
-							<button class="hkdev-tab-item active" data-slug="<?php echo esc_attr( $atts['category'] ); ?>"><?php echo esc_html__( 'All', 'hkdev-shop-elements' ); ?></button>
+							<button class="hkdev-tab-item active" data-slug="<?php echo esc_attr( $atts['category'] ); ?>"><?php echo esc_html__( 'All', 'hkdev-shop-elements' ); ?> <span class="hkdev-tab-count"><?php echo absint( $query->found_posts ); ?></span></button>
 							<?php foreach ( $categories as $cat ) : ?>
 								<button class="hkdev-tab-item" data-slug="<?php echo esc_attr( $cat->slug ); ?>">
-									<?php echo esc_html( $cat->name ); ?> <span class="hkdev-tab-count"><?php echo absint( $cat->count ); ?></span>
+									<?php echo esc_html( $cat->name ); ?> <span class="hkdev-tab-count"><?php echo absint( $this->count_listing_products( $listing_params, $cat->slug ) ); ?></span>
 								</button>
 							<?php endforeach; ?>
 						</div>
@@ -1127,11 +1166,11 @@ class Shop_Engine {
 					<button type="button" class="hkdev-load-more"
 							data-page="1"
 							data-label="<?php echo esc_attr( $more_label ); ?>"
-							data-loading-label="<?php echo esc_attr__( 'Loading…', 'hkdev-shop-elements' ); ?>"
-							data-end-label="<?php echo esc_attr__( 'No more products', 'hkdev-shop-elements' ); ?>">
+							data-loading-label="<?php echo esc_attr__( 'Loading…', 'hkdev-shop-elements' ); ?>">
 						<span class="hkdev-lm-label"><?php echo esc_html( $more_label ); ?></span>
 						<span class="hkdev-lm-spinner" aria-hidden="true"></span>
 					</button>
+					<span class="hkdev-lm-end"><?php echo esc_html__( 'No more products', 'hkdev-shop-elements' ); ?></span>
 				</div>
 			<?php endif; ?>
 

@@ -9,6 +9,8 @@ Standalone Elementor + WooCommerce widgets that work with **any** WordPress them
 - Single Product
 - Header / Footer (site-wide builders)
 - Catalog (search + filter + sort)
+- Customer Reviews (Video Reviews / Social Proofs tabs, modals, Top Pick product promo)
+- Video Embed (lite YouTube poster + click-to-play)
 - Contact Form
 - Auth (login / register), My Account, Order Tracking, 404
 

@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.7
+ * Version:           0.5.8
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.7' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.8' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -159,6 +159,12 @@ function hkdev_elements_boot() {
 
 	require_once HKDEV_ELEMENTS_PATH . 'includes/catalog-engine.php';
 	Includes\Catalog_Engine::instance();
+
+	require_once HKDEV_ELEMENTS_PATH . 'includes/review-engine.php';
+	Includes\Review_Engine::instance();
+
+	require_once HKDEV_ELEMENTS_PATH . 'includes/video-engine.php';
+	Includes\Video_Engine::instance();
 
 	// Admin settings (Checkout Fields on/off). Only hooks admin_menu, safe to
 	// init unconditionally.
@@ -344,6 +350,32 @@ function hkdev_elements_register_assets() {
 		hkdev_elements_asset_ver( 'assets/js/catalog.js' ),
 		true
 	);
+	wp_register_style(
+		'hkdev-elements-reviews-style',
+		hkdev_elements_asset_url( 'assets/css/reviews.css' ),
+		[],
+		hkdev_elements_asset_ver( 'assets/css/reviews.css' )
+	);
+	wp_register_script(
+		'hkdev-elements-reviews-js',
+		hkdev_elements_asset_url( 'assets/js/reviews.js' ),
+		[ 'jquery' ],
+		hkdev_elements_asset_ver( 'assets/js/reviews.js' ),
+		true
+	);
+	wp_register_style(
+		'hkdev-elements-video-style',
+		hkdev_elements_asset_url( 'assets/css/video.css' ),
+		[],
+		hkdev_elements_asset_ver( 'assets/css/video.css' )
+	);
+	wp_register_script(
+		'hkdev-elements-video-js',
+		hkdev_elements_asset_url( 'assets/js/video.js' ),
+		[ 'jquery' ],
+		hkdev_elements_asset_ver( 'assets/js/video.js' ),
+		true
+	);
 	wp_localize_script(
 		'hkdev-elements-header-js',
 		'hkdevHeaderL10n',
@@ -474,6 +506,8 @@ function hkdev_elements_force_style_order() {
 		'hkdev-elements-404-style',
 		'hkdev-elements-header-style',
 		'hkdev-elements-footer-style',
+		'hkdev-elements-reviews-style',
+		'hkdev-elements-video-style',
 	];
 
 	foreach ( $handles as $handle ) {

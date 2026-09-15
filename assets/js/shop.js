@@ -220,22 +220,17 @@ jQuery(function($) {
         if (!$btn.length) return;
 
         const $wrap = $btn.closest('.hkdev-load-more-wrap');
-        if ($wrap.hasClass('is-empty')) {
-            $wrap.removeClass('is-empty').html($btn);
-        }
         $btn.data('page', 1).removeClass('is-loading').prop('disabled', false)
             .find('.hkdev-lm-label').text($btn.data('label') || 'Load More');
 
         // The tab response holds page 1 of the newly selected category: when it
-        // has fewer cards than the limit there is nothing left to load.
+        // has fewer cards than the limit there is nothing left to load. The
+        // button is only hidden (never removed), so switching back to a bigger
+        // category brings it straight back.
         const limit = parseInt($wrapper.data('limit'), 10) || 0;
         // Ignore Swiper's loop-mode clones when counting the visible slides.
         const shown = $wrapper.find('.hkdev-shop-grid').first().children(':not(.swiper-slide-duplicate)').length;
-        if (limit > 0 && shown < limit) {
-            $wrap.addClass('is-empty').html(
-                '<span class="hkdev-lm-end">' + ($btn.attr('data-end-label') || 'No more products') + '</span>'
-            );
-        }
+        $wrap.toggleClass('is-empty', limit > 0 && shown < limit);
     }
 
     $(document).on('click', '.hkdev-load-more', function () {
@@ -277,12 +272,20 @@ jQuery(function($) {
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
                 image_size: $wrapper.data('image_size'),
-                hover_img: $wrapper.attr('data-hover-img')
+                hover_img: $wrapper.attr('data-hover-img'),
+                style: $wrapper.data('style')
             },
             success: function (response) {
                 const data = (response && response.success && response.data) ? response.data : null;
 
-                if (data && data.html) {
+                // No usable payload: put the button back the way it was.
+                if (!data) {
+                    $btn.removeClass('is-loading').prop('disabled', false)
+                        .find('.hkdev-lm-label').text($btn.data('label') || 'Load More');
+                    return;
+                }
+
+                if (data.html) {
                     $grid.append(data.html);
 
                     // Carousel: let Swiper pick up the new slides.
@@ -292,16 +295,15 @@ jQuery(function($) {
                     }
                 }
 
-                if (data && data.has_more) {
-                    $btn.data('page', data.page)
-                        .removeClass('is-loading')
-                        .prop('disabled', false)
-                        .find('.hkdev-lm-label').text($btn.data('label') || 'Load More');
+                $btn.removeClass('is-loading').prop('disabled', false)
+                    .find('.hkdev-lm-label').text($btn.data('label') || 'Load More');
+
+                if (data.has_more && data.html) {
+                    $btn.data('page', data.page);
                 } else {
-                    // Every product is on screen – swap the button for a note.
-                    $btn.closest('.hkdev-load-more-wrap').addClass('is-empty').html(
-                        '<span class="hkdev-lm-end">' + ($btn.attr('data-end-label') || 'No more products') + '</span>'
-                    );
+                    // Every product is on screen – hide the button; the wrap keeps
+                    // it so a later tab switch can bring it back.
+                    $btn.closest('.hkdev-load-more-wrap').addClass('is-empty');
                 }
             },
             error: function () {

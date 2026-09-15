@@ -1,0 +1,155 @@
+/* ==========================================================
+   HKDEV SHOP — VIDEO EMBED
+   video.css (lite YouTube poster + play button)
+   Brand: green #03A550 / black / white.
+========================================================== */
+
+.hkdev-yt{
+    --hkdev-yt-primary: #03a550;
+    --hkdev-yt-text: #141a14;
+    --hkdev-yt-muted: #5f6e66;
+    --hkdev-yt-bg: transparent;
+    --hkdev-yt-video-width: 800px;
+    --hkdev-yt-radius: 14px;
+    --hkdev-yt-ratio: 16 / 9;
+    --hkdev-yt-play-size: 74px;
+    --hkdev-yt-play-bg: rgba(255, 255, 255, 0.92);
+    --hkdev-yt-play-color: #03a550;
+    --hkdev-yt-play-hover-bg: #ffffff;
+    font-family: var(--hkdev-font, 'Hind Siliguri', 'Poppins', sans-serif) !important;
+    color: var(--hkdev-yt-text) !important;
+    background: var(--hkdev-yt-bg) !important;
+    box-sizing: border-box !important;
+}
+
+.hkdev-yt *,
+.hkdev-yt *::before,
+.hkdev-yt *::after{
+    box-sizing: border-box !important;
+}
+
+.hkdev-yt-container{
+    max-width: 900px !important;
+    margin: 0 auto !important;
+    padding: 10px 16px !important;
+    text-align: center !important;
+}
+
+.hkdev-yt-heading{
+    margin: 0 0 14px !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    color: var(--hkdev-yt-text) !important;
+}
+
+.hkdev-yt-separator{
+    width: 80px !important;
+    height: 3px !important;
+    margin: 0 auto 18px !important;
+    border-radius: 999px !important;
+    background: var(--hkdev-yt-primary) !important;
+}
+
+.hkdev-yt-description{
+    max-width: 720px !important;
+    margin: 0 auto 26px !important;
+    font-size: 16px !important;
+    line-height: 1.65 !important;
+    color: var(--hkdev-yt-muted) !important;
+}
+
+.hkdev-yt-description p{
+    margin: 0 0 12px !important;
+}
+
+.hkdev-yt-description p:last-child{
+    margin-bottom: 0 !important;
+}
+
+.hkdev-yt-video-wrap{
+    max-width: var(--hkdev-yt-video-width, 800px) !important;
+    margin: 0 auto !important;
+}
+
+.hkdev-yt-lite{
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    aspect-ratio: var(--hkdev-yt-ratio, 16 / 9) !important;
+    overflow: hidden !important;
+    border-radius: var(--hkdev-yt-radius) !important;
+    background: #000000 !important;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.16) !important;
+    cursor: pointer !important;
+}
+
+.hkdev-yt-lite img{
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    transition: transform .4s ease !important;
+}
+
+.hkdev-yt-lite:hover img{
+    transform: scale(1.04) !important;
+}
+
+.hkdev-yt-lite::after{
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.12) !important;
+    transition: background-color .3s ease !important;
+    pointer-events: none !important;
+}
+
+.hkdev-yt-lite:hover::after{
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+
+.hkdev-yt-play{
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 2 !important;
+    width: var(--hkdev-yt-play-size, 74px) !important;
+    height: var(--hkdev-yt-play-size, 74px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    background: var(--hkdev-yt-play-bg, rgba(255, 255, 255, 0.92)) !important;
+    color: var(--hkdev-yt-play-color, #03a550) !important;
+    backdrop-filter: blur(4px) !important;
+    transition: transform .3s ease, background-color .3s ease !important;
+}
+
+.hkdev-yt-play svg{
+    width: 45% !important;
+    height: 45% !important;
+    margin-left: 8% !important;
+}
+
+.hkdev-yt-lite:hover .hkdev-yt-play{
+    background: var(--hkdev-yt-play-hover-bg, #ffffff) !important;
+    transform: translate(-50%, -50%) scale(1.06) !important;
+}
+
+.hkdev-yt-lite iframe{
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0 !important;
+    display: block !important;
+}
+
+@media (max-width: 600px){
+    .hkdev-yt-heading{ font-size: 20px !important; }
+    .hkdev-yt{ --hkdev-yt-play-size: 58px !important; }
+}

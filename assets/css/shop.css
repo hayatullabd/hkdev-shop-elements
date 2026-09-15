@@ -1080,11 +1080,17 @@ button.hkdev-order-btn{
 }.hkdev-load-more.is-loading .hkdev-lm-spinner{
     display: inline-block !important;
 }.hkdev-lm-end{
-    display: inline-block !important;
+    display: none !important;
     padding: 8px 0 !important;
     color: var(--hkdev-text-muted, #7b8b83) !important;
     font-size: 14px !important;
     font-weight: 500 !important;
+}
+.hkdev-load-more-wrap.is-empty .hkdev-load-more{
+    display: none !important;
+}
+.hkdev-load-more-wrap.is-empty .hkdev-lm-end{
+    display: inline-block !important;
 }
 @keyframes hkdev-lm-spin{
     to { transform: rotate(360deg); }
