@@ -184,34 +184,6 @@ class Catalog_Engine {
 	 * ------------------------------------------------------------------- */
 
 	/**
-	 * Resolve term slugs to term ids for a taxonomy.
-	 *
-	 * @param string   $taxonomy Taxonomy name.
-	 * @param string[] $slugs    Term slugs.
-	 * @return int[]
-	 */
-	private function term_ids_from_slugs( $taxonomy, $slugs ) {
-		if ( ! taxonomy_exists( $taxonomy ) || empty( $slugs ) ) {
-			return [];
-		}
-
-		$terms = get_terms(
-			[
-				'taxonomy'   => $taxonomy,
-				'slug'       => array_map( 'strval', $slugs ),
-				'hide_empty' => false,
-				'fields'     => 'ids',
-			]
-		);
-
-		if ( is_wp_error( $terms ) || empty( $terms ) ) {
-			return [];
-		}
-
-		return array_map( 'intval', $terms );
-	}
-
-	/**
 	 * How many products each category would actually show in the grid.
 	 *
 	 * The stored WooCommerce term count is not a safe number for the filter
@@ -289,57 +261,44 @@ class Catalog_Engine {
 			];
 		}
 
-		// Filter by resolved term ids rather than slugs: WP_Tax_Query resolves
-		// slugs to ids anyway, and doing it here keeps encoded / stale slugs from
-		// silently turning the clause into a no-op or a wrong match.
+		// Slug form with include_children, exactly as Shop_Engine builds the same
+		// clause for the (working) Shop Grid. WP_Tax_Query resolves the slugs and
+		// expands the children itself, and keeping the two in step means a parent
+		// category lists the products of its children identically in both places.
 		if ( $params['cats'] ) {
-			$cat_ids = $this->term_ids_from_slugs( 'product_cat', $params['cats'] );
-
-			if ( $cat_ids ) {
-				$args['tax_query'][] = [
-					'taxonomy'         => 'product_cat',
-					'field'            => 'term_id',
-					'terms'            => $cat_ids,
-					'operator'         => 'IN',
-					'include_children' => true,
-				];
-			}
+			$args['tax_query'][] = [
+				'taxonomy'         => 'product_cat',
+				'field'            => 'slug',
+				'terms'            => $params['cats'],
+				'operator'         => 'IN',
+				'include_children' => true,
+			];
 		}
 
 		if ( $params['tags'] ) {
-			$tag_ids = $this->term_ids_from_slugs( 'product_tag', $params['tags'] );
-
-			if ( $tag_ids ) {
-				$args['tax_query'][] = [
-					'taxonomy' => 'product_tag',
-					'field'    => 'term_id',
-					'terms'    => $tag_ids,
-					'operator' => 'IN',
-				];
-			}
+			$args['tax_query'][] = [
+				'taxonomy' => 'product_tag',
+				'field'    => 'slug',
+				'terms'    => $params['tags'],
+				'operator' => 'IN',
+			];
 		}
 
-		if ( $params['brands'] ) {
-			$brand_ids = $this->term_ids_from_slugs( 'product_brand', $params['brands'] );
-
-			if ( $brand_ids ) {
-				$args['tax_query'][] = [
-					'taxonomy' => 'product_brand',
-					'field'    => 'term_id',
-					'terms'    => $brand_ids,
-					'operator' => 'IN',
-				];
-			}
+		if ( $params['brands'] && taxonomy_exists( 'product_brand' ) ) {
+			$args['tax_query'][] = [
+				'taxonomy' => 'product_brand',
+				'field'    => 'slug',
+				'terms'    => $params['brands'],
+				'operator' => 'IN',
+			];
 		}
 
 		foreach ( $params['attrs'] as $tax => $terms ) {
-			$attr_ids = $this->term_ids_from_slugs( $tax, $terms );
-
-			if ( $attr_ids ) {
+			if ( taxonomy_exists( $tax ) ) {
 				$args['tax_query'][] = [
 					'taxonomy' => $tax,
-					'field'    => 'term_id',
-					'terms'    => $attr_ids,
+					'field'    => 'slug',
+					'terms'    => $terms,
 					'operator' => 'IN',
 				];
 			}
@@ -717,9 +676,10 @@ class Catalog_Engine {
 		// shown is corrected: it is the count the grid would actually return, so
 		// a category with nothing to show reads 0 instead of a stale figure.
 		//
-		// One COUNT query per category, so cap the work on very large catalogues
-		// and fall back to the stored count for the rest.
-		$counts = $this->visible_category_counts( array_slice( $slugs, 0, 60 ), $params );
+		// Every category gets a real count. Capping the work (as an earlier
+		// release did at 60) left the tail of the list showing WooCommerce's
+		// stored figure, which is exactly the number that lies.
+		$counts = $this->visible_category_counts( $slugs, $params );
 
 		ob_start();
 		?>
