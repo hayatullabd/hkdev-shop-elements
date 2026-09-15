@@ -335,22 +335,47 @@ class Catalog_Engine {
 			$args['post__in'] = ! empty( $on_sale ) ? $on_sale : [ 0 ];
 		}
 
+		// Ordering by a meta value MUST go through a named meta_query clause with
+		// compare => EXISTS. Setting 'meta_key' makes WordPress build an INNER
+		// JOIN, which silently DROPS every product that has no row for that key:
+		// picking "Popularity" (or a price / rating sort) made whole categories
+		// come back empty even though the products existed. EXISTS uses a LEFT
+		// JOIN, so those products stay listed - the same reason Shop_Engine's
+		// best-selling ordering uses EXISTS rather than meta_key.
 		switch ( $params['sort'] ) {
 			case 'price_asc':
-				$args['meta_key'] = '_price'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = [ 'meta_value_num' => 'ASC', 'date' => 'DESC' ];
-				break;
 			case 'price_desc':
-				$args['meta_key'] = '_price'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = [ 'meta_value_num' => 'DESC', 'date' => 'DESC' ];
+				$args['meta_query']['hkdev_cat_price'] = [
+					'key'     => '_price',
+					'compare' => 'EXISTS',
+					'type'    => 'NUMERIC',
+				];
+				$args['orderby'] = [
+					'hkdev_cat_price' => ( 'price_asc' === $params['sort'] ) ? 'ASC' : 'DESC',
+					'date'            => 'DESC',
+				];
 				break;
 			case 'popular':
-				$args['meta_key'] = 'total_sales'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = [ 'meta_value_num' => 'DESC', 'date' => 'DESC' ];
+				$args['meta_query']['hkdev_cat_sales'] = [
+					'key'     => 'total_sales',
+					'compare' => 'EXISTS',
+					'type'    => 'NUMERIC',
+				];
+				$args['orderby'] = [
+					'hkdev_cat_sales' => 'DESC',
+					'date'            => 'DESC',
+				];
 				break;
 			case 'rating':
-				$args['meta_key'] = '_wc_average_rating'; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				$args['orderby']  = [ 'meta_value_num' => 'DESC', 'date' => 'DESC' ];
+				$args['meta_query']['hkdev_cat_rating'] = [
+					'key'     => '_wc_average_rating',
+					'compare' => 'EXISTS',
+					'type'    => 'NUMERIC',
+				];
+				$args['orderby'] = [
+					'hkdev_cat_rating' => 'DESC',
+					'date'             => 'DESC',
+				];
 				break;
 			case 'title':
 				$args['orderby'] = 'title';
