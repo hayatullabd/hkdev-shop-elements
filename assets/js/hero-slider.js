@@ -11,6 +11,13 @@
     'use strict';
 
     function initHero($root) {
+        // Elementor can hand us the same slider more than once (it fires both
+        // the global and the widget-scoped ready hooks), so never bind twice.
+        if ($root.data('hkdevHeroInit')) {
+            return;
+        }
+        $root.data('hkdevHeroInit', true);
+
         const $slides = $root.find('.hkdev-hero-slide');
         const $track = $root.find('.hkdev-hero-slides');
         const count = $slides.length;
@@ -19,6 +26,7 @@
             return;
         }
 
+        const el = $root.get(0);
         const $dotsWrap = $root.find('.hkdev-hero-dots');
         const $progress = $root.find('.hkdev-hero-progress');
 
@@ -150,6 +158,14 @@
         }
 
         function tick() {
+            // Elementor replaces the widget markup on every settings change;
+            // when that happens this instance is detached, so it has to retire
+            // rather than keep an interval running against dead nodes.
+            if (!el.isConnected) {
+                stop();
+                return;
+            }
+
             if (!loop && current >= count - 1) {
                 stop();
                 return;
@@ -220,7 +236,6 @@
         }
 
         /* ---------------- Touch swipe ---------------- */
-        const el = $root.get(0);
         let touchStartX = 0;
 
         // Bound natively so the listeners can be passive.
@@ -268,9 +283,39 @@
         start();
     }
 
-    $(function () {
-        $('.hkdev-hero').each(function () {
+    function initSliders($scope) {
+        const $roots = $scope
+            ? ($scope.hasClass('hkdev-hero') ? $scope : $scope.find('.hkdev-hero'))
+            : $('.hkdev-hero');
+
+        $roots.each(function () {
             initHero($(this));
         });
+    }
+
+    // Elementor renders - and re-renders - widgets long after DOM ready, so
+    // without this hook a slider dropped in or edited in the editor would never
+    // start: it would only work on the published page.
+    function hookElementor() {
+        if (!window.elementorFrontend || !elementorFrontend.hooks) {
+            return false;
+        }
+
+        elementorFrontend.hooks.addAction('frontend/element_ready/global', function ($scope) {
+            initSliders($scope);
+        });
+
+        return true;
+    }
+
+    $(function () {
+        initSliders();
+
+        // If this file loads after Elementor has already fired its init event,
+        // the listener below would never run - so hook straight away when the
+        // frontend object is already up.
+        if (!hookElementor()) {
+            $(window).on('elementor/frontend/init', hookElementor);
+        }
     });
 }(jQuery));

@@ -4,12 +4,20 @@
 (function ($) {
     'use strict';
 
-    $(function () {
-        // High-res posters are not available for every video; fall back to the
-        // standard one. Image error events do not bubble, so binding through a
-        // delegated selector would never fire - bind each image directly.
-        $('.hkdev-yt-lite img').each(function () {
+    // High-res posters are not available for every video; fall back to the
+    // standard one. Image error events do not bubble, so bind each image
+    // directly instead of delegating from the document.
+    function bindPosterFallback($scope) {
+        var $images = $scope ? $scope.find('.hkdev-yt-lite img') : $('.hkdev-yt-lite img');
+
+        $images.each(function () {
             var img = this;
+
+            if (img.dataset.hkdevFallbackBound) {
+                return;
+            }
+            img.dataset.hkdevFallbackBound = '1';
+
             var fallback = $(img).closest('.hkdev-yt-lite').attr('data-youtube-fallback');
 
             if (!fallback) {
@@ -28,6 +36,30 @@
                 img.onerror();
             }
         });
+    }
+
+    // Elementor renders - and re-renders - widgets long after DOM ready, so the
+    // poster fallback has to be rebound for each fresh render.
+    function hookElementor() {
+        if (!window.elementorFrontend || !elementorFrontend.hooks) {
+            return false;
+        }
+
+        elementorFrontend.hooks.addAction('frontend/element_ready/global', function ($scope) {
+            bindPosterFallback($scope);
+        });
+
+        return true;
+    }
+
+    $(function () {
+        bindPosterFallback();
+
+        // If this file loads after Elementor already fired its init event, the
+        // listener below would never run - hook straight away in that case.
+        if (!hookElementor()) {
+            $(window).on('elementor/frontend/init', hookElementor);
+        }
 
         $(document).on('click', '.hkdev-yt-lite', function (e) {
             var $link = $(this);

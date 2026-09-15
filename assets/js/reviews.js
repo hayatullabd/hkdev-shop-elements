@@ -17,6 +17,12 @@
     }
 
     function initRoot($root) {
+        // Elementor can hand us the same block more than once, so never bind twice.
+        if ($root.data('hkdevRvInit')) {
+            return;
+        }
+        $root.data('hkdevRvInit', true);
+
         var data = { videos: [], proofs: [] };
 
         var $dataEl = $root.find('.hkdev-rv-json').first();
@@ -264,10 +270,38 @@
         });
     }
 
-    $(function () {
-        $('.hkdev-rv').each(function () {
+    function initBlocks($scope) {
+        var $roots = $scope
+            ? ($scope.hasClass('hkdev-rv') ? $scope : $scope.find('.hkdev-rv'))
+            : $('.hkdev-rv');
+
+        $roots.each(function () {
             initRoot($(this));
         });
+    }
+
+    // Elementor renders - and re-renders - widgets long after DOM ready, so
+    // without this hook the block would stay inert while editing.
+    function hookElementor() {
+        if (!window.elementorFrontend || !elementorFrontend.hooks) {
+            return false;
+        }
+
+        elementorFrontend.hooks.addAction('frontend/element_ready/global', function ($scope) {
+            initBlocks($scope);
+        });
+
+        return true;
+    }
+
+    $(function () {
+        initBlocks();
+
+        // If this file loads after Elementor already fired its init event, the
+        // listener below would never run - hook straight away in that case.
+        if (!hookElementor()) {
+            $(window).on('elementor/frontend/init', hookElementor);
+        }
 
         $(document).on('keydown', function (e) {
             if (e.key !== 'Escape') {
