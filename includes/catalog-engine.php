@@ -250,20 +250,10 @@ class Catalog_Engine {
 
 		$tax_query = [ 'relation' => 'AND' ];
 
-		// Products hidden from the catalog are referenced by SLUG on purpose.
-		// wc_get_product_visibility_term_ids() hands back ids that WooCommerce
-		// core passes as term_taxonomy_id; when the two id sequences do not line
-		// up that excludes the WRONG term, and if the number happens to belong to
-		// a product_cat term then every product in that category disappears from
-		// a filtered listing. A slug is a fixed string, so it cannot be misread.
-		if ( taxonomy_exists( 'product_visibility' ) ) {
-			$tax_query[] = [
-				'taxonomy' => 'product_visibility',
-				'field'    => 'slug',
-				'terms'    => [ 'exclude-from-catalog' ],
-				'operator' => 'NOT IN',
-			];
-		}
+		// No product_visibility clause here on purpose. The Shop Grid's query -
+		// the one that demonstrably lists the correct products on this site -
+		// has none either, and every extra clause is a chance for a category to
+		// come back empty. Match the Shop Grid exactly; do not reintroduce it.
 
 		// Slug form with include_children, exactly as Shop_Engine builds the same
 		// clause for the (working) Shop Grid. WP_Tax_Query resolves the slugs and
@@ -382,13 +372,19 @@ class Catalog_Engine {
 				$args['order']   = 'ASC';
 				break;
 			case 'oldest':
-				$args['orderby'] = 'date';
-				$args['order']   = 'ASC';
+				// ID ties the ordering to Shop_Engine's: products often share a
+				// post_date and MySQL gives no order guarantee for ties.
+				$args['orderby'] = [
+					'date' => 'ASC',
+					'ID'   => 'ASC',
+				];
 				break;
 			case 'newest':
 			default:
-				$args['orderby'] = 'date';
-				$args['order']   = 'DESC';
+				$args['orderby'] = [
+					'date' => 'DESC',
+					'ID'   => 'DESC',
+				];
 				break;
 		}
 

@@ -849,18 +849,9 @@ class Category_Carousel_Widget extends Widget_Base {
 			return (int) $cached;
 		}
 
+		// Same shape as the Shop Grid query and nothing more: one product_cat
+		// clause with include_children.
 		$tax_query = [ 'relation' => 'AND' ];
-
-		// Slug, never the ids from wc_get_product_visibility_term_ids(): see the
-		// note in Catalog_Engine::build_query_args().
-		if ( taxonomy_exists( 'product_visibility' ) ) {
-			$tax_query[] = [
-				'taxonomy' => 'product_visibility',
-				'field'    => 'slug',
-				'terms'    => [ 'exclude-from-catalog' ],
-				'operator' => 'NOT IN',
-			];
-		}
 
 		$tax_query[] = [
 			'taxonomy'         => 'product_cat',
