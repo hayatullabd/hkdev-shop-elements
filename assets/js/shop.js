@@ -64,9 +64,14 @@ jQuery(function($) {
         }
     }
 
-    function initHkdevSwiper(wrapperId) {
-        const $wrapper = $('#' + wrapperId);
+    function initHkdevSwiper(wrapper) {
+        // Accepts the wrapper element or its id. Resolving purely from an id
+        // meant a wrapper without one looked up '#undefined', bailed, and left
+        // the carousel hidden for good.
+        const $wrapper = (wrapper && wrapper.jquery) ? wrapper : $('#' + wrapper);
         if (!$wrapper.length) return;
+
+        const wrapperId = $wrapper.attr('id') || '';
 
         const $container = $wrapper.find('.hkdev-swiper-container');
         if (!$container.length) return;
@@ -117,14 +122,23 @@ jQuery(function($) {
             options.pagination = { el: $dots[0], clickable: true };
         }
 
-        if (cfg.arrows) {
+        // The arrow selectors are built from the wrapper id, so only wire the
+        // navigation when there is one.
+        if (cfg.arrows && wrapperId) {
             options.navigation = {
                 nextEl: '.hkdev-next-' + wrapperId,
                 prevEl: '.hkdev-prev-' + wrapperId
             };
         }
 
-        new Swiper(el, options);
+        try {
+            new Swiper(el, options);
+        } catch (e) {
+            // A broken or duplicate Swiper build must never leave the slides
+            // hidden: reveal them and stop.
+            $container.removeClass('hkdev-loading-carousel');
+            return;
+        }
 
         // Safety net: if init never fires, reveal the slides anyway.
         window.setTimeout(function () {
@@ -136,7 +150,7 @@ jQuery(function($) {
 
     function initAllHkdevCarousels(scope) {
         $('.hkdev-shop-wrapper[data-style="carousel"]', scope || document).each(function () {
-            initHkdevSwiper($(this).attr('id'));
+            initHkdevSwiper($(this));
         });
     }
 
@@ -202,7 +216,7 @@ jQuery(function($) {
                 $loader.fadeOut(150); 
                 resetLoadMore($wrapper);
                 if($wrapper.data('style') === 'carousel') {
-                    initHkdevSwiper($wrapper.attr('id'));
+                    initHkdevSwiper($wrapper);
                 }
             }
         });

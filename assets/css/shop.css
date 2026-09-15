@@ -547,9 +547,15 @@ button.hkdev-order-btn{
 }.hkdev-swiper-container .swiper-slide.hkdev-product-card{
     display: flex !important;
     flex-direction: column !important;
-}/* Hidden only until Swiper takes over. */.hkdev-loading-carousel{
+}/* Hidden only until Swiper takes over. The animation is a CSS-only safety net:
+   if the script never runs (blocked CDN, an error, a cached page) the slides
+   still reveal themselves, instead of staying invisible on the live site the
+   way a plain opacity:0 rule did. */.hkdev-loading-carousel{
     opacity: 0;
     transition: opacity 0.3s ease;
+    animation: hkdev-carousel-reveal 0.3s ease 1.2s forwards;
+}@keyframes hkdev-carousel-reveal{
+    to{ opacity: 1; }
 }/* Elementor builds widgets after our script runs – never leave the editor
    preview blank while Swiper has not initialised yet. */.elementor-editor-active .hkdev-loading-carousel{
     opacity: 1 !important;
