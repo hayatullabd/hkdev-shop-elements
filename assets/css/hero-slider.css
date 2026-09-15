@@ -104,16 +104,19 @@
     display: block !important;
 }
 
-/* Optional portrait artwork for phones: only rendered when one is supplied. */
+/* Optional portrait artwork for phones. The swap is scoped to slides that
+   actually carry a mobile image (.hkdev-hero-slide-has-mobile) - otherwise a
+   slide with only a desktop image would lose its picture on phones. */
 .hkdev-hero-img-mobile{
     display: none !important;
 }
 
 @media (max-width: 767px){
-    .hkdev-hero-img-desktop{
+    .hkdev-hero-slide-has-mobile .hkdev-hero-img-desktop{
         display: none !important;
     }
-    .hkdev-hero-img-mobile{
+
+    .hkdev-hero-slide-has-mobile .hkdev-hero-img-mobile{
         display: block !important;
     }
 }
@@ -323,6 +326,11 @@
     transform: translateX(-50%) !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    /* Keeps a long row of dots inside the banner on narrow screens instead of
+       being clipped off both edges. */
+    max-width: calc(100% - 32px) !important;
     gap: var(--hkdev-hero-dots-gap, 12px) !important;
     z-index: 30 !important;
 }
@@ -392,13 +400,8 @@
     font-size: 14px !important;
 }
 
-/* ---------------- Responsive ---------------- */
-@media (max-width: 640px){
-    .hkdev-hero{
-        --hkdev-hero-arrow-size: 40px;
-        --hkdev-hero-arrow-offset: 10px;
-    }
-    .hkdev-hero-content{
-        padding: 32px 18px !important;
-    }
-}
+/* ---------------- Responsive ----------------
+   Phone sizing (arrow size / offset, content padding) is handled by the
+   responsive controls with mobile defaults, not by media queries here: the
+   !important rule those controls emit would always outweigh a plain rule in a
+   media query, which makes media-query overrides silently useless. */

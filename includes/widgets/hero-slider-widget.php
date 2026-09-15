@@ -656,7 +656,31 @@ class Hero_Slider_Widget extends Widget_Base {
 		);
 
 		$this->hkdev_color( 'hero_overlay', esc_html__( 'Overlay Colour', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-hero', '--hkdev-hero-overlay' );
-		$this->hkdev_dimensions( 'hero_content_padding', esc_html__( 'Content Padding', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-hero-content', 'padding' );
+		$this->add_responsive_control(
+			'hero_content_padding',
+			[
+				'label'          => esc_html__( 'Content Padding', 'hkdev-shop-elements' ),
+				'type'           => Controls_Manager::DIMENSIONS,
+				'size_units'     => [ 'px', 'em', 'rem', '%' ],
+				'default'        => [
+					'top'    => 48,
+					'right'  => 28,
+					'bottom' => 48,
+					'left'   => 28,
+					'unit'   => 'px',
+				],
+				'mobile_default' => [
+					'top'    => 32,
+					'right'  => 18,
+					'bottom' => 32,
+					'left'   => 18,
+					'unit'   => 'px',
+				],
+				'selectors'      => [
+					'{{WRAPPER}} .hkdev-hero-content' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}} !important;',
+				],
+			]
+		);
 		$this->hkdev_typography( 'hero_title', esc_html__( 'Heading', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-hero-title' );
 		$this->hkdev_typography( 'hero_text', esc_html__( 'Description', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-hero-text' );
 		$this->hkdev_typography( 'hero_btn', esc_html__( 'Button Text', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-hero-btn' );
@@ -684,8 +708,72 @@ class Hero_Slider_Widget extends Widget_Base {
 			]
 		);
 
-		$this->hkdev_slider( 'hero_arrow_size', esc_html__( 'Button Size', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-arrow-size', 28, 110 );
-		$this->hkdev_slider( 'hero_arrow_offset', esc_html__( 'Side Offset', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-arrow-offset', 0, 120 );
+		// Responsive (with phone defaults) rather than a hardcoded media query:
+		// a fixed media-query value can never win against the !important rule
+		// these controls emit, so it would silently do nothing.
+		$this->add_responsive_control(
+			'hero_arrow_size',
+			[
+				'label'          => esc_html__( 'Button Size', 'hkdev-shop-elements' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => [ 'px', 'em', 'rem' ],
+				'range'          => [
+					'px'  => [
+						'min' => 28,
+						'max' => 110,
+					],
+					'em'  => [
+						'min' => 1,
+						'max' => 8,
+					],
+					'rem' => [
+						'min' => 1,
+						'max' => 8,
+					],
+				],
+				'default'        => [
+					'unit' => 'px',
+					'size' => 50,
+				],
+				'mobile_default' => [
+					'unit' => 'px',
+					'size' => 40,
+				],
+				'selectors'      => [ $scope => '--hkdev-hero-arrow-size: {{SIZE}}{{UNIT}} !important;' ],
+			]
+		);
+
+		$this->add_responsive_control(
+			'hero_arrow_offset',
+			[
+				'label'          => esc_html__( 'Side Offset', 'hkdev-shop-elements' ),
+				'type'           => Controls_Manager::SLIDER,
+				'size_units'     => [ 'px', 'em', 'rem' ],
+				'range'          => [
+					'px'  => [
+						'min' => 0,
+						'max' => 120,
+					],
+					'em'  => [
+						'min' => 0,
+						'max' => 8,
+					],
+					'rem' => [
+						'min' => 0,
+						'max' => 8,
+					],
+				],
+				'default'        => [
+					'unit' => 'px',
+					'size' => 20,
+				],
+				'mobile_default' => [
+					'unit' => 'px',
+					'size' => 10,
+				],
+				'selectors'      => [ $scope => '--hkdev-hero-arrow-offset: {{SIZE}}{{UNIT}} !important;' ],
+			]
+		);
 		$this->hkdev_color( 'hero_arrow_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-arrow-bg' );
 		$this->hkdev_color( 'hero_arrow_color', esc_html__( 'Arrow Colour', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-arrow-color' );
 		$this->hkdev_color( 'hero_arrow_hover_bg', esc_html__( 'Hover Background', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-arrow-hover-bg' );
@@ -891,8 +979,13 @@ class Hero_Slider_Widget extends Widget_Base {
 					if ( '' !== $slide['image_mobile'] ) {
 						$img .= '<img class="hkdev-hero-img hkdev-hero-img-mobile" src="' . esc_url( $slide['image_mobile'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="lazy" decoding="async" />';
 					}
+
+					// The phone/desktop image swap is scoped to this class, so a
+					// slide with no mobile image keeps its desktop one on phones.
+					$slide_class = 'hkdev-hero-slide' . ( $active ? ' is-active' : '' )
+						. ( '' !== $slide['image_mobile'] ? ' hkdev-hero-slide-has-mobile' : '' );
 					?>
-					<div class="hkdev-hero-slide<?php echo $active ? ' is-active' : ''; ?>">
+					<div class="<?php echo esc_attr( $slide_class ); ?>">
 						<?php if ( '' !== $link_attrs ) : ?>
 							<a class="hkdev-hero-link"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<?php echo $img; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
