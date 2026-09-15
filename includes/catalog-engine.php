@@ -248,15 +248,19 @@ class Catalog_Engine {
 			$args['s'] = $params['search'];
 		}
 
-		// Kept exactly as WooCommerce core does it: the values belong to the
-		// term_taxonomy_id field here. Do not "correct" this to term_id - the two
-		// id sequences are not guaranteed to line up.
-		$visibility = function_exists( 'wc_get_product_visibility_term_ids' ) ? wc_get_product_visibility_term_ids() : [];
-		if ( ! empty( $visibility['exclude-from-catalog'] ) ) {
-			$args['tax_query'][] = [
+		$tax_query = [ 'relation' => 'AND' ];
+
+		// Products hidden from the catalog are referenced by SLUG on purpose.
+		// wc_get_product_visibility_term_ids() hands back ids that WooCommerce
+		// core passes as term_taxonomy_id; when the two id sequences do not line
+		// up that excludes the WRONG term, and if the number happens to belong to
+		// a product_cat term then every product in that category disappears from
+		// a filtered listing. A slug is a fixed string, so it cannot be misread.
+		if ( taxonomy_exists( 'product_visibility' ) ) {
+			$tax_query[] = [
 				'taxonomy' => 'product_visibility',
-				'field'    => 'term_taxonomy_id',
-				'terms'    => [ $visibility['exclude-from-catalog'] ],
+				'field'    => 'slug',
+				'terms'    => [ 'exclude-from-catalog' ],
 				'operator' => 'NOT IN',
 			];
 		}
@@ -266,7 +270,7 @@ class Catalog_Engine {
 		// expands the children itself, and keeping the two in step means a parent
 		// category lists the products of its children identically in both places.
 		if ( $params['cats'] ) {
-			$args['tax_query'][] = [
+			$tax_query[] = [
 				'taxonomy'         => 'product_cat',
 				'field'            => 'slug',
 				'terms'            => $params['cats'],
@@ -276,7 +280,7 @@ class Catalog_Engine {
 		}
 
 		if ( $params['tags'] ) {
-			$args['tax_query'][] = [
+			$tax_query[] = [
 				'taxonomy' => 'product_tag',
 				'field'    => 'slug',
 				'terms'    => $params['tags'],
@@ -285,7 +289,7 @@ class Catalog_Engine {
 		}
 
 		if ( $params['brands'] && taxonomy_exists( 'product_brand' ) ) {
-			$args['tax_query'][] = [
+			$tax_query[] = [
 				'taxonomy' => 'product_brand',
 				'field'    => 'slug',
 				'terms'    => $params['brands'],
@@ -295,13 +299,19 @@ class Catalog_Engine {
 
 		foreach ( $params['attrs'] as $tax => $terms ) {
 			if ( taxonomy_exists( $tax ) ) {
-				$args['tax_query'][] = [
+				$tax_query[] = [
 					'taxonomy' => $tax,
 					'field'    => 'slug',
 					'terms'    => $terms,
 					'operator' => 'IN',
 				];
 			}
+		}
+
+		// A relation-only tax_query is pointless, so only set it when a clause
+		// was actually added.
+		if ( count( $tax_query ) > 1 ) {
+			$args['tax_query'] = $tax_query;
 		}
 
 		$min = ( '' !== $params['min'] ) ? (float) $params['min'] : null;

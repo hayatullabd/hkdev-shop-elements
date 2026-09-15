@@ -831,6 +831,63 @@ class Category_Carousel_Widget extends Widget_Base {
 	}
 
 	/**
+	 * Count the products a category card opens.
+	 *
+	 * WooCommerce's stored term count drifts after imports or deletions and does
+	 * not include a child category's products, so a card could advertise products
+	 * its page does not have. This runs the same rules as the Shop Grid tab
+	 * badges - catalog-visible products, children included - and caches it.
+	 *
+	 * @param \WP_Term $term Category term.
+	 * @return int
+	 */
+	protected function count_category_products( $term ) {
+		$cache_key = 'hkdev_cat_widget_' . (int) $term->term_id;
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return (int) $cached;
+		}
+
+		$tax_query = [ 'relation' => 'AND' ];
+
+		// Slug, never the ids from wc_get_product_visibility_term_ids(): see the
+		// note in Catalog_Engine::build_query_args().
+		if ( taxonomy_exists( 'product_visibility' ) ) {
+			$tax_query[] = [
+				'taxonomy' => 'product_visibility',
+				'field'    => 'slug',
+				'terms'    => [ 'exclude-from-catalog' ],
+				'operator' => 'NOT IN',
+			];
+		}
+
+		$tax_query[] = [
+			'taxonomy'         => 'product_cat',
+			'field'            => 'slug',
+			'terms'            => [ $term->slug ],
+			'operator'         => 'IN',
+			'include_children' => true,
+		];
+
+		$query = new \WP_Query(
+			[
+				'post_type'      => 'product',
+				'post_status'    => 'publish',
+				'posts_per_page' => 1,
+				'fields'         => 'ids',
+				'tax_query'      => $tax_query,
+			]
+		);
+
+		$count = (int) $query->found_posts;
+
+		set_transient( $cache_key, $count, 10 * MINUTE_IN_SECONDS );
+
+		return $count;
+	}
+
+	/**
 	 * Render a single category card.
 	 *
 	 * @param \WP_Term $term        Category term.
@@ -857,7 +914,9 @@ class Category_Carousel_Widget extends Widget_Base {
 			$format     = isset( $settings['count_format'] ) && '' !== $settings['count_format']
 				? $settings['count_format']
 				: '%d Products';
-			$count_text = sprintf( $format, number_format_i18n( $term->count ) );
+			// %d needs the plain integer: number_format_i18n() returns "1,234",
+			// which %d converts to 1.
+			$count_text = sprintf( $format, $this->count_category_products( $term ) );
 		}
 		?>
 		<a class="<?php echo esc_attr( $card_class ); ?>" href="<?php echo esc_url( $link ); ?>">
