@@ -73,42 +73,43 @@ class Review_Engine {
 	 */
 	public function defaults() {
 		return [
-			'anchor'             => '',
-			'heading'            => '',
-			'subheading'         => '',
-			'video_icon'         => 'video',
-			'written_icon'       => 'list',
-			'show_header'        => true,
-			'show_heading'       => true,
-			'show_subheading'    => true,
-			'show_tabs'          => true,
-			'tab_video_label'    => __( 'Video Reviews', 'hkdev-shop-elements' ),
-			'tab_written_label'  => __( 'Social Proofs', 'hkdev-shop-elements' ),
-			'default_tab'        => 'written',
-			'show_video_name'    => true,
-			'show_video_stars'   => true,
-			'show_video_play'    => true,
-			'show_video_overlay' => true,
-			'show_card_name'     => true,
-			'show_verified'      => true,
-			'show_proof_stars'   => true,
-			'show_modal_quote'   => true,
-			'show_modal_badge'   => true,
-			'show_product'       => true,
-			'video_empty'        => __( 'No video reviews to show yet.', 'hkdev-shop-elements' ),
-			'written_empty'      => __( 'No reviews to show yet.', 'hkdev-shop-elements' ),
-			'show_filter'        => true,
-			'filter_label'       => __( 'Filter by:', 'hkdev-shop-elements' ),
-			'filter_default'     => 'recent',
-			'filter_highest'     => __( 'Highest Rating', 'hkdev-shop-elements' ),
-			'filter_recent'      => __( 'Most Recent', 'hkdev-shop-elements' ),
-			'top_pick_label'     => __( 'Top Pick', 'hkdev-shop-elements' ),
-			'order_button_text'  => __( 'Order Now', 'hkdev-shop-elements' ),
-			'view_button_text'   => __( 'View Product Details', 'hkdev-shop-elements' ),
-			'video_badge'        => __( 'Verified Customer', 'hkdev-shop-elements' ),
-			'proof_badge'        => __( 'Verified Purchase', 'hkdev-shop-elements' ),
-			'videos'             => [],
-			'proofs'             => [],
+			'anchor'               => '',
+			'heading'              => '',
+			'subheading'           => '',
+			'video_icon'           => 'video',
+			'written_icon'         => 'list',
+			'show_header'          => true,
+			'show_heading'         => true,
+			'show_subheading'      => true,
+			'show_tabs'            => true,
+			'tab_video_label'      => __( 'Video Reviews', 'hkdev-shop-elements' ),
+			'tab_written_label'    => __( 'Social Proofs', 'hkdev-shop-elements' ),
+			'default_tab'          => 'written',
+			'show_video_name'      => true,
+			'show_video_stars'     => true,
+			'show_video_play'      => true,
+			'show_video_overlay'   => true,
+			'video_thumb_fallback' => true,
+			'show_card_name'       => true,
+			'show_verified'        => true,
+			'show_proof_stars'     => true,
+			'show_modal_quote'     => true,
+			'show_modal_badge'     => true,
+			'show_product'         => true,
+			'video_empty'          => __( 'No video reviews to show yet.', 'hkdev-shop-elements' ),
+			'written_empty'        => __( 'No reviews to show yet.', 'hkdev-shop-elements' ),
+			'show_filter'          => true,
+			'filter_label'         => __( 'Filter by:', 'hkdev-shop-elements' ),
+			'filter_default'       => 'recent',
+			'filter_highest'       => __( 'Highest Rating', 'hkdev-shop-elements' ),
+			'filter_recent'        => __( 'Most Recent', 'hkdev-shop-elements' ),
+			'top_pick_label'       => __( 'Top Pick', 'hkdev-shop-elements' ),
+			'order_button_text'    => __( 'Order Now', 'hkdev-shop-elements' ),
+			'view_button_text'     => __( 'View Product Details', 'hkdev-shop-elements' ),
+			'video_badge'          => __( 'Verified Customer', 'hkdev-shop-elements' ),
+			'proof_badge'          => __( 'Verified Purchase', 'hkdev-shop-elements' ),
+			'videos'               => [],
+			'proofs'               => [],
 		];
 	}
 
@@ -180,12 +181,26 @@ class Review_Engine {
 						<div class="hkdev-rv-video-grid">
 							<?php
 							foreach ( $videos as $index => $item ) :
-								$name    = isset( $item['name'] ) ? $item['name'] : '';
-								$image   = isset( $item['image'] ) ? $item['image'] : '';
-								$rating  = isset( $item['rating'] ) ? (int) $item['rating'] : 5;
-								$quote   = isset( $item['quote'] ) ? $item['quote'] : '';
-								$product = isset( $item['product_id'] ) ? absint( $item['product_id'] ) : 0;
-								$media   = $this->video_media( isset( $item['video'] ) ? $item['video'] : '' );
+								$name      = isset( $item['name'] ) ? $item['name'] : '';
+								$image     = isset( $item['image'] ) ? $item['image'] : '';
+								$rating    = isset( $item['rating'] ) ? (int) $item['rating'] : 5;
+								$quote     = isset( $item['quote'] ) ? $item['quote'] : '';
+								$product   = isset( $item['product_id'] ) ? absint( $item['product_id'] ) : 0;
+								$video_url = isset( $item['video'] ) ? $item['video'] : '';
+								$media     = $this->video_media( $video_url );
+
+								// No thumbnail of its own: fall back to the YouTube poster.
+								$thumb          = $image;
+								$thumb_fallback = '';
+
+								if ( '' === $thumb && ! empty( $config['video_thumb_fallback'] ) ) {
+									$youtube_id = Video_Engine::youtube_id( $video_url );
+
+									if ( '' !== $youtube_id ) {
+										$thumb          = 'https://i.ytimg.com/vi/' . $youtube_id . '/maxresdefault.jpg';
+										$thumb_fallback = 'https://i.ytimg.com/vi/' . $youtube_id . '/hqdefault.jpg';
+									}
+								}
 
 								$video_json[] = [
 									'name'    => ! empty( $config['show_video_name'] ) ? (string) $name : '',
@@ -197,8 +212,8 @@ class Review_Engine {
 								];
 								?>
 								<div class="hkdev-rv-vcard" data-open-video="<?php echo esc_attr( $index ); ?>" role="button" tabindex="0" aria-label="<?php echo esc_attr( $name ); ?>">
-									<?php if ( $image ) : ?>
-										<img src="<?php echo esc_url( $image ); ?>" alt="<?php echo esc_attr( $name ); ?>" loading="lazy" />
+									<?php if ( $thumb ) : ?>
+										<img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( $name ); ?>" loading="lazy" data-thumb-fallback="<?php echo esc_url( $thumb_fallback ); ?>" />
 									<?php endif; ?>
 									<?php if ( ! empty( $config['show_video_overlay'] ) ) : ?>
 										<div class="hkdev-rv-voverlay" aria-hidden="true"></div>

@@ -291,6 +291,17 @@ class Reviews_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'video_thumb_fallback',
+			[
+				'label'        => esc_html__( 'Fallback to YouTube Thumbnail', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'When a video has no thumbnail of its own, use the YouTube video image instead.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$repeater = new Repeater();
 
 		$repeater->add_control(
@@ -1026,40 +1037,41 @@ class Reviews_Widget extends Widget_Base {
 		}
 
 		$config = [
-			'anchor'             => isset( $settings['anchor'] ) ? sanitize_title( $settings['anchor'] ) : '',
-			'heading'            => isset( $settings['heading'] ) ? $settings['heading'] : '',
-			'subheading'         => isset( $settings['subheading'] ) ? $settings['subheading'] : '',
-			'show_header'        => $yes_no( 'show_header' ),
-			'show_heading'       => true,
-			'show_subheading'    => true,
-			'show_tabs'          => $yes_no( 'show_tabs' ),
-			'tab_video_label'    => isset( $settings['tab_video_label'] ) ? $settings['tab_video_label'] : '',
-			'tab_written_label'  => isset( $settings['tab_written_label'] ) ? $settings['tab_written_label'] : '',
-			'default_tab'        => isset( $settings['default_tab'] ) ? $settings['default_tab'] : 'written',
-			'show_video_name'    => $yes_no( 'show_video_name' ),
-			'show_video_stars'   => $yes_no( 'show_video_stars' ),
-			'show_video_play'    => $yes_no( 'show_video_play' ),
-			'show_video_overlay' => $yes_no( 'show_video_overlay' ),
-			'show_card_name'     => $yes_no( 'show_card_name' ),
-			'show_verified'      => $yes_no( 'show_verified' ),
-			'show_proof_stars'   => $yes_no( 'show_proof_stars' ),
-			'show_modal_quote'   => $yes_no( 'show_modal_quote' ),
-			'show_modal_badge'   => $yes_no( 'show_modal_badge' ),
-			'show_product'       => $yes_no( 'show_product' ),
-			'video_empty'        => isset( $settings['video_empty'] ) ? $settings['video_empty'] : '',
-			'written_empty'      => isset( $settings['written_empty'] ) ? $settings['written_empty'] : '',
-			'show_filter'        => $yes_no( 'show_filter' ),
-			'filter_label'       => isset( $settings['filter_label'] ) ? $settings['filter_label'] : '',
-			'filter_default'     => isset( $settings['filter_default'] ) ? $settings['filter_default'] : 'recent',
-			'filter_highest'     => isset( $settings['filter_highest'] ) ? $settings['filter_highest'] : '',
-			'filter_recent'      => isset( $settings['filter_recent'] ) ? $settings['filter_recent'] : '',
-			'top_pick_label'     => isset( $settings['top_pick_label'] ) ? $settings['top_pick_label'] : '',
-			'order_button_text'  => isset( $settings['order_button_text'] ) ? $settings['order_button_text'] : '',
-			'view_button_text'   => isset( $settings['view_button_text'] ) ? $settings['view_button_text'] : '',
-			'video_badge'        => isset( $settings['video_badge'] ) ? $settings['video_badge'] : '',
-			'proof_badge'        => isset( $settings['proof_badge'] ) ? $settings['proof_badge'] : '',
-			'videos'             => $videos,
-			'proofs'             => $proofs,
+			'anchor'               => isset( $settings['anchor'] ) ? sanitize_title( $settings['anchor'] ) : '',
+			'heading'              => isset( $settings['heading'] ) ? $settings['heading'] : '',
+			'subheading'           => isset( $settings['subheading'] ) ? $settings['subheading'] : '',
+			'show_header'          => $yes_no( 'show_header' ),
+			'show_heading'         => true,
+			'show_subheading'      => true,
+			'show_tabs'            => $yes_no( 'show_tabs' ),
+			'tab_video_label'      => isset( $settings['tab_video_label'] ) ? $settings['tab_video_label'] : '',
+			'tab_written_label'    => isset( $settings['tab_written_label'] ) ? $settings['tab_written_label'] : '',
+			'default_tab'          => isset( $settings['default_tab'] ) ? $settings['default_tab'] : 'written',
+			'show_video_name'      => $yes_no( 'show_video_name' ),
+			'show_video_stars'     => $yes_no( 'show_video_stars' ),
+			'show_video_play'      => $yes_no( 'show_video_play' ),
+			'show_video_overlay'   => $yes_no( 'show_video_overlay' ),
+			'video_thumb_fallback' => $yes_no( 'video_thumb_fallback' ),
+			'show_card_name'       => $yes_no( 'show_card_name' ),
+			'show_verified'        => $yes_no( 'show_verified' ),
+			'show_proof_stars'     => $yes_no( 'show_proof_stars' ),
+			'show_modal_quote'     => $yes_no( 'show_modal_quote' ),
+			'show_modal_badge'     => $yes_no( 'show_modal_badge' ),
+			'show_product'         => $yes_no( 'show_product' ),
+			'video_empty'          => isset( $settings['video_empty'] ) ? $settings['video_empty'] : '',
+			'written_empty'        => isset( $settings['written_empty'] ) ? $settings['written_empty'] : '',
+			'show_filter'          => $yes_no( 'show_filter' ),
+			'filter_label'         => isset( $settings['filter_label'] ) ? $settings['filter_label'] : '',
+			'filter_default'       => isset( $settings['filter_default'] ) ? $settings['filter_default'] : 'recent',
+			'filter_highest'       => isset( $settings['filter_highest'] ) ? $settings['filter_highest'] : '',
+			'filter_recent'        => isset( $settings['filter_recent'] ) ? $settings['filter_recent'] : '',
+			'top_pick_label'       => isset( $settings['top_pick_label'] ) ? $settings['top_pick_label'] : '',
+			'order_button_text'    => isset( $settings['order_button_text'] ) ? $settings['order_button_text'] : '',
+			'view_button_text'     => isset( $settings['view_button_text'] ) ? $settings['view_button_text'] : '',
+			'video_badge'          => isset( $settings['video_badge'] ) ? $settings['video_badge'] : '',
+			'proof_badge'          => isset( $settings['proof_badge'] ) ? $settings['proof_badge'] : '',
+			'videos'               => $videos,
+			'proofs'               => $proofs,
 		];
 
 		echo Review_Engine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

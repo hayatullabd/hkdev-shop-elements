@@ -5,13 +5,27 @@
     'use strict';
 
     $(function () {
-        // High-res posters are not always available; fall back to hqdefault.
-        $(document).on('error', '.hkdev-yt-lite img', function () {
-            var fallback = $(this).closest('.hkdev-yt-lite').attr('data-youtube-fallback');
+        // High-res posters are not available for every video; fall back to the
+        // standard one. Image error events do not bubble, so binding through a
+        // delegated selector would never fire - bind each image directly.
+        $('.hkdev-yt-lite img').each(function () {
+            var img = this;
+            var fallback = $(img).closest('.hkdev-yt-lite').attr('data-youtube-fallback');
 
-            if (fallback && !this.dataset.hkdevFallback) {
-                this.dataset.hkdevFallback = '1';
-                this.src = fallback;
+            if (!fallback) {
+                return;
+            }
+
+            img.onerror = function () {
+                if (img.dataset.hkdevFallback) {
+                    return;
+                }
+                img.dataset.hkdevFallback = '1';
+                img.src = fallback;
+            };
+
+            if (img.complete && img.naturalWidth === 0) {
+                img.onerror();
             }
         });
 

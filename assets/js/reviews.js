@@ -87,6 +87,34 @@
             applySort($(this).val());
         });
 
+        /* ---------------- Thumbnail fallback ---------------- */
+        // YouTube high-res posters are not available for every video, so the
+        // card falls back to the standard poster. Image error events do not
+        // bubble, which is why the handler is bound directly.
+        function applyThumbFallback(img) {
+            var fallback = img.getAttribute('data-thumb-fallback');
+
+            if (!fallback || img.dataset.hkdevThumbFallback) {
+                return;
+            }
+
+            img.dataset.hkdevThumbFallback = '1';
+            img.src = fallback;
+        }
+
+        $root.find('.hkdev-rv-vcard img').each(function () {
+            var img = this;
+
+            img.onerror = function () {
+                applyThumbFallback(img);
+            };
+
+            // The image may already have failed before this handler was bound.
+            if (img.complete && img.naturalWidth === 0) {
+                applyThumbFallback(img);
+            }
+        });
+
         /* ---------------- Video modal ---------------- */
         var $vmodal = $root.find('.hkdev-rv-vmodal').first();
         var $vmedia = $vmodal.find('.hkdev-rv-vmodal-media');
