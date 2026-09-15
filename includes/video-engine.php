@@ -59,10 +59,14 @@ class Video_Engine {
 	/**
 	 * Extract a YouTube video id from any common URL shape (or a bare id).
 	 *
+	 * Accepts watch / share / embed / Shorts / live links and a plain 11
+	 * character id. The id may sit anywhere in the query string, so links like
+	 * `watch?si=...&v=ID` are handled too — not just `watch?v=ID`.
+	 *
 	 * @param string $url URL or id.
-	 * @return string
+	 * @return string Video id, or an empty string when none is found.
 	 */
-	public function video_id( $url ) {
+	public static function youtube_id( $url ) {
 		$url = trim( (string) $url );
 
 		if ( '' === $url ) {
@@ -73,11 +77,63 @@ class Video_Engine {
 			return $url;
 		}
 
-		if ( preg_match( '~(?:youtube\.com/(?:watch\?v=|embed/|shorts/|live/)|youtu\.be/)([A-Za-z0-9_\-]{11})~i', $url, $match ) ) {
+		if ( preg_match( '~youtu\.be/([A-Za-z0-9_\-]{11})~i', $url, $match ) ) {
+			return $match[1];
+		}
+
+		if ( preg_match( '~youtube(?:-nocookie)?\.com/(?:embed|shorts|live|v)/([A-Za-z0-9_\-]{11})~i', $url, $match ) ) {
+			return $match[1];
+		}
+
+		if ( preg_match( '~[?&]v=([A-Za-z0-9_\-]{11})~i', $url, $match ) ) {
 			return $match[1];
 		}
 
 		return '';
+	}
+
+	/**
+	 * Build a YouTube embed URL for the iframe player.
+	 *
+	 * The player must be loaded from www.youtube.com/embed/<id> with a full
+	 * parameter set. Together with the `referrerpolicy` attribute set on the
+	 * iframe (see assets/js/video.js and assets/js/reviews.js) this is what
+	 * stops YouTube from answering with
+	 * "Error 153: Video player configuration error" — that error is raised by
+	 * YouTube when the embedding request carries no usable Referer.
+	 *
+	 * @param string $id       Video id.
+	 * @param bool   $autoplay Whether to autoplay the video.
+	 * @return string
+	 */
+	public static function youtube_embed_url( $id, $autoplay = true ) {
+		$id = trim( (string) $id );
+
+		if ( '' === $id ) {
+			return '';
+		}
+
+		$args = [
+			'rel'            => '0',
+			'playsinline'    => '1',
+			'modestbranding' => '1',
+		];
+
+		if ( $autoplay ) {
+			$args['autoplay'] = '1';
+		}
+
+		return 'https://www.youtube.com/embed/' . rawurlencode( $id ) . '?' . http_build_query( $args );
+	}
+
+	/**
+	 * Normal YouTube watch URL for a video id.
+	 *
+	 * @param string $id Video id.
+	 * @return string
+	 */
+	public static function youtube_watch_url( $id ) {
+		return 'https://www.youtube.com/watch?v=' . rawurlencode( trim( (string) $id ) );
 	}
 
 	/**
@@ -89,13 +145,13 @@ class Video_Engine {
 	public function render( $config = [] ) {
 		$config = wp_parse_args( $config, $this->defaults() );
 
-		$video_id = $this->video_id( $config['video'] );
+		$video_id = self::youtube_id( $config['video'] );
 		if ( '' === $video_id ) {
 			return '';
 		}
 
-		$watch_url = 'https://www.youtube.com/watch?v=' . $video_id;
-		$embed_url = 'https://www.youtube.com/embed/' . $video_id . '?autoplay=1&rel=0';
+		$watch_url = self::youtube_watch_url( $video_id );
+		$embed_url = self::youtube_embed_url( $video_id );
 
 		$poster = ! empty( $config['poster'] ) ? $config['poster'] : 'https://i.ytimg.com/vi/' . $video_id . '/maxresdefault.jpg';
 		$fallback = 'https://i.ytimg.com/vi/' . $video_id . '/hqdefault.jpg';

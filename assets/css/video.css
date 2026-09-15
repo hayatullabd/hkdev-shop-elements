@@ -143,10 +143,20 @@
 .hkdev-yt-lite iframe{
     position: absolute !important;
     inset: 0 !important;
+    z-index: 3 !important;
     width: 100% !important;
     height: 100% !important;
     border: 0 !important;
     display: block !important;
+}
+
+/* Once the real player is loaded the poster treatment is no longer wanted. */
+.hkdev-yt-lite.hkdev-yt-playing{
+    cursor: default !important;
+}
+
+.hkdev-yt-lite.hkdev-yt-playing::after{
+    display: none !important;
 }
 
 @media (max-width: 600px){

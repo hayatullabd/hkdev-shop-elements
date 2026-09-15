@@ -394,6 +394,11 @@ class Review_Engine {
 	/**
 	 * Turn a review video URL into a playable media descriptor.
 	 *
+	 * YouTube links are normalised to a proper embed URL with the shared
+	 * Video_Engine helpers; the iframe that plays them also carries a referrer
+	 * policy (assets/js/reviews.js), which is what keeps YouTube from replying
+	 * with "Error 153: Video player configuration error".
+	 *
 	 * @param string $url YouTube / Vimeo / direct file URL.
 	 * @return array {type: iframe|video|none, url: string}
 	 */
@@ -407,10 +412,11 @@ class Review_Engine {
 			];
 		}
 
-		if ( preg_match( '~(?:youtube\.com/(?:watch\?v=|embed/|shorts/|live/)|youtu\.be/)([A-Za-z0-9_\-]{11})~i', $url, $match ) ) {
+		$youtube_id = Video_Engine::youtube_id( $url );
+		if ( '' !== $youtube_id ) {
 			return [
 				'type' => 'iframe',
-				'url'  => 'https://www.youtube.com/embed/' . $match[1] . '?autoplay=1&rel=0',
+				'url'  => Video_Engine::youtube_embed_url( $youtube_id ),
 			];
 		}
 
@@ -428,9 +434,18 @@ class Review_Engine {
 			];
 		}
 
+		// Anything else has to be a real URL, otherwise the modal would embed a
+		// broken frame instead of simply showing no player.
+		if ( preg_match( '~^https?://~i', $url ) ) {
+			return [
+				'type' => 'iframe',
+				'url'  => $url,
+			];
+		}
+
 		return [
-			'type' => 'iframe',
-			'url'  => $url,
+			'type' => 'none',
+			'url'  => '',
 		];
 	}
 

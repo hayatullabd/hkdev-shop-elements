@@ -101,7 +101,18 @@
             if (media.type === 'video') {
                 $vmedia.html('<video src="' + escapeHtml(media.url) + '" controls autoplay playsinline></video>');
             } else if (media.type === 'iframe') {
-                $vmedia.html('<iframe src="' + escapeHtml(media.url) + '" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>');
+                // referrerpolicy is required by YouTube: without a Referer the
+                // player answers "Error 153: Video player configuration error".
+                var frameId = 'hkdev-rv-player-' + Date.now();
+                $vmedia.html(
+                    '<iframe id="' + frameId + '"' +
+                    ' src="' + escapeHtml(media.url) + '"' +
+                    ' title="' + escapeHtml(item.name || 'Video review') + '"' +
+                    ' referrerpolicy="strict-origin-when-cross-origin"' +
+                    ' frameborder="0"' +
+                    ' allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share"' +
+                    ' allowfullscreen></iframe>'
+                );
             } else {
                 $vmedia.empty();
             }

@@ -26,15 +26,20 @@
 
             e.preventDefault();
 
+            // referrerpolicy is required by YouTube: without a Referer the
+            // player answers "Error 153: Video player configuration error".
             var $iframe = $('<iframe>', {
                 src: embed,
                 title: $link.attr('aria-label') || 'YouTube video',
                 frameborder: '0',
-                allow: 'accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture',
+                referrerpolicy: 'strict-origin-when-cross-origin',
+                allow: 'accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share',
                 allowfullscreen: 'allowfullscreen'
             });
 
-            $link.removeClass('hkdev-yt-lite').addClass('hkdev-yt-playing').empty().append($iframe);
+            // Keep .hkdev-yt-lite: the stylesheet positions the iframe through
+            // it. The extra state class only disables the poster overlay/hover.
+            $link.addClass('hkdev-yt-playing').empty().append($iframe);
         });
     });
 }(jQuery));
