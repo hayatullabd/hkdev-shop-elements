@@ -1,13 +1,14 @@
 <?php
 /**
- * HKDEV Category Carousel Widget (HKDEV Shop Elements plugin).
+ * HKDEV Category Grid / Carousel Widget (HKDEV Shop Elements plugin).
  *
- * Renders WooCommerce product categories as a responsive Swiper carousel:
- * image + name (+ product count) per card. Slides per view, spacing, autoplay,
- * arrows and dots are all configurable per device.
+ * Renders WooCommerce product categories either as a static grid or as a
+ * responsive Swiper carousel: image + name (+ product count) per card. Columns
+ * / slides per view, spacing, autoplay, arrows and dots are configurable.
  *
  * The markup reuses the shop wrapper contract (.hkdev-shop-wrapper with
- * data-style="carousel") so the existing shop.js carousel engine drives it.
+ * data-style="grid" or "carousel") so the shop.css grid rules and the shop.js
+ * carousel engine drive it.
  *
  * @package HkdevShopElements
  */
@@ -45,7 +46,7 @@ class Category_Carousel_Widget extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return esc_html__( 'HKDEV Category Carousel', 'hkdev-shop-elements' );
+		return esc_html__( 'HKDEV Category Grid / Carousel', 'hkdev-shop-elements' );
 	}
 
 	/**
@@ -72,7 +73,7 @@ class Category_Carousel_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_keywords() {
-		return [ 'category', 'categories', 'carousel', 'slider', 'product cat', 'responsive' ];
+		return [ 'category', 'categories', 'carousel', 'slider', 'grid', 'product cat', 'responsive' ];
 	}
 
 	/**
@@ -334,9 +335,23 @@ class Category_Carousel_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'style',
+			[
+				'label'   => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'carousel',
+				'options' => [
+					'carousel' => esc_html__( 'Carousel / Slider', 'hkdev-shop-elements' ),
+					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
+				],
+				'description' => esc_html__( 'Grid lays the categories out in a static grid; carousel shows the slide, autoplay, arrow and dot options below.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
 			'columns',
 			[
-				'label'       => esc_html__( 'Laptop Slides', 'hkdev-shop-elements' ),
+				'label'       => esc_html__( 'Columns / Slides per View', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::SELECT,
 				'default'     => '6',
 				'options'     => [
@@ -348,7 +363,7 @@ class Category_Carousel_Widget extends Widget_Base {
 					'7' => '7',
 					'8' => '8',
 				],
-				'description' => esc_html__( 'Cards visible at a time on laptops and larger screens.', 'hkdev-shop-elements' ),
+				'description' => esc_html__( 'Cards across on laptops and larger screens: grid columns, or slides visible in the carousel.', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -819,15 +834,19 @@ class Category_Carousel_Widget extends Widget_Base {
 	/**
 	 * Render a single category card.
 	 *
-	 * @param \WP_Term $term     Category term.
-	 * @param array    $settings Widget settings.
+	 * @param \WP_Term $term        Category term.
+	 * @param array    $settings    Widget settings.
+	 * @param bool     $is_carousel Whether the card sits inside the Swiper wrapper.
 	 * @return void
 	 */
-	protected function render_card( $term, $settings ) {
+	protected function render_card( $term, $settings, $is_carousel = true ) {
 		$link = get_term_link( $term );
 		if ( is_wp_error( $link ) ) {
 			return;
 		}
+
+		// Only carousel cards are Swiper slides; a grid must not carry the class.
+		$card_class = 'hkdev-cat-card' . ( $is_carousel ? ' swiper-slide' : '' );
 
 		$show_image = ! isset( $settings['show_image'] ) || 'yes' === $settings['show_image'];
 		$show_count = isset( $settings['show_count'] ) && 'yes' === $settings['show_count'];
@@ -842,7 +861,7 @@ class Category_Carousel_Widget extends Widget_Base {
 			$count_text = sprintf( $format, number_format_i18n( $term->count ) );
 		}
 		?>
-		<a class="hkdev-cat-card swiper-slide" href="<?php echo esc_url( $link ); ?>">
+		<a class="<?php echo esc_attr( $card_class ); ?>" href="<?php echo esc_url( $link ); ?>">
 			<?php if ( $show_image ) : ?>
 				<span class="hkdev-cat-thumb">
 					<?php
@@ -885,13 +904,15 @@ class Category_Carousel_Widget extends Widget_Base {
 			return;
 		}
 
-		$carousel  = $this->get_carousel_config( $settings );
-		$columns   = isset( $settings['columns'] ) ? max( 1, absint( $settings['columns'] ) ) : 6;
-		$unique_id = 'hkdev-cat-' . wp_rand( 1000, 9999 );
+		$style       = ( isset( $settings['style'] ) && 'grid' === $settings['style'] ) ? 'grid' : 'carousel';
+		$is_carousel = ( 'carousel' === $style );
+		$carousel    = $this->get_carousel_config( $settings );
+		$columns     = isset( $settings['columns'] ) ? max( 1, absint( $settings['columns'] ) ) : 6;
+		$unique_id   = 'hkdev-cat-' . wp_rand( 1000, 9999 );
 		?>
 		<div class="hkdev-shop-wrapper hkdev-cat-carousel" id="<?php echo esc_attr( $unique_id ); ?>"
 			 data-columns="<?php echo esc_attr( $columns ); ?>"
-			 data-style="carousel"
+			 data-style="<?php echo esc_attr( $style ); ?>"
 			 data-carousel="<?php echo esc_attr( wp_json_encode( $carousel ) ); ?>"
 			 data-car-arrows="<?php echo esc_attr( $carousel['arrows'] ? '1' : '0' ); ?>"
 			 data-car-dots="<?php echo esc_attr( $carousel['dots'] ? '1' : '0' ); ?>"
@@ -902,16 +923,24 @@ class Category_Carousel_Widget extends Widget_Base {
 
 			<div class="hkdev-cat-style" style="<?php echo esc_attr( $this->get_card_style_vars( $settings ) ); ?>">
 				<div class="hkdev-grid-container">
-					<div class="swiper hkdev-swiper-container hkdev-loading-carousel">
-						<div class="swiper-wrapper hkdev-shop-grid">
+					<?php if ( $is_carousel ) : ?>
+						<div class="swiper hkdev-swiper-container hkdev-loading-carousel">
+							<div class="swiper-wrapper hkdev-shop-grid">
+								<?php foreach ( $categories as $term ) : ?>
+									<?php $this->render_card( $term, $settings, true ); ?>
+								<?php endforeach; ?>
+							</div>
+							<div class="hkdev-carousel-dots swiper-pagination"></div>
+						</div>
+						<div class="hkdev-nav-btn hkdev-prev-<?php echo esc_attr( $unique_id ); ?> kh-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
+						<div class="hkdev-nav-btn hkdev-next-<?php echo esc_attr( $unique_id ); ?> kh-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+					<?php else : ?>
+						<div class="hkdev-shop-grid hkdev-columns-<?php echo esc_attr( $columns ); ?>">
 							<?php foreach ( $categories as $term ) : ?>
-								<?php $this->render_card( $term, $settings ); ?>
+								<?php $this->render_card( $term, $settings, false ); ?>
 							<?php endforeach; ?>
 						</div>
-						<div class="hkdev-carousel-dots swiper-pagination"></div>
-					</div>
-					<div class="hkdev-nav-btn hkdev-prev-<?php echo esc_attr( $unique_id ); ?> kh-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
-					<div class="hkdev-nav-btn hkdev-next-<?php echo esc_attr( $unique_id ); ?> kh-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
