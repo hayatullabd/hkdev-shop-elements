@@ -469,6 +469,7 @@ class Catalog_Engine {
 			data-hover-img="<?php echo $show_hover ? 'yes' : 'no'; ?>"
 			data-columns="<?php echo esc_attr( $columns ); ?>"
 			data-per-page="<?php echo esc_attr( $per_page ); ?>"
+			data-page="<?php echo esc_attr( $params['page'] ); ?>"
 			data-locked-cats="<?php echo esc_attr( implode( ',', $locks['cats'] ) ); ?>"
 			data-locked-tags="<?php echo esc_attr( implode( ',', $locks['tags'] ) ); ?>"
 			data-nonce="<?php echo esc_attr( wp_create_nonce( self::NONCE_ACTION ) ); ?>">

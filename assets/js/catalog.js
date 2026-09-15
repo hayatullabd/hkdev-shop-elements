@@ -181,6 +181,11 @@
 			$cat.find('.hkdev-cat-count').html(d.count_html || '');
 			$cat.find('.hkdev-cat-more').prop('hidden', !d.has_more);
 
+			// Remember which page is on screen: the Load More button reads this
+			// to work out the next one. Without it every click asked for page 2
+			// again, so nothing past the second page ever loaded.
+			$cat.data('page', parseInt(d.page, 10) || 1);
+
 			if (!options.append) {
 				syncUrl($cat, params, 1);
 			} else {
@@ -323,6 +328,12 @@
 		});
 
 		$cat.on('click', '.hkdev-cat-more', function () {
+			// Ignore a second click while a page is still in flight, otherwise
+			// the same page is appended twice.
+			if ($cat.hasClass('is-loading')) {
+				return;
+			}
+
 			var page = parseInt($cat.data('page') || 1, 10) + 1;
 			apply($cat, { page: page, append: true });
 		});
