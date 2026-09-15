@@ -184,6 +184,81 @@ class Catalog_Engine {
 	 * ------------------------------------------------------------------- */
 
 	/**
+	 * Resolve term slugs to term ids for a taxonomy.
+	 *
+	 * @param string   $taxonomy Taxonomy name.
+	 * @param string[] $slugs    Term slugs.
+	 * @return int[]
+	 */
+	private function term_ids_from_slugs( $taxonomy, $slugs ) {
+		if ( ! taxonomy_exists( $taxonomy ) || empty( $slugs ) ) {
+			return [];
+		}
+
+		$terms = get_terms(
+			[
+				'taxonomy'   => $taxonomy,
+				'slug'       => array_map( 'strval', $slugs ),
+				'hide_empty' => false,
+				'fields'     => 'ids',
+			]
+		);
+
+		if ( is_wp_error( $terms ) || empty( $terms ) ) {
+			return [];
+		}
+
+		return array_map( 'intval', $terms );
+	}
+
+	/**
+	 * How many products each category would actually show in the grid.
+	 *
+	 * The stored WooCommerce term count is not a safe number for the filter
+	 * panel: it counts products hidden from the catalog and drifts after imports
+	 * or deletions, so a category could be advertised as having products while
+	 * the grid reported none. These counts use the same rules as the grid, keep
+	 * the other active filters applied the way WooCommerce's layered nav does,
+	 * and are cached briefly.
+	 *
+	 * @param string[] $slugs  Category slugs.
+	 * @param array    $params Current filter params.
+	 * @return array slug => count
+	 */
+	private function visible_category_counts( $slugs, $params ) {
+		if ( empty( $slugs ) ) {
+			return [];
+		}
+
+		$base           = $params;
+		$base['cats']   = [];
+		$base['page']   = 1;
+		$base['append'] = false;
+
+		$cache_key = 'hkdev_cat_counts_' . md5( implode( '|', $slugs ) . '|' . wp_json_encode( $base ) );
+		$cached    = get_transient( $cache_key );
+
+		if ( is_array( $cached ) ) {
+			return $cached;
+		}
+
+		$counts = [];
+
+		foreach ( $slugs as $slug ) {
+			$args                           = $this->build_query_args( array_merge( $base, [ 'cats' => [ $slug ] ] ), 1 );
+			$args['fields']                 = 'ids';
+			$args['update_post_meta_cache'] = false;
+			$args['update_post_term_cache'] = false;
+
+			$counts[ $slug ] = (int) ( new \WP_Query( $args ) )->found_posts;
+		}
+
+		set_transient( $cache_key, $counts, 10 * MINUTE_IN_SECONDS );
+
+		return $counts;
+	}
+
+	/**
 	 * Translate parsed params into WP_Query arguments.
 	 *
 	 * @param array $params   Parsed params.
@@ -201,47 +276,71 @@ class Catalog_Engine {
 			$args['s'] = $params['search'];
 		}
 
+		// The value from wc_get_product_visibility_term_ids() is a term id. Core
+		// passes it as term_taxonomy_id, which only happens to work because the
+		// two ids are equal for WooCommerce's own visibility terms; term_id is
+		// the field those values actually belong to.
 		$visibility = function_exists( 'wc_get_product_visibility_term_ids' ) ? wc_get_product_visibility_term_ids() : [];
 		if ( ! empty( $visibility['exclude-from-catalog'] ) ) {
 			$args['tax_query'][] = [
 				'taxonomy' => 'product_visibility',
-				'field'    => 'term_taxonomy_id',
-				'terms'    => [ $visibility['exclude-from-catalog'] ],
+				'field'    => 'term_id',
+				'terms'    => [ (int) $visibility['exclude-from-catalog'] ],
 				'operator' => 'NOT IN',
 			];
 		}
 
+		// Filter by resolved term ids rather than slugs: WP_Tax_Query resolves
+		// slugs to ids anyway, and doing it here keeps encoded / stale slugs from
+		// silently turning the clause into a no-op or a wrong match.
 		if ( $params['cats'] ) {
-			$args['tax_query'][] = [
-				'taxonomy'         => 'product_cat',
-				'field'            => 'slug',
-				'terms'            => $params['cats'],
-				'operator'         => 'IN',
-				'include_children' => true,
-			];
+			$cat_ids = $this->term_ids_from_slugs( 'product_cat', $params['cats'] );
+
+			if ( $cat_ids ) {
+				$args['tax_query'][] = [
+					'taxonomy'         => 'product_cat',
+					'field'            => 'term_id',
+					'terms'            => $cat_ids,
+					'operator'         => 'IN',
+					'include_children' => true,
+				];
+			}
 		}
+
 		if ( $params['tags'] ) {
-			$args['tax_query'][] = [
-				'taxonomy' => 'product_tag',
-				'field'    => 'slug',
-				'terms'    => $params['tags'],
-				'operator' => 'IN',
-			];
+			$tag_ids = $this->term_ids_from_slugs( 'product_tag', $params['tags'] );
+
+			if ( $tag_ids ) {
+				$args['tax_query'][] = [
+					'taxonomy' => 'product_tag',
+					'field'    => 'term_id',
+					'terms'    => $tag_ids,
+					'operator' => 'IN',
+				];
+			}
 		}
-		if ( $params['brands'] && taxonomy_exists( 'product_brand' ) ) {
-			$args['tax_query'][] = [
-				'taxonomy' => 'product_brand',
-				'field'    => 'slug',
-				'terms'    => $params['brands'],
-				'operator' => 'IN',
-			];
+
+		if ( $params['brands'] ) {
+			$brand_ids = $this->term_ids_from_slugs( 'product_brand', $params['brands'] );
+
+			if ( $brand_ids ) {
+				$args['tax_query'][] = [
+					'taxonomy' => 'product_brand',
+					'field'    => 'term_id',
+					'terms'    => $brand_ids,
+					'operator' => 'IN',
+				];
+			}
 		}
+
 		foreach ( $params['attrs'] as $tax => $terms ) {
-			if ( taxonomy_exists( $tax ) ) {
+			$attr_ids = $this->term_ids_from_slugs( $tax, $terms );
+
+			if ( $attr_ids ) {
 				$args['tax_query'][] = [
 					'taxonomy' => $tax,
-					'field'    => 'slug',
-					'terms'    => $terms,
+					'field'    => 'term_id',
+					'terms'    => $attr_ids,
 					'operator' => 'IN',
 				];
 			}
@@ -612,6 +711,32 @@ class Catalog_Engine {
 			return '';
 		}
 
+		$slugs = wp_list_pluck( $terms, 'slug' );
+
+		// One COUNT query per category, so cap the work on very large catalogues
+		// and fall back to the stored count for the rest.
+		$counts = $this->visible_category_counts( array_slice( $slugs, 0, 60 ), $params );
+
+		// Never offer a category that would come back empty - that is exactly the
+		// dead end the stored counts created. A category that is already selected
+		// always stays listed so it can be unchecked again.
+		$terms = array_values(
+			array_filter(
+				$terms,
+				static function ( $term ) use ( $counts, $params ) {
+					if ( in_array( $term->slug, $params['cats'], true ) ) {
+						return true;
+					}
+
+					return ! isset( $counts[ $term->slug ] ) || $counts[ $term->slug ] > 0;
+				}
+			)
+		);
+
+		if ( empty( $terms ) ) {
+			return '';
+		}
+
 		ob_start();
 		?>
 		<div class="hkdev-cat-group">
@@ -621,7 +746,7 @@ class Catalog_Engine {
 					<label class="hkdev-cat-check">
 						<input type="checkbox" name="<?php echo esc_attr( self::P_CAT ); ?>[]" value="<?php echo esc_attr( $term->slug ); ?>" <?php checked( in_array( $term->slug, $params['cats'], true ) ); ?>>
 						<span><?php echo esc_html( $term->name ); ?></span>
-						<em><?php echo esc_html( $term->count ); ?></em>
+						<em><?php echo esc_html( isset( $counts[ $term->slug ] ) ? $counts[ $term->slug ] : $term->count ); ?></em>
 					</label>
 				<?php endforeach; ?>
 			</div>
