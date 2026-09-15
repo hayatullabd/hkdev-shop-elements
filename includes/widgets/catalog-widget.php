@@ -180,6 +180,17 @@ class Catalog_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'hide_hidden',
+			[
+				'label'        => esc_html__( 'Hide "Hidden" products', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => '',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Excludes products whose WooCommerce catalog visibility is set to Hidden. Off by default, so the Catalog lists exactly what the Shop Grid lists.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->end_controls_section();
 
 		// Product card styling (same controls as the Shop Grid widget).
@@ -207,6 +218,7 @@ class Catalog_Widget extends Widget_Base {
 				'show_sort'    => $settings['show_sort'],
 				'show_filters' => $settings['show_filters'],
 				'hover_img'    => ( ! isset( $settings['hover_img'] ) || 'yes' === $settings['hover_img'] ) ? 'yes' : 'no',
+				'hide_hidden'  => ( isset( $settings['hide_hidden'] ) && 'yes' === $settings['hide_hidden'] ) ? 'yes' : 'no',
 			],
 			false
 		);

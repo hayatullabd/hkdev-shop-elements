@@ -434,6 +434,17 @@ class Category_Carousel_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'hide_hidden',
+			[
+				'label'        => esc_html__( 'Hide "Hidden" products', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => '',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Counts only products whose WooCommerce catalog visibility is not set to Hidden. Off by default, so the number matches what the Shop Grid lists.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		// The line-limit control comes from the shared card trait (registered by
 		// register_product_controls); it is relabelled for category names in
 		// register_controls() rather than registered a second time here.
@@ -841,17 +852,25 @@ class Category_Carousel_Widget extends Widget_Base {
 	 * @param \WP_Term $term Category term.
 	 * @return int
 	 */
-	protected function count_category_products( $term ) {
-		$cache_key = 'hkdev_cat_widget_' . (int) $term->term_id;
+	protected function count_category_products( $term, $hide_hidden = false ) {
+		$cache_key = 'hkdev_cat_widget_' . (int) $term->term_id . ( $hide_hidden ? '_h' : '' );
 		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {
 			return (int) $cached;
 		}
 
-		// Same shape as the Shop Grid query and nothing more: one product_cat
-		// clause with include_children.
+		// Same shape as the Shop Grid query: one product_cat clause with
+		// include_children, plus the optional visibility exclusion.
 		$tax_query = [ 'relation' => 'AND' ];
+
+		if ( $hide_hidden ) {
+			$hidden = \HkdevShopElements\Includes\Shop_Engine::hidden_from_catalog_clause();
+
+			if ( $hidden ) {
+				$tax_query[] = $hidden;
+			}
+		}
 
 		$tax_query[] = [
 			'taxonomy'         => 'product_cat',
@@ -895,8 +914,9 @@ class Category_Carousel_Widget extends Widget_Base {
 		// Only carousel cards are Swiper slides; a grid must not carry the class.
 		$card_class = 'hkdev-cat-card' . ( $is_carousel ? ' swiper-slide' : '' );
 
-		$show_image = ! isset( $settings['show_image'] ) || 'yes' === $settings['show_image'];
-		$show_count = isset( $settings['show_count'] ) && 'yes' === $settings['show_count'];
+		$show_image  = ! isset( $settings['show_image'] ) || 'yes' === $settings['show_image'];
+		$show_count  = isset( $settings['show_count'] ) && 'yes' === $settings['show_count'];
+		$hide_hidden = isset( $settings['hide_hidden'] ) && 'yes' === $settings['hide_hidden'];
 		$size       = isset( $settings['image_size'] ) ? $settings['image_size'] : 'woocommerce_thumbnail';
 		$thumb_id   = $show_image ? (int) get_term_meta( $term->term_id, 'thumbnail_id', true ) : 0;
 
@@ -907,7 +927,7 @@ class Category_Carousel_Widget extends Widget_Base {
 				: '%d Products';
 			// %d needs the plain integer: number_format_i18n() returns "1,234",
 			// which %d converts to 1.
-			$count_text = sprintf( $format, $this->count_category_products( $term ) );
+			$count_text = sprintf( $format, $this->count_category_products( $term, $hide_hidden ) );
 		}
 		?>
 		<a class="<?php echo esc_attr( $card_class ); ?>" href="<?php echo esc_url( $link ); ?>">

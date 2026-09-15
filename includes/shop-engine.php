@@ -610,6 +610,36 @@ class Shop_Engine {
 	}
 
 	/**
+	 * Tax query clause that hides products set to "Hidden" catalog visibility.
+	 *
+	 * Returns an EMPTY array when the visibility term does not exist (which is
+	 * also the case when nothing is hidden), so the query is never handed a
+	 * clause whose terms cannot be resolved - an unresolvable NOT IN clause is
+	 * what made whole categories come back empty. The term is looked up once and
+	 * passed by term_id, which WP_Tax_Query maps to the taxonomy id itself.
+	 *
+	 * @return array Clause, or an empty array when there is nothing to exclude.
+	 */
+	public static function hidden_from_catalog_clause() {
+		if ( ! taxonomy_exists( 'product_visibility' ) ) {
+			return [];
+		}
+
+		$term = get_term_by( 'slug', 'exclude-from-catalog', 'product_visibility' );
+
+		if ( ! $term || is_wp_error( $term ) ) {
+			return [];
+		}
+
+		return [
+			'taxonomy' => 'product_visibility',
+			'field'    => 'term_id',
+			'terms'    => [ (int) $term->term_id ],
+			'operator' => 'NOT IN',
+		];
+	}
+
+	/**
 	 * Build slug => name options for a product taxonomy.
 	 *
 	 * Used by the Elementor controls so categories, tags and brands can be

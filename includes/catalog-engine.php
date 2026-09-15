@@ -33,6 +33,7 @@ class Catalog_Engine {
 	const P_SORT   = 'hk_sort';
 	const P_PAGE   = 'hk_page';
 	const P_APPEND = 'hk_append';
+	const P_HIDDEN = 'hk_hidden';
 
 	/**
 	 * @var ?Catalog_Engine
@@ -96,19 +97,22 @@ class Catalog_Engine {
 		};
 
 		$params = [
-			'search' => $scalar( self::P_SEARCH ),
-			'sort'   => $scalar( self::P_SORT, 'newest' ),
-			'min'    => $scalar( self::P_MIN ),
-			'max'    => $scalar( self::P_MAX ),
-			'stock'  => ( '1' === $scalar( self::P_STOCK ) ),
-			'sale'   => ( '1' === $scalar( self::P_SALE ) ),
-			'rating' => absint( $scalar( self::P_RATING ) ),
-			'page'   => max( 1, absint( $scalar( self::P_PAGE, 1 ) ) ),
-			'append' => ( '1' === $scalar( self::P_APPEND ) ),
-			'cats'   => $list( self::P_CAT ),
-			'brands' => $list( self::P_BRAND ),
-			'tags'   => $list( self::P_TAG ),
-			'attrs'  => [],
+			'search'      => $scalar( self::P_SEARCH ),
+			'sort'        => $scalar( self::P_SORT, 'newest' ),
+			'min'         => $scalar( self::P_MIN ),
+			'max'         => $scalar( self::P_MAX ),
+			'stock'       => ( '1' === $scalar( self::P_STOCK ) ),
+			'sale'        => ( '1' === $scalar( self::P_SALE ) ),
+			'rating'      => absint( $scalar( self::P_RATING ) ),
+			'page'        => max( 1, absint( $scalar( self::P_PAGE, 1 ) ) ),
+			'append'      => ( '1' === $scalar( self::P_APPEND ) ),
+			// Opt-in: hide products set to "Hidden" catalog visibility. Off by
+			// default so the Catalog lists exactly what the Shop Grid lists.
+			'hide_hidden' => ( '1' === $scalar( self::P_HIDDEN ) ),
+			'cats'        => $list( self::P_CAT ),
+			'brands'      => $list( self::P_BRAND ),
+			'tags'        => $list( self::P_TAG ),
+			'attrs'       => [],
 		];
 
 		if ( isset( $source[ self::P_ATTR ] ) && is_array( $source[ self::P_ATTR ] ) ) {
@@ -250,10 +254,18 @@ class Catalog_Engine {
 
 		$tax_query = [ 'relation' => 'AND' ];
 
-		// No product_visibility clause here on purpose. The Shop Grid's query -
-		// the one that demonstrably lists the correct products on this site -
-		// has none either, and every extra clause is a chance for a category to
-		// come back empty. Match the Shop Grid exactly; do not reintroduce it.
+		// The Shop Grid's query carries no visibility clause, and that is the
+		// shape this query deliberately matches: a clause whose terms cannot be
+		// resolved is what made whole categories come back empty. The exclusion
+		// is therefore opt-in, and only ever added when WooCommerce actually has
+		// the term, so the ids handed to WP_Tax_Query are always real.
+		if ( ! empty( $params['hide_hidden'] ) ) {
+			$hidden = Shop_Engine::hidden_from_catalog_clause();
+
+			if ( $hidden ) {
+				$tax_query[] = $hidden;
+			}
+		}
 
 		// Slug form with include_children, exactly as Shop_Engine builds the same
 		// clause for the (working) Shop Grid. WP_Tax_Query resolves the slugs and
@@ -490,6 +502,7 @@ class Catalog_Engine {
 				'show_sort'    => 'yes',
 				'show_filters' => 'yes',
 				'hover_img'    => 'yes',
+				'hide_hidden'  => 'no',
 			],
 			$atts,
 			'hkdev_catalog'
@@ -529,6 +542,10 @@ class Catalog_Engine {
 		// Second gallery image on hover.
 		$show_hover = ( ! isset( $atts['hover_img'] ) || 'yes' === $atts['hover_img'] );
 
+		// Opt-in: drop products WooCommerce marks as hidden from the catalog. Off
+		// by default so the Catalog lists exactly what the Shop Grid lists.
+		$hide_hidden = ( isset( $atts['hide_hidden'] ) && 'yes' === $atts['hide_hidden'] );
+
 		$this->enqueue_assets();
 
 		// A category / tag page (or a locked "categories" attribute) always wins:
@@ -541,6 +558,8 @@ class Catalog_Engine {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$params = $this->read_params( $_GET );
+		// A widget setting, not a URL parameter.
+		$params['hide_hidden'] = $hide_hidden;
 		if ( $locks['cats'] ) {
 			$params['cats'] = $locks['cats'];
 		}
@@ -558,6 +577,7 @@ class Catalog_Engine {
 			data-columns="<?php echo esc_attr( $columns ); ?>"
 			data-per-page="<?php echo esc_attr( $per_page ); ?>"
 			data-page="<?php echo esc_attr( $params['page'] ); ?>"
+			data-hide-hidden="<?php echo $hide_hidden ? '1' : '0'; ?>"
 			data-locked-cats="<?php echo esc_attr( implode( ',', $locks['cats'] ) ); ?>"
 			data-locked-tags="<?php echo esc_attr( implode( ',', $locks['tags'] ) ); ?>"
 			data-nonce="<?php echo esc_attr( wp_create_nonce( self::NONCE_ACTION ) ); ?>">
