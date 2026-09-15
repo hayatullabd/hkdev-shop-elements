@@ -125,9 +125,19 @@ class Hero_Slider_Widget extends Widget_Base {
 		$repeater->add_control(
 			'image',
 			[
-				'label'   => esc_html__( 'Image', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::MEDIA,
-				'default' => [ 'url' => \Elementor\Utils::get_placeholder_image_src() ],
+				'label'       => esc_html__( 'Image', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::MEDIA,
+				'default'     => [ 'url' => \Elementor\Utils::get_placeholder_image_src() ],
+				'description' => esc_html__( 'Landscape artwork suits the desktop banner: 1920 x 1080 (16:9) for a full-screen hero, or 1920 x 600 for a short strip. Keep it under ~300 KB (WebP).', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$repeater->add_control(
+			'image_mobile',
+			[
+				'label'       => esc_html__( 'Mobile Image (optional)', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::MEDIA,
+				'description' => esc_html__( 'Shown instead of the main image below 768px. A portrait image (1080 x 1350 / 4:5, or 1080 x 1920 / 9:16) fills a tall phone banner without heavy cropping.', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -287,6 +297,25 @@ class Hero_Slider_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_control(
+			'image_size',
+			[
+				'label'       => esc_html__( 'Image Size', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'full',
+				'separator'   => 'before',
+				'options'     => [
+					'full'              => esc_html__( 'Full (original) - best for full-width', 'hkdev-shop-elements' ),
+					'2048x2048'         => esc_html__( '2048 x 2048', 'hkdev-shop-elements' ),
+					'1536x1536'         => esc_html__( '1536 x 1536', 'hkdev-shop-elements' ),
+					'large'             => esc_html__( 'Large (1024px)', 'hkdev-shop-elements' ),
+					'woocommerce_single' => esc_html__( 'WooCommerce Single (600px)', 'hkdev-shop-elements' ),
+					'medium_large'      => esc_html__( 'Medium Large (768px)', 'hkdev-shop-elements' ),
+				],
+				'description' => esc_html__( 'Which stored file the browser loads. Keep Full for a screen-wide banner; smaller files load faster but look soft when stretched across the width.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->end_controls_section();
 	}
 
@@ -306,7 +335,9 @@ class Hero_Slider_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
+		// Responsive: the panel gets a Desktop / Tablet / Mobile tab, so the
+		// banner can be 100vh on desktop and a shorter strip on phones.
+		$this->add_responsive_control(
 			'hero_height',
 			[
 				'label'      => esc_html__( 'Height', 'hkdev-shop-elements' ),
@@ -315,7 +346,7 @@ class Hero_Slider_Widget extends Widget_Base {
 				'range'      => [
 					'px'  => [
 						'min' => 120,
-						'max' => 1200,
+						'max' => 1400,
 					],
 					'vh'  => [
 						'min' => 10,
@@ -334,9 +365,105 @@ class Hero_Slider_Widget extends Widget_Base {
 			]
 		);
 
+		$this->add_responsive_control(
+			'hero_width',
+			[
+				'label'      => esc_html__( 'Width', 'hkdev-shop-elements' ),
+				'type'       => Controls_Manager::SLIDER,
+				'size_units' => [ '%', 'px', 'vw' ],
+				'range'      => [
+					'%'  => [
+						'min' => 20,
+						'max' => 100,
+					],
+					'px' => [
+						'min' => 320,
+						'max' => 1920,
+					],
+					'vw' => [
+						'min' => 20,
+						'max' => 100,
+					],
+				],
+				'default'    => [
+					'unit' => '%',
+					'size' => 100,
+				],
+				'selectors'  => [
+					$scope => 'width: {{SIZE}}{{UNIT}} !important; margin-left: auto !important; margin-right: auto !important;',
+				],
+				'description' => esc_html__( '100% fills the container. Lower values centre a narrower banner.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'hero_full_width',
+			[
+				'label'        => esc_html__( 'Full Width (edge to edge)', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'default'      => '',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Breaks out of a boxed container so the banner spans the whole screen, ignoring the section padding. Leave it off if your section is already Full Width.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->hkdev_dimensions( 'hero_radius', esc_html__( 'Corner Radius', 'hkdev-shop-elements' ), $scope, 'border-radius' );
 		$this->hkdev_dimensions( 'hero_margin', esc_html__( 'Margin', 'hkdev-shop-elements' ), $scope, 'margin' );
 		$this->hkdev_slider_raw( 'hero_ease', esc_html__( 'Transition Speed (s)', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-ease', 0.2, 2, 0.1 );
+
+		$this->end_controls_section();
+
+		$this->register_image_style();
+	}
+
+	/**
+	 * Style tab – how the artwork fills the banner.
+	 *
+	 * @return void
+	 */
+	protected function register_image_style() {
+		$scope = '{{WRAPPER}} .hkdev-hero';
+
+		$this->start_controls_section(
+			'hero_style_image',
+			[
+				'label' => esc_html__( 'Image', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_select(
+			'hero_img_fit',
+			esc_html__( 'Image Fit', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-hero-img-fit',
+			[
+				''        => esc_html__( 'Default (cover)', 'hkdev-shop-elements' ),
+				'cover'   => esc_html__( 'Cover - fill, crop the edges', 'hkdev-shop-elements' ),
+				'contain' => esc_html__( 'Contain - show the whole image', 'hkdev-shop-elements' ),
+			],
+			[],
+			esc_html__( 'Cover fills the banner and crops what does not fit. Contain shows the entire image and leaves the background colour visible around it.', 'hkdev-shop-elements' )
+		);
+
+		$this->hkdev_select(
+			'hero_img_pos',
+			esc_html__( 'Image Focal Point', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-hero-img-pos',
+			[
+				''       => esc_html__( 'Default (center)', 'hkdev-shop-elements' ),
+				'center' => esc_html__( 'Center', 'hkdev-shop-elements' ),
+				'top'    => esc_html__( 'Top', 'hkdev-shop-elements' ),
+				'bottom' => esc_html__( 'Bottom', 'hkdev-shop-elements' ),
+				'left'   => esc_html__( 'Left', 'hkdev-shop-elements' ),
+				'right'  => esc_html__( 'Right', 'hkdev-shop-elements' ),
+			],
+			[],
+			esc_html__( 'Which part of the image stays visible when it is cropped.', 'hkdev-shop-elements' )
+		);
+
+		$this->hkdev_color( 'hero_img_bg', esc_html__( 'Background (behind the image)', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-bg' );
 
 		$this->end_controls_section();
 	}
@@ -444,6 +571,30 @@ class Hero_Slider_Widget extends Widget_Base {
 	}
 
 	/**
+	 * Resolve a slide image to the configured WordPress size.
+	 *
+	 * Falls back to the stored URL when the attachment id is missing or that
+	 * size was never generated.
+	 *
+	 * @param array  $image Image control value (id + url).
+	 * @param string $size  WordPress image size.
+	 * @return string
+	 */
+	protected function slide_image_url( $image, $size ) {
+		$image = (array) $image;
+
+		if ( ! empty( $image['id'] ) && 'full' !== $size ) {
+			$url = wp_get_attachment_image_url( absint( $image['id'] ), $size );
+
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		return ! empty( $image['url'] ) ? $image['url'] : '';
+	}
+
+	/**
 	 * Render the widget output.
 	 *
 	 * @return void
@@ -454,6 +605,9 @@ class Hero_Slider_Widget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+
+		$sizes      = [ 'full', '2048x2048', '1536x1536', 'large', 'woocommerce_single', 'medium_large' ];
+		$image_size = ( isset( $settings['image_size'] ) && in_array( $settings['image_size'], $sizes, true ) ) ? $settings['image_size'] : 'full';
 
 		$slides = [];
 		if ( ! empty( $settings['slides'] ) && is_array( $settings['slides'] ) ) {
@@ -466,7 +620,8 @@ class Hero_Slider_Widget extends Widget_Base {
 				$btn  = isset( $row['button_link'] ) ? (array) $row['button_link'] : [];
 
 				$slides[] = [
-					'image'      => $row['image']['url'],
+					'image'      => $this->slide_image_url( $row['image'], $image_size ),
+					'image_mobile' => ! empty( $row['image_mobile'] ) ? $this->slide_image_url( $row['image_mobile'], $image_size ) : '',
 					'alt'        => ! empty( $row['alt'] ) ? $row['alt'] : ( isset( $row['heading'] ) ? $row['heading'] : '' ),
 					'link'       => ! empty( $link['url'] ) ? $link['url'] : '',
 					'link_blank' => ! empty( $link['is_external'] ),
@@ -501,6 +656,10 @@ class Hero_Slider_Widget extends Widget_Base {
 		}
 
 		$classes = 'hkdev-hero hkdev-hero-position-' . $position;
+
+		if ( isset( $settings['hero_full_width'] ) && 'yes' === $settings['hero_full_width'] ) {
+			$classes .= ' hkdev-hero-full';
+		}
 		?>
 		<div class="<?php echo esc_attr( $classes ); ?>"
 			 data-autoplay="<?php echo $auto ? '1' : '0'; ?>"
@@ -530,7 +689,11 @@ class Hero_Slider_Widget extends Widget_Base {
 						}
 					}
 
-					$img = '<img src="' . esc_url( $slide['image'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="' . ( $active ? 'eager' : 'lazy' ) . '" decoding="async" />';
+					$img = '<img class="hkdev-hero-img hkdev-hero-img-desktop" src="' . esc_url( $slide['image'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="' . ( $active ? 'eager' : 'lazy' ) . '" decoding="async" />';
+
+					if ( '' !== $slide['image_mobile'] ) {
+						$img .= '<img class="hkdev-hero-img hkdev-hero-img-mobile" src="' . esc_url( $slide['image_mobile'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="lazy" decoding="async" />';
+					}
 					?>
 					<div class="hkdev-hero-slide<?php echo $active ? ' is-active' : ''; ?>">
 						<?php if ( '' !== $link_attrs ) : ?>

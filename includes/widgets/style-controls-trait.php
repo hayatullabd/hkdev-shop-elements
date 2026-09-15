@@ -146,23 +146,24 @@ trait Style_Controls {
 	 * @param string $label     Label.
 	 * @param string $selector  CSS selector.
 	 * @param string $property  CSS property.
-	 * @param array  $options   Value => label pairs.
-	 * @param array  $condition Elementor condition.
+	 * @param array  $options     Value => label pairs.
+	 * @param array  $condition   Elementor condition.
+	 * @param string $description Optional help text under the control.
 	 * @return void
 	 */
-	protected function hkdev_select( $id, $label, $selector, $property, $options, $condition = [] ) {
-		$this->add_control(
-			$id,
-			$this->hkdev_args(
-				[
-					'label'     => $label,
-					'type'      => Controls_Manager::SELECT,
-					'options'   => $options,
-					'selectors' => [ $selector => $property . ': {{VALUE}} !important;' ],
-				],
-				$condition
-			)
-		);
+	protected function hkdev_select( $id, $label, $selector, $property, $options, $condition = [], $description = '' ) {
+		$args = [
+			'label'     => $label,
+			'type'      => Controls_Manager::SELECT,
+			'options'   => $options,
+			'selectors' => [ $selector => $property . ': {{VALUE}} !important;' ],
+		];
+
+		if ( '' !== $description ) {
+			$args['description'] = $description;
+		}
+
+		$this->add_control( $id, $this->hkdev_args( $args, $condition ) );
 	}
 
 	/**
