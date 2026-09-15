@@ -276,16 +276,15 @@ class Catalog_Engine {
 			$args['s'] = $params['search'];
 		}
 
-		// The value from wc_get_product_visibility_term_ids() is a term id. Core
-		// passes it as term_taxonomy_id, which only happens to work because the
-		// two ids are equal for WooCommerce's own visibility terms; term_id is
-		// the field those values actually belong to.
+		// Kept exactly as WooCommerce core does it: the values belong to the
+		// term_taxonomy_id field here. Do not "correct" this to term_id - the two
+		// id sequences are not guaranteed to line up.
 		$visibility = function_exists( 'wc_get_product_visibility_term_ids' ) ? wc_get_product_visibility_term_ids() : [];
 		if ( ! empty( $visibility['exclude-from-catalog'] ) ) {
 			$args['tax_query'][] = [
 				'taxonomy' => 'product_visibility',
-				'field'    => 'term_id',
-				'terms'    => [ (int) $visibility['exclude-from-catalog'] ],
+				'field'    => 'term_taxonomy_id',
+				'terms'    => [ $visibility['exclude-from-catalog'] ],
 				'operator' => 'NOT IN',
 			];
 		}
@@ -713,29 +712,14 @@ class Catalog_Engine {
 
 		$slugs = wp_list_pluck( $terms, 'slug' );
 
+		// Every category is always listed - the panel is the index of the
+		// catalogue, so hiding rows makes categories unreachable. Only the number
+		// shown is corrected: it is the count the grid would actually return, so
+		// a category with nothing to show reads 0 instead of a stale figure.
+		//
 		// One COUNT query per category, so cap the work on very large catalogues
 		// and fall back to the stored count for the rest.
 		$counts = $this->visible_category_counts( array_slice( $slugs, 0, 60 ), $params );
-
-		// Never offer a category that would come back empty - that is exactly the
-		// dead end the stored counts created. A category that is already selected
-		// always stays listed so it can be unchecked again.
-		$terms = array_values(
-			array_filter(
-				$terms,
-				static function ( $term ) use ( $counts, $params ) {
-					if ( in_array( $term->slug, $params['cats'], true ) ) {
-						return true;
-					}
-
-					return ! isset( $counts[ $term->slug ] ) || $counts[ $term->slug ] > 0;
-				}
-			)
-		);
-
-		if ( empty( $terms ) ) {
-			return '';
-		}
 
 		ob_start();
 		?>
