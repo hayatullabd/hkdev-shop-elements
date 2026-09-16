@@ -140,7 +140,7 @@ jQuery(document).ready(function($) {
     $(document).on('click', '.hkdev-sp-vp-lite', function(e) {
         e.preventDefault();
         const $this = $(this);
-        const embedUrl = $this.data('youtube-embed');
+        const embedUrl = $this.attr('data-youtube-embed');
         if (!embedUrl) {
             return;
         }
@@ -159,7 +159,14 @@ jQuery(document).ready(function($) {
         $this.addClass('hkdev-sp-vp-playing').empty().append($iframe);
     });
 
-    // 4. Image Zoom Feature (class-driven so CSS !important wins over hover scale)
+     // 4. FAQ accordion (Product FAQ section)
+    $(document).on('click', '.hkdev-sp-faq-question', function() {
+        const isOpen = $(this).attr('aria-expanded') === 'true';
+        $(this).attr('aria-expanded', !isOpen);
+        $(this).siblings('.hkdev-sp-faq-answer').stop(true, true).slideToggle(200);
+    });
+
+    // 5. Image Zoom Feature (class-driven so CSS !important wins over hover scale)
     $(document).on('click', '#hkdev-sp-zoom-btn, #hkdev-sp-zoom-container', function(e) {
         if($(e.target).closest('.hkdev-sp-arrow').length) return;
 
