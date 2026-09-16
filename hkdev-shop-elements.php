@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.33
+ * Version:           0.5.34
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.33' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.34' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -432,6 +432,7 @@ function hkdev_elements_register_assets() {
 			// (e.g. placing an order).
 			'nonces'   => [
 				'shop_filter'      => wp_create_nonce( 'hkdev_elements_shop_filter' ),
+				'blog_filter'      => wp_create_nonce( 'hkdev_elements_blog_filter' ),
 				'add_to_cart'      => wp_create_nonce( 'hkdev_elements_add_to_cart' ),
 				'cart_update'      => wp_create_nonce( 'hkdev_elements_cart_update' ),
 				'co_modal'         => wp_create_nonce( 'hkdev_elements_co_modal' ),
@@ -493,6 +494,13 @@ function hkdev_elements_register_assets() {
 		hkdev_elements_asset_url( 'assets/css/blog.css' ),
 		[ 'hkdev-elements-fontawesome' ],
 		hkdev_elements_asset_ver( 'assets/css/blog.css' )
+	);
+	wp_register_script(
+		'hkdev-elements-blog-js',
+		hkdev_elements_asset_url( 'assets/js/blog.js' ),
+		[ 'jquery' ],
+		hkdev_elements_asset_ver( 'assets/js/blog.js' ),
+		true
 	);
 
 	wp_localize_script(

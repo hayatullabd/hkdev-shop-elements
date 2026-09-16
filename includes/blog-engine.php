@@ -46,6 +46,11 @@ class Blog_Engine {
 
 		// Ensure assets are enqueued when the shortcode, archive or single is active.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets_check' ] );
+
+		// Category-tab filtering for the Blog widget (same contract as the shop
+		// grid: the clicked tab replaces the widget's own category filter).
+		add_action( 'wp_ajax_hkdev_elements_filter_blog', [ $this, 'ajax_filter_blog' ] );
+		add_action( 'wp_ajax_nopriv_hkdev_elements_filter_blog', [ $this, 'ajax_filter_blog' ] );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -240,14 +245,38 @@ class Blog_Engine {
 
 		$this->enqueue_assets();
 
-		$layout        = isset( $atts['layout'] ) && 'list' === $atts['layout'] ? 'list' : 'grid';
-		$columns       = isset( $atts['columns'] ) ? max( 1, min( 6, absint( $atts['columns'] ) ) ) : 3;
-		$show_image    = empty( $atts['show_image'] ) || 'yes' === $atts['show_image'];
-		$show_excerpt  = empty( $atts['show_excerpt'] ) || 'yes' === $atts['show_excerpt'];
-		$show_meta     = empty( $atts['show_meta'] ) || 'yes' === $atts['show_meta'];
-		$show_readmore = empty( $atts['show_readmore'] ) || 'yes' === $atts['show_readmore'];
-		$readmore_text = ! empty( $atts['readmore_text'] ) ? $atts['readmore_text'] : __( 'Read More', 'hkdev-shop-elements' );
-		$image_ratio   = ! empty( $atts['image_ratio'] ) ? sanitize_text_field( $atts['image_ratio'] ) : '16:9';
+		$atts          = $this->normalise_atts( $atts );
+		$layout        = $atts['layout'];
+		$columns       = $atts['columns'];
+		$show_image    = 'yes' === $atts['show_image'];
+		$show_excerpt  = 'yes' === $atts['show_excerpt'];
+		$show_meta     = 'yes' === $atts['show_meta'];
+		$show_readmore = 'yes' === $atts['show_readmore'];
+		$readmore_text = $atts['readmore_text'];
+		$image_ratio   = $atts['image_ratio'];
+
+		// Section heading (same markup renderer as the Section Heading widget and
+		// the Shop Grid, so all three stay visually identical).
+		$heading_html = ( ! empty( $atts['heading'] ) && is_array( $atts['heading'] ) )
+			? Shop_Engine::instance()->shop_heading_html( $atts['heading'] )
+			: '';
+
+		// Category tabs (widget context only — archives keep their pill links).
+		$tabs_html = '';
+		if ( ! $is_archive && 'yes' === $atts['show_tabs'] ) {
+			$tabs_html = $this->render_tabs( $atts, $query );
+		}
+
+		$has_tabs = ( '' !== $tabs_html );
+
+		if ( $has_tabs ) {
+			wp_enqueue_script( 'hkdev-elements-blog-js' );
+		}
+
+		// The tab request only needs the listing params, so the heading config
+		// (dozens of keys) is left out of the attribute.
+		$ajax_config = $atts;
+		unset( $ajax_config['heading'], $ajax_config['tabs'] );
 
 		// BEM-style modifier: the old `hkdev-blog-{layout}` class collided with
 		// the `.hkdev-blog-list` posts container and broke the list layout.
@@ -255,18 +284,31 @@ class Blog_Engine {
 
 		ob_start();
 		?>
-		<div class="<?php echo esc_attr( $wrapper_class ); ?>" data-layout="<?php echo esc_attr( $layout ); ?>" data-columns="<?php echo esc_attr( $columns ); ?>">
+		<div class="<?php echo esc_attr( $wrapper_class ); ?>" data-layout="<?php echo esc_attr( $layout ); ?>" data-columns="<?php echo esc_attr( $columns ); ?>"<?php echo $has_tabs ? ' data-hkdev-blog="1" data-hkdev-blog-config="' . esc_attr( wp_json_encode( $ajax_config ) ) . '"' : ''; ?>>
+
+			<?php echo $heading_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 			<?php if ( $is_archive ) : ?>
 				<?php echo $this->render_archive_header( $query ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php echo self::render_category_pills(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php else : ?>
+				<?php echo $tabs_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<?php endif; ?>
 
-			<div class="hkdev-blog-items">
-				<?php while ( $query->have_posts() ) : $query->the_post(); ?>
-					<?php echo $this->render_card( get_the_ID(), $show_image, $show_excerpt, $show_meta, $show_readmore, $readmore_text, $image_ratio ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php endwhile; ?>
+			<?php if ( $has_tabs ) : ?>
+			<div class="hkdev-blog-grid-wrap">
+				<div class="hkdev-blog-loader" aria-hidden="true"><i class="fa-solid fa-spinner fa-spin"></i></div>
+			<?php endif; ?>
+
+				<div class="hkdev-blog-items">
+					<?php while ( $query->have_posts() ) : $query->the_post(); ?>
+						<?php echo $this->render_card( get_the_ID(), $show_image, $show_excerpt, $show_meta, $show_readmore, $readmore_text, $image_ratio ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php endwhile; ?>
+				</div>
+
+			<?php if ( $has_tabs ) : ?>
 			</div>
+			<?php endif; ?>
 
 			<?php if ( $is_archive ) : ?>
 				<div class="hkdev-blog-pagination">
@@ -283,15 +325,243 @@ class Blog_Engine {
 	}
 
 	/**
+	 * Normalise shortcode / widget / AJAX attributes to one canonical shape so
+	 * the first render and every tab request build the exact same query.
+	 *
+	 * @param array $atts Raw attributes.
+	 * @return array
+	 */
+	private function normalise_atts( $atts ) {
+		$atts = is_array( $atts ) ? $atts : [];
+
+		$yes_no = static function ( $key ) use ( $atts ) {
+			return ( ! isset( $atts[ $key ] ) || 'yes' === $atts[ $key ] ) ? 'yes' : 'no';
+		};
+
+		$orderby = isset( $atts['orderby'] ) ? sanitize_text_field( $atts['orderby'] ) : 'date';
+		if ( ! in_array( $orderby, [ 'date', 'title', 'rand', 'comment_count', 'modified' ], true ) ) {
+			$orderby = 'date';
+		}
+
+		$order = isset( $atts['order'] ) ? strtoupper( (string) $atts['order'] ) : 'DESC';
+		if ( ! in_array( $order, [ 'ASC', 'DESC' ], true ) ) {
+			$order = 'DESC';
+		}
+
+		$ratio = isset( $atts['image_ratio'] ) ? sanitize_text_field( $atts['image_ratio'] ) : '16:9';
+		if ( ! in_array( $ratio, [ '1:1', '4:3', '16:9', 'auto' ], true ) ) {
+			$ratio = '16:9';
+		}
+
+		return [
+			'layout'         => ( isset( $atts['layout'] ) && 'list' === $atts['layout'] ) ? 'list' : 'grid',
+			'columns'        => max( 1, min( 6, absint( $atts['columns'] ?? 3 ) ) ),
+			'posts_per_page' => max( 1, absint( $atts['posts_per_page'] ?? 9 ) ),
+			'category'       => isset( $atts['category'] ) ? (string) $atts['category'] : '',
+			'orderby'        => $orderby,
+			'order'          => $order,
+			'image_ratio'    => $ratio,
+			'show_image'     => $yes_no( 'show_image' ),
+			'show_excerpt'   => $yes_no( 'show_excerpt' ),
+			'show_meta'      => $yes_no( 'show_meta' ),
+			'show_readmore'  => $yes_no( 'show_readmore' ),
+			'readmore_text'  => ! empty( $atts['readmore_text'] ) ? (string) $atts['readmore_text'] : __( 'Read More', 'hkdev-shop-elements' ),
+			// Tabs are opt-in: only an explicit "yes" turns them on.
+			'show_tabs'      => ( isset( $atts['show_tabs'] ) && 'yes' === $atts['show_tabs'] ) ? 'yes' : 'no',
+			'tabs'           => isset( $atts['tabs'] ) ? $atts['tabs'] : [],
+			// Heading config is opaque here: it is passed straight to
+			// Shop_Engine::shop_heading_html().
+			'heading'        => ( isset( $atts['heading'] ) && is_array( $atts['heading'] ) ) ? $atts['heading'] : [],
+		];
+	}
+
+	/**
+	 * Category tab bar (widget context).
+	 *
+	 * @param array     $atts  Normalised attributes.
+	 * @param \WP_Query $query The rendered query (for the "All" count).
+	 * @return string HTML.
+	 */
+	private function render_tabs( $atts, $query ) {
+		$terms = $this->tab_terms( $atts );
+
+		if ( empty( $terms ) ) {
+			return '';
+		}
+
+		// "All" carries the widget's own category filter, so clicking it restores
+		// the widget's original listing.
+		$all_slug = (string) $atts['category'];
+
+		ob_start();
+		?>
+		<div class="hkdev-blog-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter posts by category', 'hkdev-shop-elements' ); ?>">
+			<div class="hkdev-blog-tabs-scroll">
+				<button type="button" class="hkdev-blog-tab-item is-active" role="tab" aria-selected="true" data-slug="<?php echo esc_attr( $all_slug ); ?>">
+					<?php esc_html_e( 'All', 'hkdev-shop-elements' ); ?>
+					<span class="hkdev-blog-tab-count"><?php echo absint( $query->found_posts ); ?></span>
+				</button>
+				<?php foreach ( $terms as $term ) : ?>
+					<button type="button" class="hkdev-blog-tab-item" role="tab" aria-selected="false" data-slug="<?php echo esc_attr( $term->slug ); ?>">
+						<?php echo esc_html( $term->name ); ?>
+						<span class="hkdev-blog-tab-count"><?php echo absint( $this->count_posts( $atts, $term->slug ) ); ?></span>
+					</button>
+				<?php endforeach; ?>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Categories shown as tabs.
+	 *
+	 * Manual (repeater) tabs set the order; otherwise the children of the
+	 * widget's own category filter are listed, and top-level categories when no
+	 * filter is set.
+	 *
+	 * @param array $atts Normalised attributes.
+	 * @return \WP_Term[]
+	 */
+	private function tab_terms( $atts ) {
+		$manual = [];
+		if ( ! empty( $atts['tabs'] ) ) {
+			$raw    = is_array( $atts['tabs'] ) ? $atts['tabs'] : explode( ',', (string) $atts['tabs'] );
+			$manual = array_values( array_filter( array_map( 'sanitize_title', $raw ) ) );
+		}
+
+		if ( ! empty( $manual ) ) {
+			$terms = [];
+			foreach ( $manual as $slug ) {
+				$term = get_term_by( 'slug', $slug, 'category' );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$terms[] = $term;
+				}
+			}
+			return $terms;
+		}
+
+		$parent = 0;
+		$slugs  = array_values( array_filter( array_map( 'sanitize_title', explode( ',', (string) $atts['category'] ) ) ) );
+		if ( ! empty( $slugs ) ) {
+			$parent_term = get_term_by( 'slug', $slugs[0], 'category' );
+			if ( $parent_term && ! is_wp_error( $parent_term ) ) {
+				$parent = (int) $parent_term->term_id;
+			}
+		}
+
+		$terms = get_categories(
+			[
+				'taxonomy'   => 'category',
+				'hide_empty' => true,
+				'parent'     => $parent,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			]
+		);
+
+		return is_wp_error( $terms ) ? [] : $terms;
+	}
+
+	/**
+	 * How many posts a tab will show.
+	 *
+	 * Runs the same query args as the listing (page 1, one row) so the badge
+	 * always matches the cards that appear when the tab is clicked.
+	 *
+	 * @param array  $atts     Normalised attributes.
+	 * @param string $cat_slug Category slug.
+	 * @return int
+	 */
+	private function count_posts( $atts, $cat_slug ) {
+		static $cache = [];
+
+		$key = md5( wp_json_encode( [ $atts, $cat_slug ] ) );
+		if ( isset( $cache[ $key ] ) ) {
+			return $cache[ $key ];
+		}
+
+		$count_atts             = $atts;
+		$count_atts['category'] = (string) $cat_slug;
+
+		$args                           = $this->build_query_args( $count_atts );
+		$args['posts_per_page']         = 1;
+		$args['paged']                  = 1;
+		$args['fields']                 = 'ids';
+		$args['update_post_meta_cache'] = false;
+		$args['update_post_term_cache'] = false;
+
+		$query = new \WP_Query( $args );
+
+		$cache[ $key ] = (int) $query->found_posts;
+
+		return $cache[ $key ];
+	}
+
+	/**
+	 * AJAX: re-render the cards for the clicked category tab.
+	 *
+	 * @return void
+	 */
+	public function ajax_filter_blog() {
+		check_ajax_referer( 'hkdev_elements_blog_filter', 'nonce' );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+		$raw_config = isset( $_POST['config'] ) ? wp_unslash( $_POST['config'] ) : '';
+		$config     = is_string( $raw_config ) ? json_decode( $raw_config, true ) : [];
+
+		$atts = $this->normalise_atts( is_array( $config ) ? $config : [] );
+
+		// The clicked tab replaces the widget's own category filter. "All" sends
+		// that filter back, so the original listing is restored.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$tab = isset( $_POST['category'] ) ? (string) wp_unslash( $_POST['category'] ) : '';
+		$atts['category'] = implode( ',', array_filter( array_map( 'sanitize_title', explode( ',', $tab ) ) ) );
+
+		$query = $this->build_query( $atts );
+
+		ob_start();
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				echo $this->render_card( get_the_ID(), 'yes' === $atts['show_image'], 'yes' === $atts['show_excerpt'], 'yes' === $atts['show_meta'], 'yes' === $atts['show_readmore'], $atts['readmore_text'], $atts['image_ratio'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+		} else {
+			echo '<p class="hkdev-blog-empty">' . esc_html__( 'No posts found.', 'hkdev-shop-elements' ) . '</p>';
+		}
+		wp_reset_postdata();
+
+		wp_send_json_success(
+			[
+				'html'  => ob_get_clean(),
+				'count' => (int) $query->found_posts,
+			]
+		);
+	}
+
+	/**
 	 * Build a WP_Query for the shortcode (non-archive) context.
 	 *
 	 * @param array $atts Attributes.
 	 * @return \WP_Query
 	 */
 	private function build_query( $atts ) {
+		return new \WP_Query( $this->build_query_args( $atts ) );
+	}
+
+	/**
+	 * Query args for the shortcode / widget context (non-archive).
+	 *
+	 * Shared with the tab counters and the AJAX filter so the badge count and
+	 * the rendered cards can never drift apart.
+	 *
+	 * @param array $atts Attributes.
+	 * @return array
+	 */
+	private function build_query_args( $atts ) {
 		$cat_slugs = [];
 		if ( ! empty( $atts['category'] ) ) {
-			$cat_slugs = array_values( array_filter( array_map( 'trim', explode( ',', $atts['category'] ) ) ) );
+			$cat_slugs = array_values( array_filter( array_map( 'sanitize_title', explode( ',', (string) $atts['category'] ) ) ) );
 		}
 
 		$args = [
@@ -317,7 +587,7 @@ class Blog_Engine {
 			$args['order'] = $order;
 		}
 
-		return new \WP_Query( $args );
+		return $args;
 	}
 
 	/**

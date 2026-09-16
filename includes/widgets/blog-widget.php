@@ -16,10 +16,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Blog_Engine;
+use HkdevShopElements\Includes\Shop_Engine;
 
 class Blog_Widget extends Widget_Base {
 
 	use Style_Controls;
+	use Heading_Controls;
 
 	/**
 	 * Widget slug.
@@ -63,7 +65,7 @@ class Blog_Widget extends Widget_Base {
 	 * @return string[]
 	 */
 	public function get_keywords() {
-		return [ 'blog', 'post', 'posts', 'news', 'latest' ];
+		return [ 'blog', 'post', 'posts', 'news', 'latest', 'category', 'tabs' ];
 	}
 
 	/**
@@ -81,13 +83,17 @@ class Blog_Widget extends Widget_Base {
 	 * @return string[]
 	 */
 	public function get_script_depends() {
-		return [];
+		return [ 'hkdev-elements-blog-js' ];
 	}
 
 	/**
 	 * Register content controls.
 	 */
 	protected function _register_controls() {
+		// Section heading (accent bar + heading + subtitle + "View All" link).
+		// Same trait and renderer as the Shop Grid / Section Heading widgets.
+		$this->register_heading_controls();
+
 		$this->start_controls_section(
 			'content_section',
 			[
@@ -253,6 +259,51 @@ class Blog_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		// ---- Content: Category Tabs ----
+		$this->start_controls_section(
+			'tabs_section',
+			[
+				'label' => __( 'Category Tabs', 'hkdev-shop-elements' ),
+				'icon'  => 'eicon-tabs',
+			]
+		);
+
+		$this->add_control(
+			'show_tabs',
+			[
+				'label'        => __( 'Show Category Tabs', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'Yes', 'hkdev-shop-elements' ),
+				'label_off'    => __( 'No', 'hkdev-shop-elements' ),
+				'default'      => 'no',
+				'return_value' => 'yes',
+				'description'  => __( 'Tabs filter the grid without reloading the page.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'tabs',
+			[
+				'label'       => __( 'Categories', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::REPEATER,
+				'fields'      => [
+					[
+						'name'        => 'category',
+						'label'       => __( 'Category', 'hkdev-shop-elements' ),
+						'type'        => Controls_Manager::SELECT2,
+						'options'     => Shop_Engine::term_options( 'category' ),
+						'label_block' => true,
+					],
+				],
+				'title_field' => '{{{ category }}}',
+				'default'     => [],
+				'condition'   => [ 'show_tabs' => 'yes' ],
+				'description' => __( 'Add categories to set the tab order, then drag to rearrange. Leave empty to list categories automatically.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->end_controls_section();
+
 		// ---- Style: Layout & Spacing ----
 		// Every control is scoped to {{WRAPPER}} so two Blog widgets on the same
 		// page can be styled independently.
@@ -392,6 +443,60 @@ class Blog_Widget extends Widget_Base {
 		$this->hkdev_dimensions( 'button_padding', __( 'Padding', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'padding' );
 
 		$this->end_controls_section();
+
+		// ---- Style: Category Tabs ----
+		$this->start_controls_section(
+			'style_tabs',
+			[
+				'label'     => __( 'Category Tabs', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'show_tabs' => 'yes' ],
+			]
+		);
+
+		$this->hkdev_dimensions( 'tabs_margin', __( 'Spacing Below', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tabs', 'margin' );
+
+		$this->hkdev_slider( 'tab_gap', __( 'Gap Between Tabs', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tabs-scroll', 'gap', 0, 30 );
+
+		$this->hkdev_slider( 'tab_font_size', __( 'Font Size', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'font-size', 8, 24 );
+
+		$this->hkdev_dimensions( 'tab_padding', __( 'Padding', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'padding' );
+
+		$this->hkdev_slider( 'tab_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'border-radius', 0, 40 );
+
+		$this->hkdev_color( 'tab_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'background-color' );
+
+		$this->hkdev_color( 'tab_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item' );
+
+		$this->hkdev_color( 'tab_border', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'border-color' );
+
+		$this->add_control(
+			'tab_active_heading',
+			[
+				'label'     => __( 'Active Tab', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+
+		$this->hkdev_color( 'tab_active_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active', 'background-color' );
+
+		$this->hkdev_color( 'tab_active_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active' );
+
+		$this->add_control(
+			'tab_count_heading',
+			[
+				'label'     => __( 'Count Badge', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+
+		$this->hkdev_color( 'tab_count_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-count', 'background-color' );
+
+		$this->hkdev_color( 'tab_count_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-count' );
+
+		$this->end_controls_section();
 	}
 
 	/**
@@ -417,8 +522,33 @@ class Blog_Widget extends Widget_Base {
 			'show_meta'      => $settings['show_meta'] ?? 'yes',
 			'show_readmore'  => $settings['show_readmore'] ?? 'yes',
 			'readmore_text'  => $settings['readmore_text'] ?? __( 'Read More', 'hkdev-shop-elements' ),
+			'show_tabs'      => $settings['show_tabs'] ?? 'no',
+			'tabs'           => $this->get_tab_slugs( $settings ),
+			'heading'        => $this->get_heading_config( $settings ),
 		];
 
 		echo Blog_Engine::instance()->render( $atts, false );
+	}
+
+	/**
+	 * Category slugs from the tabs repeater.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return string[]
+	 */
+	private function get_tab_slugs( $settings ) {
+		$slugs = [];
+
+		if ( empty( $settings['tabs'] ) || ! is_array( $settings['tabs'] ) ) {
+			return $slugs;
+		}
+
+		foreach ( $settings['tabs'] as $item ) {
+			if ( ! empty( $item['category'] ) ) {
+				$slugs[] = sanitize_title( $item['category'] );
+			}
+		}
+
+		return array_values( array_unique( $slugs ) );
 	}
 }

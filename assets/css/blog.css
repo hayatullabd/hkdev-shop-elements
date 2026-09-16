@@ -126,6 +126,214 @@
 }
 
 /* ------------------------------------------------------------------
+   Section heading
+   Mirrors the .hkdev-sh-heading block in shop.css so the Blog widget
+   heading is pixel-identical to the Shop Grid / Section Heading widgets
+   without having to load the (much larger) shop stylesheet on blog pages.
+   ------------------------------------------------------------------ */
+.hkdev-sh-heading {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+	gap: 14px !important;
+	width: 100% !important;
+	margin: 0 0 var(--hkdev-sh-gap, 18px) !important;
+	box-sizing: border-box !important;
+}
+.hkdev-sh-heading.is-boxed {
+	padding: var(--hkdev-sh-pad, 11px 18px) !important;
+	background: var(--hkdev-sh-bg, #ffffff) !important;
+	border: var(--hkdev-sh-bw, 1px) solid var(--hkdev-sh-border, rgba(0, 0, 0, 0.09)) !important;
+	border-radius: var(--hkdev-sh-radius, 8px) !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-left {
+	display: flex !important;
+	align-items: center !important;
+	gap: 10px !important;
+	min-width: 0 !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-texts {
+	display: flex !important;
+	flex-direction: column !important;
+	gap: 2px !important;
+	min-width: 0 !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-sub {
+	display: block !important;
+	font-size: var(--hkdev-sh-sub-size, 13px) !important;
+	font-weight: var(--hkdev-sh-sub-weight, 500) !important;
+	line-height: var(--hkdev-sh-sub-lh, 1.35) !important;
+	letter-spacing: var(--hkdev-sh-sub-ls, normal) !important;
+	text-transform: var(--hkdev-sh-sub-tt, none) !important;
+	color: var(--hkdev-sh-sub, #6b7280) !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-accent {
+	display: none !important;
+	width: var(--hkdev-sh-accent-w, 5px) !important;
+	height: var(--hkdev-sh-accent-h, 18px) !important;
+	border-radius: var(--hkdev-sh-accent-r, 999px) !important;
+	background: var(--hkdev-sh-accent, var(--hkblog-primary, #03a550)) !important;
+	flex: 0 0 auto !important;
+}
+.hkdev-sh-heading.has-accent .hkdev-sh-heading-accent {
+	display: block !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-title {
+	margin: 0 !important;
+	padding: 0 !important;
+	font-size: var(--hkdev-sh-title-size, 18px) !important;
+	font-weight: var(--hkdev-sh-weight, 700) !important;
+	line-height: var(--hkdev-sh-lh, 1.3) !important;
+	letter-spacing: var(--hkdev-sh-ls, normal) !important;
+	text-transform: var(--hkdev-sh-tt, none) !important;
+	color: var(--hkdev-sh-title, #f06724) !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+	white-space: nowrap !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-link {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: var(--hkdev-sh-link-gap, 6px) !important;
+	flex: 0 0 auto !important;
+	/* Padding + an equal negative margin keep the text exactly where it was
+	   while giving the hover background a comfortable hit area. */
+	padding: var(--hkdev-sh-link-pad, 6px 10px) !important;
+	margin: var(--hkdev-sh-link-neg, -6px -10px) !important;
+	background: transparent !important;
+	border-radius: var(--hkdev-sh-link-radius, 7px) !important;
+	font-size: var(--hkdev-sh-link-size, 13px) !important;
+	font-weight: var(--hkdev-sh-link-weight, 600) !important;
+	line-height: 1 !important;
+	letter-spacing: var(--hkdev-sh-link-ls, normal) !important;
+	text-transform: var(--hkdev-sh-link-tt, none) !important;
+	color: var(--hkdev-sh-link, #f06724) !important;
+	text-decoration: var(--hkdev-sh-link-deco, none) !important;
+	white-space: nowrap !important;
+	transition: background 0.2s ease, color 0.2s ease, gap 0.2s ease !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-link i {
+	font-size: var(--hkdev-sh-link-icon, 11px) !important;
+	transition: transform 0.2s ease !important;
+}
+/* Hover applies to the <a> as well as to the plain "View All" span that is
+   rendered when no URL is set, so the hover background always shows. */
+.hkdev-sh-heading .hkdev-sh-heading-link:hover,
+.hkdev-sh-heading .hkdev-sh-heading-link:focus,
+.hkdev-sh-heading .hkdev-sh-heading-link:focus-visible {
+	background: var(--hkdev-sh-link-hover, rgba(240, 103, 36, 0.10)) !important;
+	color: var(--hkdev-sh-link-hover-color, var(--hkdev-sh-link, #f06724)) !important;
+}
+.hkdev-sh-heading.has-underline-hover .hkdev-sh-heading-link:hover,
+.hkdev-sh-heading.has-underline-hover .hkdev-sh-heading-link:focus {
+	text-decoration: underline !important;
+}
+.hkdev-sh-heading .hkdev-sh-heading-link:hover i,
+.hkdev-sh-heading .hkdev-sh-heading-link:focus i {
+	transform: translateX(3px) !important;
+}
+
+/* ------------------------------------------------------------------
+   Category tabs (widget) — look and behave like the shop grid tabs
+   ------------------------------------------------------------------ */
+.hkdev-blog-tabs {
+	display: flex !important;
+	align-items: center !important;
+	margin: 0 0 18px !important;
+}
+.hkdev-blog-tabs-scroll {
+	display: flex !important;
+	flex: 1 1 auto !important;
+	min-width: 0 !important;
+	gap: 8px !important;
+	overflow-x: auto !important;
+	padding: 2px 2px 6px !important;
+	scrollbar-width: thin;
+	scrollbar-color: var(--hkblog-primary) transparent;
+	-webkit-overflow-scrolling: touch;
+}
+.hkdev-blog-tab-item {
+	flex: 0 0 auto !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	padding: 6px 14px !important;
+	font-family: inherit !important;
+	font-size: 13px !important;
+	line-height: 1.3 !important;
+	font-weight: 600 !important;
+	color: var(--hkblog-text) !important;
+	background: var(--hkblog-bg) !important;
+	border: 1.5px solid var(--hkblog-border) !important;
+	border-radius: 999px !important;
+	cursor: pointer !important;
+	white-space: nowrap !important;
+	text-decoration: none !important;
+	appearance: none !important;
+	-webkit-appearance: none !important;
+	transition: all 0.2s ease !important;
+}
+.hkdev-blog-tab-item:hover {
+	background: var(--hkblog-soft-2) !important;
+	border-color: var(--hkblog-border-strong) !important;
+	color: var(--hkblog-primary) !important;
+}
+.hkdev-blog-tab-item.is-active {
+	background: var(--hkblog-primary) !important;
+	border-color: var(--hkblog-primary) !important;
+	color: #ffffff !important;
+	box-shadow: 0 6px 16px rgba(3, 165, 80, 0.24) !important;
+}
+.hkdev-blog-tab-item.is-loading {
+	opacity: 0.7 !important;
+	pointer-events: none !important;
+}
+.hkdev-blog-tab-count {
+	min-width: 18px !important;
+	height: 18px !important;
+	padding: 0 5px !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	font-size: 11px !important;
+	font-weight: 700 !important;
+	color: var(--hkblog-primary) !important;
+	background: var(--hkblog-primary-soft) !important;
+	border-radius: 999px !important;
+}
+.hkdev-blog-tab-item.is-active .hkdev-blog-tab-count {
+	color: #ffffff !important;
+	background: rgba(255, 255, 255, 0.22) !important;
+}
+
+/* ------------------------------------------------------------------
+   Grid wrapper + AJAX loader (tabs enabled)
+   ------------------------------------------------------------------ */
+.hkdev-blog-grid-wrap {
+	position: relative !important;
+}
+.hkdev-blog-loader {
+	position: absolute !important;
+	inset: 0 !important;
+	display: none !important;
+	align-items: center !important;
+	justify-content: center !important;
+	background: rgba(255, 255, 255, 0.7) !important;
+	border-radius: var(--hkblog-radius) !important;
+	z-index: 3 !important;
+}
+.hkdev-blog-loader.is-visible {
+	display: flex !important;
+}
+.hkdev-blog-loader i {
+	font-size: 26px !important;
+	color: var(--hkblog-primary) !important;
+}
+
+/* ------------------------------------------------------------------
    Cards
    ------------------------------------------------------------------ */
 .hkdev-blog-card {
@@ -1000,6 +1208,25 @@
 	.hkdev-blog-cat {
 		padding: 5px 13px !important;
 		font-size: 12px !important;
+	}
+	.hkdev-blog-tabs {
+		margin-bottom: 14px !important;
+	}
+	.hkdev-blog-tab-item {
+		padding: 5px 12px !important;
+		font-size: 12px !important;
+	}
+	.hkdev-blog-tab-count {
+		min-width: 16px !important;
+		height: 16px !important;
+		font-size: 10px !important;
+	}
+	.hkdev-sh-heading {
+		gap: 10px !important;
+	}
+	.hkdev-sh-heading .hkdev-sh-heading-accent {
+		width: var(--hkdev-sh-accent-w, 4px) !important;
+		height: var(--hkdev-sh-accent-h, 15px) !important;
 	}
 
 	/* -- compact card -- */
