@@ -38,29 +38,33 @@
 	display: block !important;
 }
 
-/* Posts grid — columns controlled by data-columns attribute */
+/* Posts grid — the column count lives in the --hkblog-cols custom property on
+   the wrapper. The responsive rules below then override it by declaring the
+   property on .hkdev-blog-items itself: a local declaration always beats the
+   inherited one, whereas overriding grid-template-columns directly would lose
+   to the higher-specificity [data-columns] selector. */
 .hkdev-blog-items {
 	display: grid !important;
-	grid-template-columns: repeat(3, 1fr) !important;
+	grid-template-columns: repeat(var(--hkblog-cols, 3), 1fr) !important;
 	gap: 24px !important;
 }
-.hkdev-blog[data-columns="1"] .hkdev-blog-items {
-	grid-template-columns: 1fr !important;
+.hkdev-blog[data-columns="1"] {
+	--hkblog-cols: 1;
 }
-.hkdev-blog[data-columns="2"] .hkdev-blog-items {
-	grid-template-columns: repeat(2, 1fr) !important;
+.hkdev-blog[data-columns="2"] {
+	--hkblog-cols: 2;
 }
-.hkdev-blog[data-columns="3"] .hkdev-blog-items {
-	grid-template-columns: repeat(3, 1fr) !important;
+.hkdev-blog[data-columns="3"] {
+	--hkblog-cols: 3;
 }
-.hkdev-blog[data-columns="4"] .hkdev-blog-items {
-	grid-template-columns: repeat(4, 1fr) !important;
+.hkdev-blog[data-columns="4"] {
+	--hkblog-cols: 4;
 }
-.hkdev-blog[data-columns="5"] .hkdev-blog-items {
-	grid-template-columns: repeat(5, 1fr) !important;
+.hkdev-blog[data-columns="5"] {
+	--hkblog-cols: 5;
 }
-.hkdev-blog[data-columns="6"] .hkdev-blog-items {
-	grid-template-columns: repeat(6, 1fr) !important;
+.hkdev-blog[data-columns="6"] {
+	--hkblog-cols: 6;
 }
 
 /* List layout — one card per row */
@@ -955,25 +959,92 @@
 /* ------------------------------------------------------------------
    Responsive
    ------------------------------------------------------------------ */
+
+/* Tablet: never more than two cards per row. */
 @media (max-width: 991.98px) {
 	.hkdev-blog-items {
-		grid-template-columns: repeat(2, 1fr) !important;
-		gap: 20px !important;
+		--hkblog-cols: 2;
+		gap: 18px !important;
 	}
 	.hkdev-blog-single .entry-title {
 		font-size: 30px !important;
 	}
 }
+
+/* Phone: two cards per row, with a compact card so both stay readable. */
 @media (max-width: 600.98px) {
 	.hkdev-blog-items {
-		grid-template-columns: 1fr !important;
+		--hkblog-cols: 2;
+		gap: 12px !important;
+	}
+	/* An explicit one-column widget setting is still honoured. */
+	.hkdev-blog[data-columns="1"] .hkdev-blog-items {
+		--hkblog-cols: 1;
 	}
 	.hkdev-blog--archive {
-		padding: 24px 16px 40px !important;
+		padding: 20px 12px 40px !important;
+	}
+	.hkdev-blog-archive-head {
+		margin-bottom: 18px !important;
 	}
 	.hkdev-blog-archive-title {
-		font-size: 25px !important;
+		font-size: 23px !important;
 	}
+	.hkdev-blog-archive-desc {
+		font-size: 14px !important;
+	}
+	.hkdev-blog-categories {
+		gap: 6px !important;
+		padding-bottom: 16px !important;
+	}
+	.hkdev-blog-cat {
+		padding: 5px 13px !important;
+		font-size: 12px !important;
+	}
+
+	/* -- compact card -- */
+	.hkdev-blog-card {
+		border-radius: 10px !important;
+	}
+	.hkdev-blog-card:hover {
+		transform: none !important;
+	}
+	.hkdev-blog-card-body {
+		padding: 12px !important;
+		gap: 8px !important;
+	}
+	.hkdev-blog-card-title {
+		font-size: 14px !important;
+		line-height: 1.35 !important;
+	}
+	.hkdev-blog-card-category {
+		top: 8px !important;
+		left: 8px !important;
+		padding: 1px 8px !important;
+		font-size: 9.5px !important;
+		letter-spacing: 0.02em !important;
+	}
+	.hkdev-blog-card-meta {
+		gap: 4px 8px !important;
+		font-size: 10.5px !important;
+		line-height: 1.5 !important;
+	}
+	.hkdev-blog-card-meta i {
+		font-size: 10px !important;
+	}
+	.hkdev-blog-excerpt {
+		font-size: 12px !important;
+		line-height: 1.5 !important;
+		-webkit-line-clamp: 2 !important;
+	}
+	.hkdev-blog-readmore {
+		align-self: stretch !important;
+		justify-content: center !important;
+		padding: 7px 12px !important;
+		font-size: 11.5px !important;
+	}
+
+	/* -- list layout stacks -- */
 	.hkdev-blog--list .hkdev-blog-card {
 		flex-direction: column !important;
 	}
@@ -982,8 +1053,23 @@
 		max-width: 100% !important;
 	}
 	.hkdev-blog--list .hkdev-blog-card-body {
-		padding: 16px !important;
+		padding: 14px !important;
 	}
+
+	/* -- pagination -- */
+	.hkdev-blog-pagination ul.page-numbers {
+		gap: 4px !important;
+		margin-top: 24px !important;
+	}
+	.hkdev-blog-pagination ul.page-numbers a,
+	.hkdev-blog-pagination ul.page-numbers span {
+		min-width: 34px !important;
+		height: 34px !important;
+		padding: 0 10px !important;
+		font-size: 12px !important;
+	}
+
+	/* -- single post -- */
 	.hkdev-blog-single-wrap {
 		padding: 20px 16px 48px !important;
 	}
@@ -991,12 +1077,18 @@
 		font-size: 25px !important;
 	}
 	.hkdev-blog-single .entry-meta {
-		gap: 12px !important;
+		gap: 8px 14px !important;
+	}
+	.hkdev-blog-single .entry-content p {
+		font-size: 15.5px !important;
 	}
 	.hkdev-blog-author-box {
 		flex-direction: column !important;
 		align-items: center !important;
 		text-align: center !important;
+	}
+	.hkdev-blog-related-title {
+		font-size: 19px !important;
 	}
 	.hkdev-blog-nav {
 		flex-direction: column !important;
@@ -1006,5 +1098,29 @@
 	.hkdev-blog-nav .nav-next {
 		text-align: left !important;
 		width: 100% !important;
+	}
+	.hkdev-blog-comments-wrap .comment-list ol.children {
+		padding-left: 12px !important;
+	}
+}
+
+/* Small phones: keep the two columns, trim the rhythm a little further. */
+@media (max-width: 400px) {
+	.hkdev-blog-items {
+		gap: 10px !important;
+	}
+	.hkdev-blog-card-body {
+		padding: 10px !important;
+		gap: 7px !important;
+	}
+	.hkdev-blog-card-title {
+		font-size: 13.5px !important;
+	}
+	.hkdev-blog-card-meta {
+		font-size: 10px !important;
+	}
+	.hkdev-blog-readmore {
+		padding: 6px 10px !important;
+		font-size: 11px !important;
 	}
 }
