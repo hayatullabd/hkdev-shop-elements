@@ -40,10 +40,11 @@ class Blog_Engine {
 	public function __construct() {
 		add_shortcode( 'hkdev_blog', [ $this, 'shortcode' ] );
 
-		// Auto-style the standard blog / posts-page and post taxonomy archives.
-		add_filter( 'template_include', [ $this, 'blog_archive_template' ] );
+		// Auto-style the standard blog / posts-page, post taxonomy archives,
+		// and single blog post pages when not built with Elementor.
+		add_filter( 'template_include', [ $this, 'blog_template' ] );
 
-		// Ensure assets are enqueued when the shortcode or archive is active.
+		// Ensure assets are enqueued when the shortcode, archive or single is active.
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets_check' ] );
 	}
 
@@ -96,12 +97,15 @@ class Blog_Engine {
 	}
 
 	/**
-	 * Whether the current request is a blog / post-archive page that we should
-	 * auto-style.
+	 * Whether the current request is a blog / post-archive page or a single
+	 * blog post that we should auto-style.
 	 *
 	 * @return bool
 	 */
 	private function is_blog_page() {
+		if ( is_singular( 'post' ) ) {
+			return true;
+		}
 		if ( is_singular() ) {
 			return false;
 		}
@@ -115,19 +119,22 @@ class Blog_Engine {
 	}
 
 	/* ---------------------------------------------------------------------
-	 * Archive auto-styling
+	 * Archive + single auto-styling
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * When the standard blog / posts-page or post-taxonomy archive is visited and
-	 * the page hasn't been built with Elementor or marked with the [hkdev_blog]
-	 * shortcode, swap in our plugin-provided template so the archive gets the
-	 * styled HKDEV blog grid.
+	 * Decide which plugin template (if any) to load for the blog.
+	 *
+	 * - Single post pages  → templates/blog-single.php
+	 * - Archive / list pages → templates/blog-archive.php
+	 *
+	 * If the page is built with Elementor or uses the [hkdev_blog] shortcode,
+	 * the theme template is kept so the widget handles rendering.
 	 *
 	 * @param string $template Absolute path to the theme template file.
 	 * @return string
 	 */
-	public function blog_archive_template( $template ) {
+	public function blog_template( $template ) {
 		if ( is_admin() ) {
 			return $template;
 		}
@@ -138,15 +145,21 @@ class Blog_Engine {
 			return $template;
 		}
 
-		// Respect Elementor-built pages and explicit shortcode usage.
+		// Respect Elementor-built pages.
 		if ( $this->is_elementor_page() ) {
 			return $template;
 		}
-		if ( has_shortcode( get_post()->post_content, 'hkdev_blog' ) ) {
+
+		// Respect explicit shortcode usage — let the shortcode handle rendering.
+		if ( is_singular() && has_shortcode( get_post()->post_content, 'hkdev_blog' ) ) {
 			return $template;
 		}
 
-		$tpl = HKDEV_ELEMENTS_PATH . 'templates/blog-archive.php';
+		if ( is_singular( 'post' ) ) {
+			$tpl = HKDEV_ELEMENTS_PATH . 'templates/blog-single.php';
+		} else {
+			$tpl = HKDEV_ELEMENTS_PATH . 'templates/blog-archive.php';
+		}
 		if ( file_exists( $tpl ) ) {
 			return $tpl;
 		}
@@ -236,15 +249,20 @@ class Blog_Engine {
 		$readmore_text = ! empty( $atts['readmore_text'] ) ? $atts['readmore_text'] : __( 'Read More', 'hkdev-shop-elements' );
 		$image_ratio   = ! empty( $atts['image_ratio'] ) ? sanitize_text_field( $atts['image_ratio'] ) : '16:9';
 
+		// BEM-style modifier: the old `hkdev-blog-{layout}` class collided with
+		// the `.hkdev-blog-list` posts container and broke the list layout.
+		$wrapper_class = 'hkdev-blog hkdev-blog--' . $layout . ( $is_archive ? ' hkdev-blog--archive' : '' );
+
 		ob_start();
 		?>
-		<div class="hkdev-blog hkdev-blog-<?php echo esc_attr( $layout ); ?>" data-layout="<?php echo esc_attr( $layout ); ?>" data-columns="<?php echo esc_attr( $columns ); ?>">
+		<div class="<?php echo esc_attr( $wrapper_class ); ?>" data-layout="<?php echo esc_attr( $layout ); ?>" data-columns="<?php echo esc_attr( $columns ); ?>">
 
 			<?php if ( $is_archive ) : ?>
+				<?php echo $this->render_archive_header( $query ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php echo self::render_category_pills(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<?php endif; ?>
 
-			<div class="hkdev-blog-list">
+			<div class="hkdev-blog-items">
 				<?php while ( $query->have_posts() ) : $query->the_post(); ?>
 					<?php echo $this->render_card( get_the_ID(), $show_image, $show_excerpt, $show_meta, $show_readmore, $readmore_text, $image_ratio ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php endwhile; ?>
@@ -300,6 +318,74 @@ class Blog_Engine {
 		}
 
 		return new \WP_Query( $args );
+	}
+
+	/**
+	 * Archive / blog-page header: eyebrow, title, description and result count.
+	 *
+	 * @param \WP_Query $query The main query.
+	 * @return string HTML.
+	 */
+	private function render_archive_header( $query ) {
+		$eyebrow = '';
+
+		if ( is_home() ) {
+			$page_id = (int) get_option( 'page_for_posts' );
+			$title   = $page_id ? get_the_title( $page_id ) : __( 'Blog', 'hkdev-shop-elements' );
+			$desc    = $page_id ? (string) get_post_field( 'post_excerpt', $page_id ) : '';
+			$eyebrow = __( 'Latest Articles', 'hkdev-shop-elements' );
+		} elseif ( is_category() ) {
+			$title   = single_cat_title( '', false );
+			$desc    = category_description();
+			$eyebrow = __( 'Category', 'hkdev-shop-elements' );
+		} elseif ( is_tag() ) {
+			$title   = single_tag_title( '', false );
+			$desc    = tag_description();
+			$eyebrow = __( 'Tag', 'hkdev-shop-elements' );
+		} elseif ( is_author() ) {
+			$title   = get_the_author();
+			$desc    = get_the_author_meta( 'description' );
+			$eyebrow = __( 'Author', 'hkdev-shop-elements' );
+		} else {
+			$title   = wp_strip_all_tags( get_the_archive_title() );
+			$desc    = wp_strip_all_tags( get_the_archive_description() );
+			$eyebrow = __( 'Archive', 'hkdev-shop-elements' );
+		}
+
+		$title = trim( wp_strip_all_tags( (string) $title ) );
+		$desc  = trim( wp_strip_all_tags( (string) $desc ) );
+		$count = (int) $query->found_posts;
+
+		if ( '' === $title ) {
+			$title = __( 'Blog', 'hkdev-shop-elements' );
+		}
+
+		ob_start();
+		?>
+		<header class="hkdev-blog-archive-head">
+			<?php if ( $eyebrow ) : ?>
+				<span class="hkdev-blog-archive-eyebrow"><?php echo esc_html( $eyebrow ); ?></span>
+			<?php endif; ?>
+			<h1 class="hkdev-blog-archive-title"><?php echo esc_html( $title ); ?></h1>
+			<?php if ( $desc ) : ?>
+				<p class="hkdev-blog-archive-desc"><?php echo esc_html( $desc ); ?></p>
+			<?php endif; ?>
+			<?php if ( $count > 0 ) : ?>
+				<span class="hkdev-blog-archive-count">
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %d: number of posts. */
+							_n( '%d article', '%d articles', $count, 'hkdev-shop-elements' ),
+							$count
+						)
+					);
+					?>
+				</span>
+			<?php endif; ?>
+		</header>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
@@ -465,6 +551,274 @@ class Blog_Engine {
 			'end_size'  => 1,
 			'mid_size'  => 2,
 		] );
+	}
+
+	/* ---------------------------------------------------------------------
+	 * Single post
+	 * ------------------------------------------------------------------- */
+
+	/**
+	 * Render a single blog post page (used by templates/blog-single.php).
+	 *
+	 * @return string HTML.
+	 */
+	public function render_single() {
+		if ( ! have_posts() ) {
+			return '';
+		}
+
+		$this->enqueue_assets();
+
+		ob_start();
+
+		while ( have_posts() ) :
+			the_post();
+
+			$post_id   = get_the_ID();
+			$author_id = (int) get_post_field( 'post_author', $post_id );
+			$author    = get_the_author_meta( 'display_name', $author_id );
+			$bio       = get_the_author_meta( 'description', $author_id );
+			$time      = self::reading_time( $post_id );
+			$cats      = get_the_category( $post_id );
+			$cat       = ! empty( $cats ) ? $cats[0] : null;
+			$comments  = (int) get_comments_number( $post_id );
+			$tags      = get_the_tag_list( '', '', '', $post_id );
+			?>
+			<div class="hkdev-blog-single-wrap">
+				<?php echo $this->render_breadcrumb( $post_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+				<article id="post-<?php echo esc_attr( $post_id ); ?>" <?php post_class( [ 'hkdev-blog-single' ] ); ?>>
+					<header class="hkdev-blog-single-header">
+						<?php if ( $cat ) : ?>
+							<a class="hkdev-blog-single-cat" href="<?php echo esc_url( get_category_link( $cat->term_id ) ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+						<?php endif; ?>
+
+						<h1 class="entry-title"><?php the_title(); ?></h1>
+
+						<div class="entry-meta">
+							<?php if ( $author ) : ?>
+								<span class="hkdev-blog-author">
+									<?php echo get_avatar( $author_id, 48, '', $author, [ 'class' => 'hkdev-blog-author-img' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+									<?php echo esc_html( $author ); ?>
+								</span>
+							<?php endif; ?>
+							<span class="hkdev-blog-date">
+								<i class="fa-solid fa-calendar"></i> <?php echo esc_html( get_the_date( get_option( 'date_format' ), $post_id ) ); ?>
+							</span>
+							<span class="hkdev-blog-time">
+								<i class="fa-solid fa-clock"></i>
+								<?php
+								echo esc_html(
+									sprintf(
+										/* translators: %d: reading time in minutes. */
+										_x( '%d min read', 'reading time', 'hkdev-shop-elements' ),
+										$time
+									)
+								);
+								?>
+							</span>
+							<?php if ( comments_open( $post_id ) || $comments > 0 ) : ?>
+								<span class="hkdev-blog-comments">
+									<i class="fa-solid fa-comment"></i>
+									<?php
+									echo esc_html(
+										sprintf(
+											/* translators: %d: number of comments. */
+											_n( '%d Comment', '%d Comments', $comments, 'hkdev-shop-elements' ),
+											$comments
+										)
+									);
+									?>
+								</span>
+							<?php endif; ?>
+						</div>
+					</header>
+
+					<?php if ( has_post_thumbnail( $post_id ) ) : ?>
+						<figure class="hkdev-blog-single-featured">
+							<?php echo get_the_post_thumbnail( $post_id, 'large' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</figure>
+					<?php endif; ?>
+
+					<div class="entry-content">
+						<?php the_content(); ?>
+						<?php
+						wp_link_pages(
+							[
+								'before' => '<div class="hkdev-blog-page-links">' . esc_html__( 'Pages:', 'hkdev-shop-elements' ),
+								'after'  => '</div>',
+							]
+						);
+						?>
+					</div>
+
+					<?php if ( $tags ) : ?>
+						<div class="hkdev-blog-tags">
+							<i class="fa-solid fa-tags"></i> <?php echo wp_kses_post( $tags ); ?>
+						</div>
+					<?php endif; ?>
+
+					<?php echo $this->render_author_box( $author_id, $author, $bio ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</article>
+
+				<?php echo $this->render_post_nav(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php echo $this->render_related( $post_id, 3 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+
+				<?php if ( comments_open( $post_id ) || $comments > 0 ) : ?>
+					<div class="hkdev-blog-comments-wrap">
+						<?php comments_template(); ?>
+					</div>
+				<?php endif; ?>
+			</div>
+			<?php
+		endwhile;
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Breadcrumb trail for a single post.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return string HTML.
+	 */
+	private function render_breadcrumb( $post_id ) {
+		$posts_page = (int) get_option( 'page_for_posts' );
+		$blog_url   = $posts_page ? get_permalink( $posts_page ) : home_url( '/' );
+		$blog_label = ( $posts_page && get_the_title( $posts_page ) )
+			? get_the_title( $posts_page )
+			: __( 'Blog', 'hkdev-shop-elements' );
+
+		$cats = get_the_category( $post_id );
+		$cat  = ! empty( $cats ) ? $cats[0] : null;
+
+		ob_start();
+		?>
+		<nav class="hkdev-blog-breadcrumb" aria-label="<?php esc_attr_e( 'Breadcrumb', 'hkdev-shop-elements' ); ?>">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><i class="fa-solid fa-house"></i> <?php esc_html_e( 'Home', 'hkdev-shop-elements' ); ?></a>
+			<span class="hkdev-blog-breadcrumb-sep"><i class="fa-solid fa-angle-right"></i></span>
+			<a href="<?php echo esc_url( $blog_url ); ?>"><?php echo esc_html( $blog_label ); ?></a>
+			<?php if ( $cat ) : ?>
+				<span class="hkdev-blog-breadcrumb-sep"><i class="fa-solid fa-angle-right"></i></span>
+				<a href="<?php echo esc_url( get_category_link( $cat->term_id ) ); ?>"><?php echo esc_html( $cat->name ); ?></a>
+			<?php endif; ?>
+		</nav>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Author bio box shown after the post content.
+	 *
+	 * @param int    $author_id Author user ID.
+	 * @param string $author    Display name.
+	 * @param string $bio       Author biography.
+	 * @return string HTML.
+	 */
+	private function render_author_box( $author_id, $author, $bio ) {
+		if ( ! $author ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<div class="hkdev-blog-author-box">
+			<div class="hkdev-blog-author-avatar">
+				<?php echo get_avatar( $author_id, 192, '', $author ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			</div>
+			<div class="hkdev-blog-author-body">
+				<span class="hkdev-blog-author-label"><?php esc_html_e( 'Written by', 'hkdev-shop-elements' ); ?></span>
+				<h2 class="hkdev-blog-author-name"><?php echo esc_html( $author ); ?></h2>
+				<?php if ( $bio ) : ?>
+					<p class="hkdev-blog-author-bio"><?php echo esc_html( wp_strip_all_tags( $bio ) ); ?></p>
+				<?php endif; ?>
+				<a class="hkdev-blog-author-link" href="<?php echo esc_url( get_author_posts_url( $author_id ) ); ?>">
+					<?php esc_html_e( 'View all posts', 'hkdev-shop-elements' ); ?> <i class="fa-solid fa-arrow-right"></i>
+				</a>
+			</div>
+		</div>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Previous / next post navigation.
+	 *
+	 * @return string HTML.
+	 */
+	private function render_post_nav() {
+		$prev = get_previous_post();
+		$next = get_next_post();
+
+		if ( ! $prev && ! $next ) {
+			return '';
+		}
+
+		ob_start();
+		?>
+		<nav class="hkdev-blog-nav" aria-label="<?php esc_attr_e( 'Post navigation', 'hkdev-shop-elements' ); ?>">
+			<?php if ( $prev ) : ?>
+				<a class="nav-prev" href="<?php echo esc_url( get_permalink( $prev ) ); ?>">
+					<span class="nav-label"><i class="fa-solid fa-arrow-left"></i> <?php esc_html_e( 'Previous Post', 'hkdev-shop-elements' ); ?></span>
+					<span class="nav-title"><?php echo esc_html( get_the_title( $prev ) ); ?></span>
+				</a>
+			<?php endif; ?>
+			<?php if ( $next ) : ?>
+				<a class="nav-next" href="<?php echo esc_url( get_permalink( $next ) ); ?>">
+					<span class="nav-label"><?php esc_html_e( 'Next Post', 'hkdev-shop-elements' ); ?> <i class="fa-solid fa-arrow-right"></i></span>
+					<span class="nav-title"><?php echo esc_html( get_the_title( $next ) ); ?></span>
+				</a>
+			<?php endif; ?>
+		</nav>
+		<?php
+		return ob_get_clean();
+	}
+
+	/**
+	 * Related posts grid (same categories, newest first).
+	 *
+	 * @param int $post_id Current post ID.
+	 * @param int $count   Number of posts.
+	 * @return string HTML.
+	 */
+	private function render_related( $post_id, $count = 3 ) {
+		$cat_ids = wp_get_post_categories( $post_id );
+
+		$args = [
+			'post_type'           => 'post',
+			'post_status'         => 'publish',
+			'posts_per_page'      => max( 1, absint( $count ) ),
+			'post__not_in'        => [ $post_id ],
+			'ignore_sticky_posts' => true,
+			'no_found_rows'       => true,
+		];
+
+		if ( ! empty( $cat_ids ) ) {
+			$args['category__in'] = $cat_ids;
+		}
+
+		$related = new \WP_Query( $args );
+
+		if ( ! $related->have_posts() ) {
+			wp_reset_postdata();
+			return '';
+		}
+
+		ob_start();
+		?>
+		<section class="hkdev-blog hkdev-blog--grid hkdev-blog--related" data-columns="3">
+			<h2 class="hkdev-blog-related-title"><?php esc_html_e( 'Related Posts', 'hkdev-shop-elements' ); ?></h2>
+			<div class="hkdev-blog-items">
+				<?php while ( $related->have_posts() ) : ?>
+					<?php $related->the_post(); ?>
+					<?php echo $this->render_card( get_the_ID(), true, false, true, true, __( 'Read More', 'hkdev-shop-elements' ), '16:9' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				<?php endwhile; ?>
+			</div>
+		</section>
+		<?php
+		wp_reset_postdata();
+
+		return ob_get_clean();
 	}
 
 }

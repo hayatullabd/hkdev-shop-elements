@@ -253,6 +253,36 @@ class Blog_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		// ---- Style: Layout & Spacing ----
+		// Every control is scoped to {{WRAPPER}} so two Blog widgets on the same
+		// page can be styled independently.
+		$w = '{{WRAPPER}} ';
+
+		$this->start_controls_section(
+			'style_layout',
+			[
+				'label' => __( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_slider( 'items_gap', __( 'Gap Between Cards', 'hkdev-shop-elements' ), $w . '.hkdev-blog-items', 'gap', 0, 60 );
+
+		$this->hkdev_slider( 'image_radius', __( 'Image Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-img-wrap', 'border-radius', 0, 40 );
+
+		$this->add_control(
+			'image_zoom',
+			[
+				'label'     => __( 'Image Hover Zoom', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SLIDER,
+				'range'     => [ 'px' => [ 'min' => 1, 'max' => 1.3, 'step' => 0.01 ] ],
+				'default'   => [ 'size' => 1.05 ],
+				'selectors' => [ $w . '.hkdev-blog-card:hover .hkdev-blog-card-img-wrap img' => 'transform: scale({{SIZE}}) !important;' ],
+			]
+		);
+
+		$this->end_controls_section();
+
 		// ---- Style: Card ----
 		$this->start_controls_section(
 			'style_card',
@@ -262,36 +292,30 @@ class Blog_Widget extends Widget_Base {
 			]
 		);
 
+		$this->hkdev_color( 'card_bg', __( 'Card Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 'background-color' );
+
+		$this->hkdev_color( 'card_border', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 'border-color' );
+
+		$this->hkdev_slider( 'card_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 'border-radius', 0, 40 );
+
+		$this->hkdev_shadow( 'card_shadow', __( 'Box Shadow', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card' );
+
+		$this->hkdev_dimensions( 'card_content_padding', __( 'Content Padding', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-body', 'padding' );
+
 		$this->add_control(
-			'card_bg',
+			'cat_badge_heading',
 			[
-				'label'     => __( 'Card Background', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::COLOR,
-				'default'   => '#ffffff',
-				'selectors' => [ '.hkdev-blog-card' => 'background-color: {{VALUE}} !important;' ],
+				'label'     => __( 'Category Badge', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
 			]
 		);
 
-		$this->add_control(
-			'card_border',
-			[
-				'label'     => __( 'Border', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::COLOR,
-				'default'   => '#e1e4e8',
-				'selectors' => [ '.hkdev-blog-card' => 'border-color: {{VALUE}} !important;' ],
-			]
-		);
+		$this->hkdev_color( 'cat_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-category', 'background-color' );
 
-		$this->add_control(
-			'card_radius',
-			[
-				'label'     => __( 'Border Radius', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::SLIDER,
-				'range'     => [ 'px' => [ 'min' => 0, 'max' => 40, 'step' => 1 ] ],
-				'default'   => [ 'size' => 12 ],
-				'selectors' => [ '.hkdev-blog-card' => 'border-radius: {{SIZE}}{{UNIT}} !important;' ],
-			]
-		);
+		$this->hkdev_color( 'cat_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-category', 'color' );
+
+		$this->hkdev_slider( 'cat_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-category', 'border-radius', 0, 30 );
 
 		$this->end_controls_section();
 
@@ -304,9 +328,9 @@ class Blog_Widget extends Widget_Base {
 			]
 		);
 
-		$this->hkdev_typography( 'title_typography', __( 'Title Typography', 'hkdev-shop-elements' ), '.hkdev-blog-card-title a' );
+		$this->hkdev_typography( 'title_typography', __( 'Title Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-title, ' . $w . '.hkdev-blog-card-title a' );
 
-		$this->hkdev_color( 'title_color', __( 'Color', 'hkdev-shop-elements' ), '.hkdev-blog-card-title a' );
+		$this->hkdev_color( 'title_color', __( 'Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-title a' );
 
 		$this->end_controls_section();
 
@@ -319,9 +343,11 @@ class Blog_Widget extends Widget_Base {
 			]
 		);
 
-		$this->hkdev_color( 'meta_color', __( 'Color', 'hkdev-shop-elements' ), '.hkdev-blog-card-meta' );
+		$this->hkdev_color( 'meta_color', __( 'Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-meta' );
 
-		$this->hkdev_typography( 'meta_typography', __( 'Meta Typography', 'hkdev-shop-elements' ), '.hkdev-blog-card-meta' );
+		$this->hkdev_color( 'meta_icon_color', __( 'Icon Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-meta i' );
+
+		$this->hkdev_typography( 'meta_typography', __( 'Meta Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-meta' );
 
 		$this->end_controls_section();
 
@@ -334,9 +360,11 @@ class Blog_Widget extends Widget_Base {
 			]
 		);
 
-		$this->hkdev_color( 'excerpt_color', __( 'Color', 'hkdev-shop-elements' ), '.hkdev-blog-excerpt' );
+		$this->hkdev_color( 'excerpt_color', __( 'Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-excerpt' );
 
-		$this->hkdev_typography( 'excerpt_typography', __( 'Excerpt Typography', 'hkdev-shop-elements' ), '.hkdev-blog-excerpt' );
+		$this->hkdev_typography( 'excerpt_typography', __( 'Excerpt Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-excerpt' );
+
+		$this->hkdev_slider_raw( 'excerpt_lines', __( 'Maximum Lines', 'hkdev-shop-elements' ), $w . '.hkdev-blog-excerpt', '-webkit-line-clamp', 1, 8, 1 );
 
 		$this->end_controls_section();
 
@@ -349,11 +377,19 @@ class Blog_Widget extends Widget_Base {
 			]
 		);
 
-		$this->hkdev_color( 'button_text_color', __( 'Text Color', 'hkdev-shop-elements' ), '.hkdev-blog-readmore' );
+		$this->hkdev_typography( 'button_typography', __( 'Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore' );
 
-		$this->hkdev_color( 'button_bg_color', __( 'Background Color', 'hkdev-shop-elements' ), '.hkdev-blog-readmore', 'background-color' );
+		$this->hkdev_color( 'button_bg_color', __( 'Background Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'background-color' );
 
-		$this->hkdev_slider( 'button_radius', __( 'Border Radius', 'hkdev-shop-elements' ), '.hkdev-blog-readmore', 'border-radius', 0, 30 );
+		$this->hkdev_color( 'button_text_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore' );
+
+		$this->hkdev_color( 'button_bg_hover', __( 'Hover Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover', 'background-color' );
+
+		$this->hkdev_color( 'button_text_hover', __( 'Hover Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover' );
+
+		$this->hkdev_slider( 'button_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'border-radius', 0, 30 );
+
+		$this->hkdev_dimensions( 'button_padding', __( 'Padding', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'padding' );
 
 		$this->end_controls_section();
 	}
