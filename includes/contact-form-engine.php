@@ -124,11 +124,11 @@ class Contact_Form_Engine {
 			if ( ! isset( $_POST['hkdev_cf_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['hkdev_cf_nonce'] ), 'hkdev_cf_action' ) ) {
 				$form_status = '<div class="hkdev-cf-error"><i class="fa-solid fa-triangle-exclamation"></i> ' . esc_html__( 'Security check failed. Please try again.', 'hkdev-shop-elements' ) . '</div>';
 			} else {
-				$name_raw = sanitize_text_field( wp_unslash( $_POST['hkdev_name'] ) );
+				$name_raw = isset( $_POST['hkdev_name'] ) ? sanitize_text_field( wp_unslash( $_POST['hkdev_name'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$name     = str_replace( [ "\r", "\n" ], '', $name_raw );
-				$email    = sanitize_email( wp_unslash( $_POST['hkdev_email'] ) );
-				$subject  = sanitize_text_field( wp_unslash( $_POST['hkdev_subject'] ) );
-				$message  = sanitize_textarea_field( wp_unslash( $_POST['hkdev_message'] ) );
+				$email    = isset( $_POST['hkdev_email'] ) ? sanitize_email( wp_unslash( $_POST['hkdev_email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$subject  = isset( $_POST['hkdev_subject'] ) ? sanitize_text_field( wp_unslash( $_POST['hkdev_subject'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$message  = isset( $_POST['hkdev_message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['hkdev_message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				if ( empty( $name ) || empty( $email ) || empty( $message ) ) {
 					$form_status = '<div class="hkdev-cf-error"><i class="fa-solid fa-circle-exclamation"></i> ' . esc_html__( 'Please fill out all required fields.', 'hkdev-shop-elements' ) . '</div>';

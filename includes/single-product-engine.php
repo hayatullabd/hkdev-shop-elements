@@ -47,6 +47,139 @@ class Single_Product_Engine {
 		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ $this, 'ajax_add_to_cart_handler' ] );
 		add_action( 'wp_ajax_nopriv_' . self::AJAX_ACTION, [ $this, 'ajax_add_to_cart_handler' ] );
 		add_action( 'template_redirect', [ $this, 'track_recently_viewed' ], 20 );
+
+		// Product video URL field (admin).
+		add_action( 'woocommerce_product_options_general_product_data', [ $this, 'render_video_field' ] );
+		add_action( 'woocommerce_admin_process_product_object', [ $this, 'save_video_field' ] );
+	}
+
+	/**
+	 * Render the "Product Video URL" field on the product General tab.
+	 *
+	 * @return void
+	 */
+	public function render_video_field() {
+		echo '<div class="options_group">';
+		woocommerce_wp_text_input(
+			[
+				'id'          => 'hkdev_product_video_url',
+				'label'       => __( 'Product Video URL', 'hkdev-shop-elements' ),
+				'placeholder' => 'https://www.youtube.com/watch?v=...',
+				'desc_tip'    => true,
+				'description' => __( 'Shows a video in the product gallery. YouTube, Vimeo and direct .mp4 / .webm links are supported.', 'hkdev-shop-elements' ),
+				'type'        => 'url',
+			]
+		);
+		echo '</div>';
+	}
+
+	/**
+	 * Save the product video URL.
+	 *
+	 * @param \WC_Product $product Product object.
+	 * @return void
+	 */
+	public function save_video_field( $product ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC verifies its own nonce on this hook.
+		if ( isset( $_POST['hkdev_product_video_url'] ) ) {
+			$video_url = esc_url_raw( wp_unslash( $_POST['hkdev_product_video_url'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$product->update_meta_data( '_hkdev_product_video_url', $video_url );
+		}
+	}
+
+	/**
+	 * Build the embed markup for a stored video URL.
+	 *
+	 * Supports YouTube (lite poster + click-to-load), Vimeo (iframe), and
+	 * direct .mp4 / .webm files (HTML5 video tag). Returns an empty string
+	 * when the URL is not recognised.
+	 *
+	 * @param string $url Video URL.
+	 * @return array{type:string, embed:string, thumbnail:string}
+	 */
+	public static function build_video_embed( $url ) {
+		$url = trim( (string) $url );
+		if ( '' === $url ) {
+			return [ 'type' => '', 'embed' => '', 'thumbnail' => '' ];
+		}
+
+		$youtube_id = Video_Engine::youtube_id( $url );
+		if ( '' !== $youtube_id ) {
+			$embed     = Video_Engine::youtube_embed_url( $youtube_id, true );
+			$thumbnail = 'https://i.ytimg.com/vi/' . $youtube_id . '/hqdefault.jpg';
+			return [
+				'type'      => 'youtube',
+				'embed'     => $embed,
+				'thumbnail' => $thumbnail,
+				'id'        => $youtube_id,
+			];
+		}
+
+		if ( preg_match( '~vimeo\.com/(?:video/)?(\d+)~i', $url, $match ) ) {
+			$thumbnail = 'https://vumbnail.com/' . $match[1] . '.jpg';
+			return [
+				'type'      => 'vimeo',
+				'embed'     => 'https://player.vimeo.com/video/' . $match[1],
+				'thumbnail' => $thumbnail,
+			];
+		}
+
+		if ( preg_match( '~\.(mp4|webm|ogg|ogv|mov|m4v)(\?.*)?$~i', $url, $match ) ) {
+			$src = esc_url( $url );
+			return [
+				'type'      => 'direct',
+				'embed'     => $src,
+				'thumbnail' => '',
+				'ext'       => strtolower( $match[1] ),
+			];
+		}
+
+		// Anything else with a usable scheme: try a plain iframe.
+		if ( preg_match( '~^https?://~i', $url ) ) {
+			return [
+				'type'      => 'iframe',
+				'embed'     => esc_url( $url ),
+				'thumbnail' => '',
+			];
+		}
+
+		return [ 'type' => '', 'embed' => '', 'thumbnail' => '' ];
+	}
+
+	/**
+	 * Build the player markup for a video (used in the gallery viewport).
+	 *
+	 * YouTube uses the lite poster + click-to-load pattern (same as the
+	 * Video_Engine widget); Vimeo / iframe / direct use an immediate
+	 * embed so the video is ready to play.
+	 *
+	 * @param array $video Array from build_video_embed().
+	 * @return string HTML.
+	 */
+	public static function render_video_player( $video ) {
+		if ( empty( $video['type'] ) || empty( $video['embed'] ) ) {
+			return '';
+		}
+
+		if ( 'youtube' === $video['type'] ) {
+			$poster     = ! empty( $video['thumbnail'] ) ? $video['thumbnail'] : 'https://i.ytimg.com/vi/' . $video['id'] . '/maxresdefault.jpg';
+			$watch_url  = Video_Engine::youtube_watch_url( $video['id'] );
+			$play_label = __( 'Play video', 'hkdev-shop-elements' );
+			return '<a href="' . esc_url( $watch_url ) . '" class="hkdev-sp-vp-lite" data-youtube-id="' . esc_attr( $video['id'] ) . '" data-youtube-embed="' . esc_url( $video['embed'] ) . '" data-youtube-fallback="" aria-label="' . esc_attr( $play_label ) . '" target="_blank" rel="noopener">'
+				. '<img src="' . esc_url( $poster ) . '" alt="" loading="lazy" decoding="async" aria-hidden="true">'
+				. '<span class="hkdev-sp-vp-play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>'
+				. '</a>';
+		}
+
+		if ( 'direct' === $video['type'] ) {
+			$ext = isset( $video['ext'] ) ? $video['ext'] : 'mp4';
+			return '<video class="hkdev-sp-vp-video" controls playsinline preload="metadata">'
+				. '<source src="' . esc_url( $video['embed'] ) . '" type="video/' . esc_attr( $ext ) . '">'
+				. '</video>';
+		}
+
+		// vimeo / iframe.
+		return '<iframe class="hkdev-sp-vp-iframe" src="' . esc_url( $video['embed'] ) . '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="' . esc_attr__( 'Product video', 'hkdev-shop-elements' ) . '"></iframe>';
 	}
 
 	/**
@@ -211,6 +344,10 @@ class Single_Product_Engine {
 						$show_badge         = ( 'variable' !== $product->get_type() && $percentage > 0 );
 						$display_percentage = $percentage > 0 ? $percentage . '% ' . $off_text : $off_text;
 						$badge_style        = $show_badge ? '' : 'display:none;';
+
+						// --- Product video (if set) ---
+						$video_url = get_post_meta( $product_id, '_hkdev_product_video_url', true );
+						$video     = ! empty( $video_url ) ? self::build_video_embed( $video_url ) : [ 'type' => '', 'embed' => '', 'thumbnail' => '' ];
 						?>
 						<span class="hkdev-sp-sale-badge" style="<?php echo esc_attr( $badge_style ); ?>"><?php echo esc_html( $display_percentage ); ?></span>
 
@@ -224,19 +361,35 @@ class Single_Product_Engine {
 						<div class="hkdev-sp-zoom-inner" id="hkdev-sp-zoom-container">
 							<img id="hkdev-sp-main-img" src="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>">
 						</div>
+
+						<?php if ( ! empty( $video['type'] ) ) : ?>
+						<div class="hkdev-sp-video-player" id="hkdev-sp-video-player" style="display:none;">
+							<?php echo self::render_video_player( $video ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+						<?php endif; ?>
 					</div>
 
 					<div class="hkdev-sp-thumbnails">
 						<?php if ( $main_image_id ) : ?>
-							<div class="hkdev-sp-thumb active" data-full="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>">
+							<div class="hkdev-sp-thumb active" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>">
 								<?php echo wp_get_attachment_image( $main_image_id, 'thumbnail' ); ?>
 							</div>
 						<?php endif; ?>
 						<?php foreach ( $attachment_ids as $attachment_id ) : ?>
-							<div class="hkdev-sp-thumb" data-full="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, 'large' ) ); ?>">
+							<div class="hkdev-sp-thumb" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, 'large' ) ); ?>">
 								<?php echo wp_get_attachment_image( $attachment_id, 'thumbnail' ); ?>
 							</div>
 						<?php endforeach; ?>
+						<?php if ( ! empty( $video['type'] ) ) : ?>
+						<div class="hkdev-sp-thumb hkdev-sp-video-thumb" data-type="video" data-video-type="<?php echo esc_attr( $video['type'] ); ?>">
+							<?php if ( ! empty( $video['thumbnail'] ) ) : ?>
+								<img src="<?php echo esc_url( $video['thumbnail'] ); ?>" alt="<?php esc_attr_e( 'Product video', 'hkdev-shop-elements' ); ?>" loading="lazy">
+							<?php else : ?>
+								<span class="hkdev-sp-video-thumb-placeholder"><i class="fa-solid fa-film"></i></span>
+							<?php endif; ?>
+							<span class="hkdev-sp-video-thumb-icon"><i class="fa-solid fa-play"></i></span>
+						</div>
+						<?php endif; ?>
 					</div>
 				</div>
 
@@ -254,10 +407,10 @@ class Single_Product_Engine {
 						$variations = $product->get_available_variations();
 						foreach ( $variations as $key => $variation ) {
 							$v_obj  = wc_get_product( $variation['variation_id'] );
-							$v_reg  = (float) $v_obj->get_regular_price();
-							$v_sale = (float) $v_obj->get_sale_price();
+							$v_reg  = $v_obj ? (float) $v_obj->get_regular_price() : 0;
+							$v_sale = $v_obj ? (float) $v_obj->get_sale_price() : 0;
 							$v_perc = 0;
-							if ( $v_obj->is_on_sale() && $v_reg > 0 ) {
+							if ( $v_obj && $v_obj->is_on_sale() && $v_reg > 0 ) {
 								$v_perc = round( ( ( $v_reg - $v_sale ) / $v_reg ) * 100 );
 							}
 							$variations[ $key ]['discount_percentage'] = $v_perc;

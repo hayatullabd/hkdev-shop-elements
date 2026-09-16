@@ -844,11 +844,15 @@ class Header_Engine {
 									<ul class="hkdev-header-cats-list">
 										<?php
 										foreach ( $cats as $cat ) :
+											$cat_link = get_term_link( $cat );
+											if ( is_wp_error( $cat_link ) ) {
+												continue;
+											}
 											$children     = isset( $cat_children[ $cat->term_id ] ) ? $cat_children[ $cat->term_id ] : [];
 											$has_children = ! empty( $children );
 											?>
 											<li class="hkdev-header-cat-item<?php echo $has_children ? ' has-children' : ''; ?>">
-												<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>">
+												<a href="<?php echo esc_url( $cat_link ); ?>">
 													<span class="cat-name"><?php echo esc_html( $cat->name ); ?></span>
 													<span class="cat-count"><?php echo esc_html( $cat->count ); ?></span>
 													<?php if ( $has_children ) : ?>
@@ -858,8 +862,14 @@ class Header_Engine {
 												<?php if ( $has_children ) : ?>
 													<ul class="hkdev-header-cat-children">
 														<?php foreach ( $children as $child ) : ?>
+															<?php
+															$child_link = get_term_link( $child );
+															if ( is_wp_error( $child_link ) ) {
+																continue;
+															}
+															?>
 															<li>
-																<a href="<?php echo esc_url( get_term_link( $child ) ); ?>">
+																<a href="<?php echo esc_url( $child_link ); ?>">
 																	<?php echo esc_html( $child->name ); ?>
 																</a>
 															</li>

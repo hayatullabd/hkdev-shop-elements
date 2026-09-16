@@ -484,73 +484,124 @@ class Checkout_Engine {
 				$payment_method_title = 'Cash On Delivery';
 			}
 
-			$qr_code_url = 'https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=' . rawurlencode( $order->get_checkout_order_received_url() );
+			// --- Logo (auto from Customizer, fallback to site name) ---
+			$logo_html = '';
+			if ( function_exists( 'get_custom_logo' ) && get_theme_mod( 'custom_logo' ) ) {
+				$logo_html = get_custom_logo();
+			}
+			if ( '' === $logo_html ) {
+				$logo_html = '<h2 class="hkdev-co-invoice-site-name">' . esc_html( get_bloginfo( 'name' ) ) . '</h2>';
+			}
+
+			$order_number = $order->get_order_number();
 			?>
-			<div class="hkdev-co-thankyou-container fade-in">
-				<div class="hkdev-co-success-hero">
-					<div class="success-anim-icon"><i class="fa-solid fa-circle-check"></i></div>
-					<h2><?php esc_html_e( 'Order Successful!', 'hkdev-shop-elements' ); ?></h2>
-					<p><?php esc_html_e( 'Order #', 'hkdev-shop-elements' ); ?> <strong>#<?php echo esc_html( $order->get_order_number() ); ?></strong></p>
-					<p class="sub-text"><?php esc_html_e( 'Thank you for shopping with us.', 'hkdev-shop-elements' ); ?></p>
+			<div class="hkdev-co-invoice fade-in" id="hkdev-co-invoice">
+				<!-- Invoice header: logo + order info + print button -->
+				<div class="hkdev-co-invoice-header">
+					<div class="hkdev-co-invoice-brand">
+						<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+					<div class="hkdev-co-invoice-head-right">
+						<span class="hkdev-co-invoice-title"><?php esc_html_e( 'INVOICE', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-co-invoice-order-no">#<?php echo esc_html( $order_number ); ?></span>
+						<span class="hkdev-co-invoice-status"><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></span>
+					</div>
 				</div>
 
-				<div class="hkdev-co-info-cards-grid">
-					<div class="hkdev-co-info-card"><span class="label"><?php esc_html_e( 'Date', 'hkdev-shop-elements' ); ?></span><span class="val"><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></span></div>
-					<div class="hkdev-co-info-card"><span class="label"><?php esc_html_e( 'Total', 'hkdev-shop-elements' ); ?></span><span class="val"><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span></div>
-					<div class="hkdev-co-info-card"><span class="label"><?php esc_html_e( 'Payment Method', 'hkdev-shop-elements' ); ?></span><span class="val"><?php echo esc_html( $payment_method_title ); ?></span></div>
+				<div class="hkdev-co-invoice-top-row">
+					<div class="hkdev-co-invoice-meta-grid">
+						<div class="hkdev-co-invoice-meta-block">
+							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'From', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span>
+						</div>
+						<div class="hkdev-co-invoice-meta-block">
+							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Order Date', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></span>
+						</div>
+						<div class="hkdev-co-invoice-meta-block">
+							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Bill To', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_formatted_billing_full_name() ); ?></span>
+						</div>
+						<div class="hkdev-co-invoice-meta-block">
+							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Phone', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_billing_phone() ? $order->get_billing_phone() : '—' ); ?></span>
+						</div>
+						<div class="hkdev-co-invoice-meta-block">
+							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Email', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_billing_email() ? $order->get_billing_email() : '—' ); ?></span>
+						</div>
+						<div class="hkdev-co-invoice-meta-block">
+							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Payment', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $payment_method_title ); ?></span>
+						</div>
+					</div>
+					<div class="hkdev-co-invoice-print-wrap">
+						<button type="button" class="hkdev-co-print-btn" onclick="window.print()">
+							<i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Invoice', 'hkdev-shop-elements' ); ?>
+						</button>
+					</div>
 				</div>
 
-				<div class="hkdev-co-thankyou-content-grid">
-					<div class="hkdev-co-thankyou-section card-summary">
-						<h3><?php esc_html_e( 'Order Summary', 'hkdev-shop-elements' ); ?></h3>
-						<div class="summary-table-wrap">
-							<?php
-							foreach ( $order->get_items() as $item_id => $item ) :
+				<!-- Billing / Shipping addresses -->
+				<div class="hkdev-co-invoice-address-row">
+					<div class="hkdev-co-invoice-address-block">
+						<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Billing Address', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-co-invoice-meta-val"><?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'hkdev-shop-elements' ) ) ); ?></span>
+					</div>
+					<?php if ( $order->get_formatted_shipping_address() ) : ?>
+					<div class="hkdev-co-invoice-address-block">
+						<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Shipping Address', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-co-invoice-meta-val"><?php echo wp_kses_post( $order->get_formatted_shipping_address() ); ?></span>
+					</div>
+					<?php endif; ?>
+				</div>
+
+				<!-- Items table -->
+				<table class="hkdev-co-invoice-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Item', 'hkdev-shop-elements' ); ?></th>
+							<th class="col-qty"><?php esc_html_e( 'Qty', 'hkdev-shop-elements' ); ?></th>
+							<th class="col-total"><?php esc_html_e( 'Total', 'hkdev-shop-elements' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $order->get_items() as $item_id => $item ) : ?>
+						<tr>
+							<td>
+								<?php
 								$product   = $item->get_product();
 								$item_name = apply_filters( 'woocommerce_order_item_name', $item->get_name(), $item, false );
-								?>
-								<div class="hkdev-co-summary-table-row">
-									<div class="prod-img"><?php echo $product ? wp_kses_post( $product->get_image( 'thumbnail' ) ) : ''; ?></div>
-									<div class="prod-info">
-										<span class="name"><?php echo wp_kses_post( $item_name ); ?></span>
-										<span class="qty"><?php esc_html_e( 'Qty', 'hkdev-shop-elements' ); ?>: <?php echo esc_html( $item->get_quantity() ); ?></span>
-									</div>
-									<div class="prod-total"><?php echo $order->get_formatted_line_subtotal( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-								</div>
-							<?php endforeach; ?>
-						</div>
-						<div class="hkdev-co-summary-totals-footer">
-							<div class="foot-row"><span><?php esc_html_e( 'Subtotal', 'hkdev-shop-elements' ); ?>:</span><strong><?php echo $order->get_subtotal_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-							<?php foreach ( $order->get_items( 'coupon' ) as $coupon_item ) : $coupon_code = $coupon_item->get_name(); ?>
-								<div class="foot-row" style="color: #d5541e;">
-									<span><i class="fa-solid fa-tag"></i> <?php esc_html_e( 'Coupon', 'hkdev-shop-elements' ); ?>: <?php echo esc_html( $coupon_code ); ?></span>
-									<strong>-<?php echo wc_price( $coupon_item->get_discount() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
-								</div>
-							<?php endforeach; ?>
-							<?php foreach ( $order->get_fees() as $fee_id => $fee ) : ?>
-								<div class="foot-row" style="color: #03a550;">
-									<span><i class="fa-solid fa-gift"></i> <?php echo esc_html( $fee->get_name() ); ?></span>
-									<strong><?php echo wc_price( $fee->get_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
-								</div>
-							<?php endforeach; ?>
-							<div class="foot-row"><span><?php esc_html_e( 'Shipping', 'hkdev-shop-elements' ); ?>:</span><strong><?php echo $order->get_shipping_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-							<div class="foot-row grand-total"><span><?php esc_html_e( 'Grand Total', 'hkdev-shop-elements' ); ?>:</span><strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-						</div>
-					</div>
+								echo wp_kses_post( $item_name );
+								if ( $product && $product->get_sku() ) :
+									?>
+									<span class="hkdev-co-invoice-sku"><?php esc_html_e( 'SKU:', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $product->get_sku() ); ?></span>
+								<?php endif; ?>
+							</td>
+							<td class="col-qty"><?php echo esc_html( $item->get_quantity() ); ?></td>
+							<td class="col-total"><?php echo $order->get_formatted_line_subtotal( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+						</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
 
-					<div class="hkdev-co-thankyou-section customer-sidebar">
-						<h3><?php esc_html_e( 'Delivery Details', 'hkdev-shop-elements' ); ?></h3>
-						<div class="hkdev-co-address-box">
-							<p><strong><?php esc_html_e( 'Name', 'hkdev-shop-elements' ); ?>: <?php echo esc_html( $order->get_billing_first_name() ); ?></strong></p>
-							<p><i class="fa-solid fa-phone-volume"></i> <?php echo esc_html( $order->get_billing_phone() ); ?></p>
-							<p><i class="fa-solid fa-location-dot"></i> <?php echo esc_html( $order->get_billing_address_1() ); ?></p>
-						</div>
-						<div class="hkdev-co-qr-block">
-							<img src="<?php echo esc_url_raw( $qr_code_url ); ?>" alt="Order QR Code">
-							<p><?php esc_html_e( 'Scan QR for details', 'hkdev-shop-elements' ); ?></p>
-						</div>
-						<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-shop-more-btn"><?php esc_html_e( 'Continue Shopping', 'hkdev-shop-elements' ); ?></a>
-					</div>
+				<!-- Totals -->
+				<div class="hkdev-co-invoice-totals">
+					<div class="hkdev-co-invoice-total-row"><span><?php esc_html_e( 'Subtotal', 'hkdev-shop-elements' ); ?></span><strong><?php echo $order->get_subtotal_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<?php foreach ( $order->get_items( 'coupon' ) as $coupon_item ) : ?>
+					<div class="hkdev-co-invoice-total-row is-discount"><span><i class="fa-solid fa-tag"></i> <?php esc_html_e( 'Coupon:', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $coupon_item->get_name() ); ?></span><strong>-<?php echo wc_price( $coupon_item->get_discount() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<?php endforeach; ?>
+					<?php foreach ( $order->get_fees() as $fee ) : ?>
+					<div class="hkdev-co-invoice-total-row is-fee"><span><i class="fa-solid fa-gift"></i> <?php echo esc_html( $fee->get_name() ); ?></span><strong><?php echo wc_price( $fee->get_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<?php endforeach; ?>
+					<div class="hkdev-co-invoice-total-row"><span><?php esc_html_e( 'Shipping', 'hkdev-shop-elements' ); ?></span><strong><?php echo $order->get_shipping_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<div class="hkdev-co-invoice-total-row grand-total"><span><?php esc_html_e( 'Grand Total', 'hkdev-shop-elements' ); ?></span><strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+				</div>
+
+				<!-- Footer -->
+				<div class="hkdev-co-invoice-footer">
+					<p class="hkdev-co-invoice-thanks"><i class="fa-solid fa-circle-check"></i> <?php esc_html_e( 'Thank you for shopping with us!', 'hkdev-shop-elements' ); ?></p>
+					<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-shop-more-btn"><?php esc_html_e( 'Continue Shopping', 'hkdev-shop-elements' ); ?></a>
 				</div>
 			</div>
 			<?php
@@ -1185,19 +1236,23 @@ class Checkout_Engine {
 	 * @return void
 	 */
 	private function update_customer_address_from_post() {
-		$post  = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$clean = static function ( $key, $fallback = null ) use ( $post ) {
-			return ( isset( $post[ $key ] ) && '' !== $post[ $key ] ) ? wc_clean( $post[ $key ] ) : $fallback;
+		$post     = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$customer = WC()->customer;
+		// A disabled checkout field is absent from the form and therefore from
+		// $_POST. Fall back to the customer's current value so it is never
+		// wiped to null (which would also wipe the state-based delivery fee).
+		$clean = static function ( $key, $current ) use ( $post ) {
+			return ( isset( $post[ $key ] ) && '' !== $post[ $key ] ) ? wc_clean( $post[ $key ] ) : $current;
 		};
 
-		WC()->customer->set_props(
+		$customer->set_props(
 			[
-				'billing_country'   => $clean( 'billing_country' ),
-				'billing_state'     => $clean( 'billing_state' ),
-				'billing_postcode'  => $clean( 'billing_postcode' ),
-				'billing_city'      => $clean( 'billing_city' ),
-				'billing_address_1' => $clean( 'billing_address_1' ),
-				'billing_address_2' => $clean( 'billing_address_2' ),
+				'billing_country'   => $clean( 'billing_country', $customer->get_billing_country() ),
+				'billing_state'     => $clean( 'billing_state', $customer->get_billing_state() ),
+				'billing_postcode'  => $clean( 'billing_postcode', $customer->get_billing_postcode() ),
+				'billing_city'      => $clean( 'billing_city', $customer->get_billing_city() ),
+				'billing_address_1' => $clean( 'billing_address_1', $customer->get_billing_address_1() ),
+				'billing_address_2' => $clean( 'billing_address_2', $customer->get_billing_address_2() ),
 			]
 		);
 
@@ -1224,14 +1279,14 @@ class Checkout_Engine {
 		$ship_addr1    = $shipping_given ? $ship( 'shipping_address_1' ) : null;
 		$ship_addr2    = $shipping_given ? $ship( 'shipping_address_2' ) : null;
 
-		WC()->customer->set_props(
+		$customer->set_props(
 			[
-				'shipping_country'   => $ship_country ? $ship_country : $clean( 'billing_country' ),
-				'shipping_state'     => $ship_state ? $ship_state : $clean( 'billing_state' ),
-				'shipping_postcode'  => $ship_postcode ? $ship_postcode : $clean( 'billing_postcode' ),
-				'shipping_city'      => $ship_city ? $ship_city : $clean( 'billing_city' ),
-				'shipping_address_1' => $ship_addr1 ? $ship_addr1 : $clean( 'billing_address_1' ),
-				'shipping_address_2' => $ship_addr2 ? $ship_addr2 : $clean( 'billing_address_2' ),
+				'shipping_country'   => $ship_country ? $ship_country : $clean( 'billing_country', $customer->get_billing_country() ),
+				'shipping_state'     => $ship_state ? $ship_state : $clean( 'billing_state', $customer->get_billing_state() ),
+				'shipping_postcode'  => $ship_postcode ? $ship_postcode : $clean( 'billing_postcode', $customer->get_billing_postcode() ),
+				'shipping_city'      => $ship_city ? $ship_city : $clean( 'billing_city', $customer->get_billing_city() ),
+				'shipping_address_1' => $ship_addr1 ? $ship_addr1 : $clean( 'billing_address_1', $customer->get_billing_address_1() ),
+				'shipping_address_2' => $ship_addr2 ? $ship_addr2 : $clean( 'billing_address_2', $customer->get_billing_address_2() ),
 			]
 		);
 
@@ -1342,7 +1397,12 @@ class Checkout_Engine {
 
 		try {
 			WC()->cart->calculate_totals();
-			$order = wc_create_order();
+			$order_id = wc_create_order();
+			$order    = wc_get_order( $order_id );
+
+			if ( ! $order instanceof \WC_Order ) {
+				wp_send_json_error( [ 'message' => esc_html__( 'Could not create your order. Please try again.', 'hkdev-shop-elements' ) ] );
+			}
 
 			$order->set_created_via( 'checkout' );
 			$order->set_customer_ip_address( \WC_Geolocation::get_ip_address() );
@@ -1536,7 +1596,7 @@ class Checkout_Engine {
 			WC()->cart->empty_cart();
 
 			wp_send_json_success( [ 'redirect' => $order->get_checkout_order_received_url() ] );
-		} catch ( \Exception $e ) {
+		} catch ( \Throwable $e ) {
 			wp_send_json_error( [ 'message' => $e->getMessage() ] );
 		}
 	}

@@ -45,6 +45,15 @@ class Auth_Engine {
 		if ( is_user_logged_in() ) {
 			return;
 		}
+
+		// The modal is printed both by the [hkdev_login] shortcode and by the
+		// wp_footer hook. Print it only once per request — otherwise the same
+		// element IDs appear twice in the DOM and the JS handlers misbehave.
+		static $rendered = false;
+		if ( $rendered ) {
+			return;
+		}
+		$rendered = true;
 		?>
 		<div class="hkdev-auth-modal" id="hkdev-auth-modal" aria-hidden="true">
 			<div class="hkdev-auth-modal-overlay"></div>

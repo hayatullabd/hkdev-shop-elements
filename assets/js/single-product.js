@@ -71,23 +71,38 @@ jQuery(document).ready(function($) {
     // 2. Variations Data
     const variations = $('.hkdev-sp-variable-options').data('variations') || [];
 
-    // 3. Image Gallery Logic
+    // 3. Image + Video Gallery Logic
     function updateMainImage(index) {
         const $thumbs = $('.hkdev-sp-thumb');
         if(index >= $thumbs.length) index = 0;
         if(index < 0) index = $thumbs.length - 1;
 
         const $target = $thumbs.eq(index);
-        const fullSrc = $target.data('full');
+        const mediaType = $target.data('type') || 'image';
 
         $thumbs.removeClass('active');
         $target.addClass('active');
 
         $('#hkdev-sp-viewport').removeClass('zoomed-active');
 
-        $('#hkdev-sp-main-img').fadeOut(100, function() {
-            $(this).attr('src', fullSrc).fadeIn(200);
-        });
+        const $player = $('#hkdev-sp-video-player');
+
+        if ('video' === mediaType) {
+            // Show the video player, hide the main image.
+            $('#hkdev-sp-main-img').stop(true, true).fadeOut(100);
+            if ($player.length) {
+                $player.stop(true, true).fadeIn(200);
+            }
+        } else {
+            // Show the image, hide the video player.
+            const fullSrc = $target.data('full');
+            if ($player.length) {
+                $player.stop(true, true).fadeOut(100);
+            }
+            $('#hkdev-sp-main-img').stop(true, true).fadeOut(100, function() {
+                $(this).attr('src', fullSrc).fadeIn(200);
+            });
+        }
 
         const container = $('.hkdev-sp-thumbnails');
         if ($target.length) {
@@ -109,6 +124,28 @@ jQuery(document).ready(function($) {
     $(document).on('click', '#hkdev-sp-prev-img', function(e) {
         e.stopPropagation();
         updateMainImage($('.hkdev-sp-thumb.active').index() - 1);
+    });
+
+    // YouTube lite embed in the gallery viewport (click poster -> load player).
+    $(document).on('click', '.hkdev-sp-vp-lite', function(e) {
+        e.preventDefault();
+        const $this = $(this);
+        const embedUrl = $this.data('youtube-embed');
+        if (!embedUrl) {
+            return;
+        }
+        const $img = $this.find('img');
+        const $wrap = $this.parent();
+        const w = $wrap.width() || 640;
+        const h = $wrap.height() || 360;
+        $('<iframe class="hkdev-sp-vp-iframe" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>')
+            .attr('src', embedUrl)
+            .attr('width', w)
+            .attr('height', h)
+            .css({ width: '100%', height: '100%', display: 'block' })
+            .insertBefore($img);
+        $img.remove();
+        $this.remove();
     });
 
     // 4. Image Zoom Feature (class-driven so CSS !important wins over hover scale)

@@ -433,8 +433,14 @@ class Footer_Engine {
 								<h3 class="hkdev-footer-title"><?php echo esc_html( $atts['categories_title'] ); ?></h3>
 								<ul class="hkdev-footer-links">
 									<?php foreach ( $cats as $cat ) : ?>
+										<?php
+										$footer_cat_link = get_term_link( $cat );
+										if ( is_wp_error( $footer_cat_link ) ) {
+											continue;
+										}
+										?>
 										<li>
-											<a href="<?php echo esc_url( get_term_link( $cat ) ); ?>">
+											<a href="<?php echo esc_url( $footer_cat_link ); ?>">
 												<?php echo esc_html( $cat->name ); ?>
 											</a>
 										</li>
