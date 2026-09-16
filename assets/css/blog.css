@@ -1,0 +1,348 @@
+/* ==========================================================================
+   HKDEV Blog — post grid / list + archive
+   Matches the plugin design language: brand green + soft tints + pills.
+   Control styles use !important so theme / Elementor globals cannot override.
+   ========================================================================== */
+.hkdev-blog {
+	--hkblog-primary: #03a550;
+	--hkblog-primary-dark: #027a3b;
+	--hkblog-soft: #f2f9f4;
+	--hkblog-soft-2: #e5f4e6;
+	--hkblog-border: #e1e4e8;
+	--hkblog-border-strong: rgba(3, 165, 80, 0.2);
+	--hkblog-text: #141a14;
+	--hkblog-muted: #6b776f;
+	--hkblog-bg: #ffffff;
+	--hkblog-radius: 12px;
+	--hkblog-shadow: 0 6px 22px rgba(0, 0, 0, 0.06);
+	position: relative !important;
+	display: block !important;
+	font-family: inherit !important;
+	color: var(--hkblog-text) !important;
+}
+
+/* ------------------------------------------------------------------
+   Container & columns
+   ------------------------------------------------------------------ */
+.hkdev-blog-grid {
+	display: grid !important;
+	grid-template-columns: repeat(3, 1fr) !important;
+	gap: 24px !important;
+}
+.hkdev-blog-list-layout {
+	display: block !important;
+}
+
+/* data-columns override (set by the engine/widget) */
+.hkdev-blog[data-columns="1"] .hkdev-blog-list {
+	grid-template-columns: 1fr !important;
+}
+.hkdev-blog[data-columns="2"] .hkdev-blog-list {
+	grid-template-columns: repeat(2, 1fr) !important;
+}
+.hkdev-blog[data-columns="3"] .hkdev-blog-list {
+	grid-template-columns: repeat(3, 1fr) !important;
+}
+.hkdev-blog[data-columns="4"] .hkdev-blog-list {
+	grid-template-columns: repeat(4, 1fr) !important;
+}
+.hkdev-blog[data-columns="5"] .hkdev-blog-list {
+	grid-template-columns: repeat(5, 1fr) !important;
+}
+.hkdev-blog[data-columns="6"] .hkdev-blog-list {
+	grid-template-columns: repeat(6, 1fr) !important;
+}
+
+/* ------------------------------------------------------------------
+   Cards
+   ------------------------------------------------------------------ */
+.hkdev-blog-list {
+	display: grid !important;
+	grid-template-columns: repeat(3, 1fr) !important;
+	gap: 24px !important;
+}
+.hkdev-blog-card {
+	display: flex !important;
+	flex-direction: column !important;
+	background: var(--hkblog-bg) !important;
+	border: 1.5px solid var(--hkblog-border) !important;
+	border-radius: var(--hkblog-radius) !important;
+	overflow: hidden !important;
+	box-shadow: var(--hkblog-shadow) !important;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+.hkdev-blog-card:hover {
+	transform: translateY(-2px) !important;
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.1) !important;
+	border-color: rgba(3, 165, 80, 0.25) !important;
+}
+.hkdev-blog-list-layout .hkdev-blog-card {
+	flex-direction: row !important;
+}
+
+/* -- image wrapper (aspect ratio) -- */
+.hkdev-blog-card-img-wrap {
+	position: relative !important;
+	width: 100% !important;
+	overflow: hidden !important;
+}
+.hkdev-blog-card-img-wrap[data-ratio="1:1"] {
+	aspect-ratio: 1 / 1 !important;
+}
+.hkdev-blog-card-img-wrap[data-ratio="4:3"] {
+	aspect-ratio: 4 / 3 !important;
+}
+.hkdev-blog-card-img-wrap[data-ratio="16:9"] {
+	aspect-ratio: 16 / 9 !important;
+}
+.hkdev-blog-card-img-wrap[data-ratio="auto"] {
+	aspect-ratio: auto !important;
+}
+.hkdev-blog-card-img-wrap img {
+	width: 100% !important;
+	height: 100% !important;
+	object-fit: cover !important;
+	display: block !important;
+}
+.hkdev-blog-list-layout .hkdev-blog-card-img-wrap {
+	max-width: 240px !important;
+	flex-shrink: 0 !important;
+}
+
+/* -- category badge -- */
+.hkdev-blog-card-link-img {
+	display: block !important;
+	position: relative !important;
+}
+.hkdev-blog-card-category {
+	position: absolute !important;
+	top: 10px !important;
+	left: 10px !important;
+	background: var(--hkblog-primary) !important;
+	color: #fff !important;
+	padding: 2px 10px !important;
+	border-radius: 999px !important;
+	font-size: 11px !important;
+	font-weight: 600 !important;
+	line-height: 1.8 !important;
+	text-transform: uppercase !important;
+	letter-spacing: 0.03em !important;
+}
+.hkdev-blog-card-category-top {
+	position: static !important;
+	margin-bottom: 6px !important;
+}
+
+/* placeholder (no featured image) */
+.hkdev-blog-card-img-placeholder {
+	background: var(--hkblog-soft) !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+}
+.hkdev-blog-card-placeholder-icon {
+	font-size: 42px !important;
+	color: var(--hkblog-muted) !important;
+}
+
+/* -- card body -- */
+.hkdev-blog-card-body {
+	display: flex !important;
+	flex-direction: column !important;
+	padding: 16px !important;
+	gap: 8px !important;
+	flex-grow: 1 !important;
+}
+.hkdev-blog-list-layout .hkdev-blog-card-body {
+	padding: 16px 20px !important;
+}
+
+/* -- title -- */
+.hkdev-blog-card-title {
+	margin: 0 !important;
+	font-size: 17px !important;
+	line-height: 1.35 !important;
+}
+.hkdev-blog-card-title a {
+	color: var(--hkblog-text) !important;
+	text-decoration: none !important;
+	transition: color 0.2s ease !important;
+}
+.hkdev-blog-card-title a:hover {
+	color: var(--hkblog-primary) !important;
+}
+
+/* -- meta row -- */
+.hkdev-blog-card-meta {
+	display: flex !important;
+	flex-wrap: wrap !important;
+	align-items: center !important;
+	gap: 10px !important;
+	font-size: 12px !important;
+	color: var(--hkblog-muted) !important;
+}
+.hkdev-blog-card-meta span {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 4px !important;
+}
+.hkdev-blog-card-meta i {
+	font-size: 11px !important;
+	color: var(--hkblog-primary) !important;
+}
+
+/* -- excerpt -- */
+.hkdev-blog-excerpt {
+	margin: 0 !important;
+	font-size: 14px !important;
+	line-height: 1.6 !important;
+	color: var(--hkblog-muted) !important;
+	display: -webkit-box !important;
+	-webkit-line-clamp: 3 !important;
+	-webkit-box-orient: vertical !important;
+	overflow: hidden !important;
+	text-overflow: ellipsis !important;
+}
+
+/* -- read more button -- */
+.hkdev-blog-readmore {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 6px !important;
+	margin-top: auto !important;
+	align-self: flex-start !important;
+	background: var(--hkblog-primary) !important;
+	color: #fff !important;
+	padding: 8px 18px !important;
+	border-radius: 999px !important;
+	font-size: 13px !important;
+	font-weight: 600 !important;
+	text-decoration: none !important;
+	transition: background 0.2s ease, transform 0.2s ease !important;
+	border: none !important;
+	cursor: pointer !important;
+}
+.hkdev-blog-readmore:hover {
+	background: var(--hkblog-primary-dark) !important;
+	transform: translateY(-1px) !important;
+}
+.hkdev-blog-readmore i {
+	font-size: 12px !important;
+}
+
+/* ------------------------------------------------------------------
+   Category pills (archive filter)
+   ------------------------------------------------------------------ */
+.hkdev-blog-categories {
+	display: flex !important;
+	flex-wrap: nowrap !important;
+	overflow-x: auto !important;
+	gap: 8px !important;
+	padding: 4px 0 16px !important;
+	margin: 0 0 12px !important;
+	scrollbar-width: none !important;
+}
+.hkdev-blog-categories::-webkit-scrollbar {
+	display: none !important;
+}
+.hkdev-blog-cat {
+	display: inline-flex !important;
+	align-items: center !important;
+	padding: 6px 16px !important;
+	border-radius: 999px !important;
+	font-size: 13px !important;
+	font-weight: 500 !important;
+	text-decoration: none !important;
+	white-space: nowrap !important;
+	border: 1.5px solid var(--hkblog-border) !important;
+	color: var(--hkblog-muted) !important;
+	background: var(--hkblog-bg) !important;
+	transition: all 0.2s ease !important;
+	cursor: pointer !important;
+}
+.hkdev-blog-cat:hover {
+	background: var(--hkblog-soft-2) !important;
+	border-color: var(--hkblog-primary) !important;
+	color: var(--hkblog-primary) !important;
+}
+.hkdev-blog-cat.hkdev-blog-cat-active {
+	background: var(--hkblog-primary) !important;
+	color: #fff !important;
+	border-color: var(--hkblog-primary) !important;
+}
+
+/* ------------------------------------------------------------------
+   Pagination
+   ------------------------------------------------------------------ */
+.hkdev-blog-pagination ul.page-numbers {
+	display: flex !important;
+	justify-content: center !important;
+	flex-wrap: wrap !important;
+	gap: 4px !important;
+	list-style: none !important;
+	padding: 0 !important;
+	margin: 20px 0 0 !important;
+}
+.hkdev-blog-pagination ul.page-numbers li {
+	display: inline-block !important;
+}
+.hkdev-blog-pagination ul.page-numbers a,
+.hkdev-blog-pagination ul.page-numbers span {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	min-width: 36px !important;
+	height: 36px !important;
+	padding: 0 10px !important;
+	border-radius: 6px !important;
+	font-size: 13px !important;
+	font-weight: 500 !important;
+	color: var(--hkblog-text) !important;
+	text-decoration: none !important;
+	border: 1.5px solid var(--hkblog-border) !important;
+	background: var(--hkblog-bg) !important;
+	transition: all 0.2s ease !important;
+}
+.hkdev-blog-pagination ul.page-numbers a:hover,
+.hkdev-blog-pagination ul.page-numbers .current {
+	background: var(--hkblog-primary) !important;
+	color: #fff !important;
+	border-color: var(--hkblog-primary) !important;
+}
+
+/* ------------------------------------------------------------------
+   Empty state
+   ------------------------------------------------------------------ */
+.hkdev-blog-empty {
+	text-align: center !important;
+	padding: 48px 16px !important;
+	color: var(--hkblog-muted) !important;
+	font-size: 16px !important;
+}
+
+/* ------------------------------------------------------------------
+   Responsive
+   ------------------------------------------------------------------ */
+@media (max-width: 991.98px) {
+	.hkdev-blog-grid,
+	.hkdev-blog-list {
+		grid-template-columns: repeat(2, 1fr) !important;
+		gap: 20px !important;
+	}
+	.hkdev-blog-list-layout .hkdev-blog-card-img-wrap {
+		max-width: 180px !important;
+	}
+}
+@media (max-width: 600.98px) {
+	.hkdev-blog-grid,
+	.hkdev-blog-list,
+	.hkdev-blog[data-columns="1"] .hkdev-blog-list {
+		grid-template-columns: 1fr !important;
+	}
+	.hkdev-blog-list-layout .hkdev-blog-card {
+		flex-direction: column !important;
+	}
+	.hkdev-blog-list-layout .hkdev-blog-card-img-wrap {
+		max-width: 100% !important;
+	}
+}
