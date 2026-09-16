@@ -551,30 +551,46 @@
     .hkdev-co-invoice-totals { max-width: 100% !important; }
 }
 
-/* Print: clean invoice */
+/* Print: only the invoice, compact on one page */
 @media print {
-    body.woocommerce-checkout body, body.woocommerce-checkout { background: #fff !important; }
-    .hkdev-co-invoice {
+    /* Hide everything, then re-show only the invoice and its children. */
+    body * { visibility: hidden !important; }
+    #hkdev-co-invoice, #hkdev-co-invoice * { visibility: visible !important; }
+    #hkdev-co-invoice {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 16px !important;
         box-shadow: none !important;
         border: none !important;
         border-radius: 0 !important;
-        max-width: 100% !important;
-        padding: 0 !important;
         page-break-inside: avoid !important;
+        font-size: 12px !important;
     }
+    body.woocommerce-checkout, body.woocommerce-checkout body { background: #fff !important; }
+
+    /* Never print the print button / continue shopping link. */
     .hkdev-co-print-btn,
     .hkdev-co-invoice-footer .hkdev-co-shop-more-btn,
     .hkdev-co-qr-block { display: none !important; }
+
+    /* Compact layout for one page. */
     .hkdev-co-invoice-header { border-bottom-color: #ccc !important; }
     .hkdev-co-invoice-status { border: 1px solid var(--brand-primary) !important; color: var(--brand-primary) !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .hkdev-co-invoice-table th { border-bottom-color: #ccc !important; }
-    .hkdev-co-invoice-table td { border-bottom-color: #eee !important; }
+    .hkdev-co-invoice-meta-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px 8px !important; }
+    .hkdev-co-invoice-address-row { grid-template-columns: 1fr 1fr !important; padding: 8px !important; background: #f7f7f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .hkdev-co-invoice-table { margin-top: 8px !important; }
+    .hkdev-co-invoice-table th { border-bottom-color: #ccc !important; font-size: 10px !important; text-transform: uppercase; }
+    .hkdev-co-invoice-table td { border-bottom-color: #eee !important; padding: 4px !important; font-size: 10px !important; }
+    .hkdev-co-invoice-totals td { padding: 3px 4px !important; font-size: 10px !important; }
+    .hkdev-co-invoice-total-row strong { font-size: 10px !important; }
+    .hkdev-co-invoice-total-row.grand-total strong { font-size: 13px !important; }
     .hkdev-co-invoice-footer { border-top-color: #ccc !important; }
-    .hkdev-co-invoice-address-row { background: #f7f7f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    /* Hide the rest of the checkout UI that might print */
-    .hkdev-co-checkout-grid > .checkout-section:not(.left-column),
-    #hkdev-co-global-loader,
-    #hkdev-co-toast { display: none !important; }
+    .hkdev-co-invoice h2 { font-size: 15px !important; margin: 0 !important; }
+    .hkdev-co-invoice th.total-amt, .hkdev-co-invoice td.total-amt { font-weight: 700 !important; }
 }
 
 /* Responsive adjustments */

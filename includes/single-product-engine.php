@@ -43,48 +43,183 @@ class Single_Product_Engine {
 	/**
 	 * Register hooks.
 	 */
+	const VIDEO_SLOTS = 5;
+
 	public function __construct() {
 		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ $this, 'ajax_add_to_cart_handler' ] );
 		add_action( 'wp_ajax_nopriv_' . self::AJAX_ACTION, [ $this, 'ajax_add_to_cart_handler' ] );
 		add_action( 'template_redirect', [ $this, 'track_recently_viewed' ], 20 );
 
-		// Product video URL field (admin).
-		add_action( 'woocommerce_product_options_general_product_data', [ $this, 'render_video_field' ] );
-		add_action( 'woocommerce_admin_process_product_object', [ $this, 'save_video_field' ] );
+		// Product video meta box (admin).
+		add_action( 'add_meta_boxes', [ $this, 'register_video_meta_box' ] );
+		add_action( 'woocommerce_admin_process_product_object', [ $this, 'save_video_meta_box' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_video_meta_box_assets' ] );
 	}
 
 	/**
-	 * Render the "Product Video URL" field on the product General tab.
+	 * Register the "Product Videos" meta box on the product edit screen.
 	 *
 	 * @return void
 	 */
-	public function render_video_field() {
-		echo '<div class="options_group">';
-		woocommerce_wp_text_input(
-			[
-				'id'          => 'hkdev_product_video_url',
-				'label'       => __( 'Product Video URL', 'hkdev-shop-elements' ),
-				'placeholder' => 'https://www.youtube.com/watch?v=...',
-				'desc_tip'    => true,
-				'description' => __( 'Shows a video in the product gallery. YouTube, Vimeo and direct .mp4 / .webm links are supported.', 'hkdev-shop-elements' ),
-				'type'        => 'url',
-			]
+	public function register_video_meta_box() {
+		add_meta_box(
+			'hkdev_product_videos',
+			__( 'Product Videos', 'hkdev-shop-elements' ),
+			[ $this, 'render_video_meta_box' ],
+			'product',
+			'normal',
+			'high'
 		);
-		echo '</div>';
 	}
 
 	/**
-	 * Save the product video URL.
+	 * Enqueue the media uploader and our small admin script on the product
+	 * edit screen only.
+	 *
+	 * @param string $hook Current admin page.
+	 * @return void
+	 */
+	public function enqueue_video_meta_box_assets( $hook ) {
+		if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( ! $screen || 'product' !== $screen->post_type ) {
+			return;
+		}
+
+		wp_enqueue_media();
+	}
+
+	/**
+	 * Render the "Product Videos" meta box.
+	 *
+	 * @param \WP_Post $post Product post object.
+	 * @return void
+	 */
+	public function render_video_meta_box( $post ) {
+		$videos   = get_post_meta( $post->ID, '_hkdev_product_videos', true );
+		$videos   = is_array( $videos ) ? $videos : [];
+		$old_url  = get_post_meta( $post->ID, '_hkdev_product_video_url', true );
+
+		// Backward compat: migrate the single old key into the first slot.
+		if ( empty( $videos ) && ! empty( $old_url ) ) {
+			$videos[] = [ 'url' => $old_url ];
+		}
+
+		wp_nonce_field( 'hkdev_save_product_videos', 'hkdev_product_videos_nonce' );
+		?>
+		<p class="description" style="margin: 0 0 12px; padding: 0 12px;">
+			<?php esc_html_e( 'Add YouTube, Vimeo or direct video file links. They appear as switchable thumbs in the product gallery next to the images. Use the upload button to pick a video from your media library, or paste a URL.', 'hkdev-shop-elements' ); ?>
+		</p>
+		<div class="hkdev-video-slots" style="padding: 0 12px;">
+			<?php for ( $i = 0; $i < self::VIDEO_SLOTS; $i++ ) : ?>
+				<?php
+				$slot_url = isset( $videos[ $i ]['url'] ) ? $videos[ $i ]['url'] : '';
+				?>
+				<div class="hkdev-video-slot" style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
+					<span class="hkdev-video-slot-num" style="width: 22px; font-weight: 700; color: #555;"><?php echo intval( $i + 1 ); ?>.</span>
+					<input type="text"
+						class="hkdev-video-url short-text"
+						name="hkdev_video_urls[]"
+						value="<?php echo esc_url( $slot_url ); ?>"
+						placeholder="<?php esc_attr_e( 'Paste YouTube / Vimeo / .mp4 URL', 'hkdev-shop-elements' ); ?>"
+						style="flex: 1; min-width: 200px;"
+					/>
+					<button type="button" class="button hkdev-video-upload-btn" data-target="hkdev_video_urls">
+						<span class="dashicons dashicons-upload" style="vertical-align: middle; font-size: 16px; line-height: 1.4;"></span>
+						<?php esc_html_e( 'Upload / Add Video', 'hkdev-shop-elements' ); ?>
+					</button>
+					<?php if ( $slot_url ) : ?>
+						<button type="button" class="button hkdev-video-clear-btn" style="color: #a00;"><?php esc_html_e( 'Clear', 'hkdev-shop-elements' ); ?></button>
+					<?php endif; ?>
+				</div>
+			<?php endfor; ?>
+		</div>
+		<script>
+		(function($){
+			'use strict';
+			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
+			$(document).on('click', '.hkdev-video-upload-btn', function(e) {
+				e.preventDefault();
+				var $btn = $(this);
+				var $row = $btn.closest('.hkdev-video-slot');
+				var $input = $row.find('input[name="hkdev_video_urls[]"]');
+				var frame = wp.media({
+					title: '<?php echo esc_js( __( 'Select or Upload Product Video', 'hkdev-shop-elements' ) ); ?>',
+					library: { type: 'video' },
+					button: { text: '<?php echo esc_js( __( 'Use this video', 'hkdev-shop-elements' ) ); ?>' },
+					multiple: false
+				});
+				frame.on('select', function() {
+					var url = frame.state().get('selection').first().get('url');
+					$input.val(url).trigger('change');
+				});
+				frame.open();
+			});
+			$(document).on('click', '.hkdev-video-clear-btn', function(e) {
+				e.preventDefault();
+				$(this).closest('.hkdev-video-slot').find('input[name="hkdev_video_urls[]"]').val('');
+				$(this).remove();
+			});
+		})(jQuery);
+		</script>
+		<?php
+	}
+
+	/**
+	 * Save the product videos meta box.
 	 *
 	 * @param \WC_Product $product Product object.
 	 * @return void
 	 */
-	public function save_video_field( $product ) {
+	public function save_video_meta_box( $product ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC verifies its own nonce on this hook.
-		if ( isset( $_POST['hkdev_product_video_url'] ) ) {
-			$video_url = esc_url_raw( wp_unslash( $_POST['hkdev_product_video_url'] ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-			$product->update_meta_data( '_hkdev_product_video_url', $video_url );
+		if ( ! isset( $_POST['hkdev_product_videos_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['hkdev_product_videos_nonce'] ) ), 'hkdev_save_product_videos' ) ) {
+			return;
 		}
+
+		$raw_urls = isset( $_POST['hkdev_video_urls'] ) && is_array( $_POST['hkdev_video_urls'] ) ? wp_unslash( $_POST['hkdev_video_urls'] ) : array(); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		$videos = array();
+		foreach ( $raw_urls as $raw ) {
+			$url = esc_url_raw( trim( (string) $raw ) );
+			if ( '' === $url ) {
+				continue;
+			}
+			$videos[] = array( 'url' => $url );
+		}
+
+		if ( empty( $videos ) ) {
+			$product->delete_meta_data( '_hkdev_product_videos' );
+			$product->delete_meta_data( '_hkdev_product_video_url' );
+		} else {
+			$product->update_meta_data( '_hkdev_product_videos', $videos );
+			// Keep the old single key in sync for any code still reading it.
+			$product->update_meta_data( '_hkdev_product_video_url', $videos[0]['url'] );
+		}
+	}
+
+	/**
+	 * Collect all video URLs for a product (new array + old single fallback).
+	 *
+	 * @param int $product_id Product ID.
+	 * @return string[]
+	 */
+	public static function get_product_video_urls( $product_id ) {
+		$videos = get_post_meta( $product_id, '_hkdev_product_videos', true );
+		if ( is_array( $videos ) && ! empty( $videos ) ) {
+			$urls = array();
+			foreach ( $videos as $v ) {
+				if ( ! empty( $v['url'] ) ) {
+					$urls[] = $v['url'];
+				}
+			}
+			return $urls;
+		}
+
+		$old = get_post_meta( $product_id, '_hkdev_product_video_url', true );
+		return ! empty( $old ) ? array( $old ) : array();
 	}
 
 	/**
@@ -345,9 +480,8 @@ class Single_Product_Engine {
 						$display_percentage = $percentage > 0 ? $percentage . '% ' . $off_text : $off_text;
 						$badge_style        = $show_badge ? '' : 'display:none;';
 
-						// --- Product video (if set) ---
-						$video_url = get_post_meta( $product_id, '_hkdev_product_video_url', true );
-						$video     = ! empty( $video_url ) ? self::build_video_embed( $video_url ) : [ 'type' => '', 'embed' => '', 'thumbnail' => '' ];
+						// --- Product videos (multiple, with per-thumb embed data) ---
+						$video_urls = self::get_product_video_urls( $product_id );
 						?>
 						<span class="hkdev-sp-sale-badge" style="<?php echo esc_attr( $badge_style ); ?>"><?php echo esc_html( $display_percentage ); ?></span>
 
@@ -362,11 +496,7 @@ class Single_Product_Engine {
 							<img id="hkdev-sp-main-img" src="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>">
 						</div>
 
-						<?php if ( ! empty( $video['type'] ) ) : ?>
-						<div class="hkdev-sp-video-player" id="hkdev-sp-video-player" style="display:none;">
-							<?php echo self::render_video_player( $video ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-						</div>
-						<?php endif; ?>
+						<div class="hkdev-sp-video-player" id="hkdev-sp-video-player" style="display:none;"></div>
 					</div>
 
 					<div class="hkdev-sp-thumbnails">
@@ -380,16 +510,26 @@ class Single_Product_Engine {
 								<?php echo wp_get_attachment_image( $attachment_id, 'thumbnail' ); ?>
 							</div>
 						<?php endforeach; ?>
-						<?php if ( ! empty( $video['type'] ) ) : ?>
-						<div class="hkdev-sp-thumb hkdev-sp-video-thumb" data-type="video" data-video-type="<?php echo esc_attr( $video['type'] ); ?>">
-							<?php if ( ! empty( $video['thumbnail'] ) ) : ?>
-								<img src="<?php echo esc_url( $video['thumbnail'] ); ?>" alt="<?php esc_attr_e( 'Product video', 'hkdev-shop-elements' ); ?>" loading="lazy">
+						<?php foreach ( $video_urls as $v_index => $v_url ) : ?>
+							<?php
+							$v_data = self::build_video_embed( $v_url );
+							if ( empty( $v_data['type'] ) ) {
+								continue;
+							}
+							$player_html = self::render_video_player( $v_data );
+							if ( '' === $player_html ) {
+								continue;
+							}
+							?>
+						<div class="hkdev-sp-thumb hkdev-sp-video-thumb" data-type="video" data-video-embed="<?php echo esc_attr( $player_html ); ?>">
+							<?php if ( ! empty( $v_data['thumbnail'] ) ) : ?>
+								<img src="<?php echo esc_url( $v_data['thumbnail'] ); ?>" alt="<?php esc_attr_e( 'Product video', 'hkdev-shop-elements' ); ?>" loading="lazy">
 							<?php else : ?>
 								<span class="hkdev-sp-video-thumb-placeholder"><i class="fa-solid fa-film"></i></span>
 							<?php endif; ?>
 							<span class="hkdev-sp-video-thumb-icon"><i class="fa-solid fa-play"></i></span>
 						</div>
-						<?php endif; ?>
+						<?php endforeach; ?>
 					</div>
 				</div>
 

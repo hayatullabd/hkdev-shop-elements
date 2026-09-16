@@ -261,7 +261,7 @@ a.added_to_cart.wc-forward {
     width: 100% !important;
     height: 100% !important;
     background: #000 !important;
-    z-index: 5 !important;
+    z-index: 10 !important;
 }
 .hkdev-sp-video-player .hkdev-sp-vp-iframe,
 .hkdev-sp-video-player .hkdev-sp-vp-video {
