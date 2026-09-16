@@ -134,6 +134,9 @@ jQuery(document).ready(function($) {
     });
 
     // YouTube lite embed in the gallery viewport (click poster -> load player).
+    // Same pattern as video.js: keep the .hkdev-sp-vp-lite link as the container,
+    // empty it and append the iframe inside it. Removing the link itself would
+    // also remove the iframe that was placed inside it.
     $(document).on('click', '.hkdev-sp-vp-lite', function(e) {
         e.preventDefault();
         const $this = $(this);
@@ -141,18 +144,19 @@ jQuery(document).ready(function($) {
         if (!embedUrl) {
             return;
         }
-        const $img = $this.find('img');
-        const $wrap = $this.parent();
-        const w = $wrap.width() || 640;
-        const h = $wrap.height() || 360;
-        $('<iframe class="hkdev-sp-vp-iframe" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>')
-            .attr('src', embedUrl)
-            .attr('width', w)
-            .attr('height', h)
-            .css({ width: '100%', height: '100%', display: 'block' })
-            .insertBefore($img);
-        $img.remove();
-        $this.remove();
+        // referrerpolicy is required by YouTube to avoid "Error 153".
+        const $iframe = $('<iframe>', {
+            class: 'hkdev-sp-vp-iframe',
+            src: embedUrl,
+            frameborder: '0',
+            referrerpolicy: 'strict-origin-when-cross-origin',
+            allow: 'accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share',
+            allowfullscreen: 'allowfullscreen',
+            loading: 'lazy'
+        }).css({ width: '100%', height: '100%', display: 'block' });
+
+        // Keep the link as the positioning container; drop the poster content.
+        $this.addClass('hkdev-sp-vp-playing').empty().append($iframe);
     });
 
     // 4. Image Zoom Feature (class-driven so CSS !important wins over hover scale)

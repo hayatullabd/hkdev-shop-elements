@@ -552,6 +552,7 @@
 }
 
 /* Print: only the invoice, compact on one page */
+@page { margin: 0.4in; }
 @media print {
     /* Hide everything, then re-show only the invoice and its children. */
     body * { visibility: hidden !important; }
@@ -563,34 +564,57 @@
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        padding: 16px !important;
+        padding: 12px !important;
         box-shadow: none !important;
         border: none !important;
         border-radius: 0 !important;
+        background: #fff !important;
         page-break-inside: avoid !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
     }
     body.woocommerce-checkout, body.woocommerce-checkout body { background: #fff !important; }
 
-    /* Never print the print button / continue shopping link. */
+    /* Never print the print button / continue shopping link / QR. */
     .hkdev-co-print-btn,
+    .hkdev-co-invoice-print-wrap,
     .hkdev-co-invoice-footer .hkdev-co-shop-more-btn,
     .hkdev-co-qr-block { display: none !important; }
 
+    /* Cap the logo so it wastes no vertical space. */
+    .hkdev-co-invoice-brand img,
+    .hkdev-co-invoice-brand .custom-logo,
+    .hkdev-co-invoice-brand .custom-logo img { max-height: 36px !important; max-width: 180px !important; }
+    .hkdev-co-invoice-site-name { font-size: 14px !important; font-weight: 700 !important; margin: 0 !important; }
+
+    /* Tighten address blocks (they render <br>/<p> from WC). */
+    .hkdev-co-invoice-address-block { line-height: 1.3 !important; }
+    .hkdev-co-invoice-address-block .hkdev-co-invoice-meta-label { display: block !important; font-weight: 700 !important; font-size: 10px !important; margin-bottom: 2px !important; }
+    .hkdev-co-invoice-address-block p { margin: 0 !important; padding: 0 !important; line-height: 1.3 !important; }
+
     /* Compact layout for one page. */
-    .hkdev-co-invoice-header { border-bottom-color: #ccc !important; }
+    .hkdev-co-invoice-header { border-bottom-color: #ccc !important; padding-bottom: 8px !important; margin-bottom: 8px !important; }
+    .hkdev-co-invoice-head-right { display: flex !important; gap: 6px !important; flex-wrap: wrap !important; }
+    .hkdev-co-invoice-title, .hkdev-co-invoice-order-no, .hkdev-co-invoice-status { font-size: 9px !important; }
     .hkdev-co-invoice-status { border: 1px solid var(--brand-primary) !important; color: var(--brand-primary) !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .hkdev-co-invoice-meta-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px 8px !important; }
-    .hkdev-co-invoice-address-row { grid-template-columns: 1fr 1fr !important; padding: 8px !important; background: #f7f7f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .hkdev-co-invoice-table { margin-top: 8px !important; }
-    .hkdev-co-invoice-table th { border-bottom-color: #ccc !important; font-size: 10px !important; text-transform: uppercase; }
-    .hkdev-co-invoice-table td { border-bottom-color: #eee !important; padding: 4px !important; font-size: 10px !important; }
-    .hkdev-co-invoice-totals td { padding: 3px 4px !important; font-size: 10px !important; }
-    .hkdev-co-invoice-total-row strong { font-size: 10px !important; }
-    .hkdev-co-invoice-total-row.grand-total strong { font-size: 13px !important; }
-    .hkdev-co-invoice-footer { border-top-color: #ccc !important; }
-    .hkdev-co-invoice h2 { font-size: 15px !important; margin: 0 !important; }
+    .hkdev-co-invoice-meta-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 3px 6px !important; }
+    .hkdev-co-invoice-meta-block { line-height: 1.2 !important; }
+    .hkdev-co-invoice-meta-label { font-size: 8px !important; text-transform: uppercase; }
+    .hkdev-co-invoice-meta-val { font-size: 9px !important; font-weight: 600 !important; }
+    .hkdev-co-invoice-address-row { grid-template-columns: 1fr 1fr !important; padding: 6px !important; background: #f7f7f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .hkdev-co-invoice-table { margin-top: 6px !important; }
+    .hkdev-co-invoice-table thead th { font-size: 9px !important; padding: 4px 2px !important; }
+    .hkdev-co-invoice-table th, .hkdev-co-invoice-table td { border-bottom-color: #ccc !important; padding: 3px 2px !important; font-size: 9px !important; }
+    .hkdev-co-invoice-total-row { font-size: 9px !important; padding: 2px 0 !important; }
+    .hkdev-co-invoice-total-row strong { font-size: 9px !important; }
+    .hkdev-co-invoice-total-row.grand-total { font-size: 10px !important; font-weight: 700 !important; }
+    .hkdev-co-invoice-total-row.grand-total strong { font-size: 11px !important; }
+    .hkdev-co-invoice-footer { border-top-color: #ccc !important; padding-top: 8px !important; margin-top: 8px !important; }
+    .hkdev-co-invoice-thanks { font-size: 10px !important; }
+    .hkdev-co-invoice h2 { font-size: 12px !important; margin: 0 !important; }
     .hkdev-co-invoice th.total-amt, .hkdev-co-invoice td.total-amt { font-weight: 700 !important; }
+    /* Prevent the invoice from splitting mid-table on multi-item orders. */
+    .hkdev-co-invoice-totals, .hkdev-co-invoice-table { page-break-inside: avoid !important; }
 }
 
 /* Responsive adjustments */
