@@ -750,18 +750,6 @@ a.added_to_cart.wc-forward {
     display: block !important;
 }
 
-/* Wide Feature Image (Suggested) */
-.hkdev-sp-feature-img {
-    width: 100% !important;
-    height: auto !important;
-    display: block !important;
-    margin: 16px 0 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
-    object-fit: contain !important;
-    max-height: 560px !important;
-}
-
 /* Product FAQ Section */
 .hkdev-sp-faq-section {
     margin: 28px 0 !important;

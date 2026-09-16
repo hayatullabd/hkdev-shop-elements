@@ -55,9 +55,9 @@ class Single_Product_Engine {
 		add_action( 'woocommerce_admin_process_product_object', [ $this, 'save_video_meta_box' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_video_meta_box_assets' ] );
 
-		// FAQ + Feature Image (Suggested).
+		// Product FAQ.
 		add_action( 'add_meta_boxes', [ $this, 'register_faq_media_meta_boxes' ] );
-		add_action( 'woocommerce_admin_process_product_object', [ $this, 'save_faq_and_feature_image' ] );
+		add_action( 'woocommerce_admin_process_product_object', [ $this, 'save_faq_meta_box' ] );
 	}
 
 	/**
@@ -244,18 +244,7 @@ class Single_Product_Engine {
 	}
 
 	/**
-	 * Get the suggested feature image attachment ID for a product.
-	 *
-	 * @param int $product_id Product ID.
-	 * @return int Attachment ID or 0.
-	 */
-	public static function get_product_feature_image_id( $product_id ) {
-		$id = (int) get_post_meta( $product_id, '_hkdev_feature_image_id', true );
-		return $id > 0 ? $id : 0;
-	}
-
-	/**
-	 * Register the FAQ and Feature Image meta boxes on the product edit screen.
+	 * Register the FAQ meta box on the product edit screen.
 	 *
 	 * @return void
 	 */
@@ -266,14 +255,6 @@ class Single_Product_Engine {
 			[ $this, 'render_faq_meta_box' ],
 			'product',
 			'normal',
-			'default'
-		);
-		add_meta_box(
-			'hkdev_product_feature_image',
-			__( 'Feature Image (Suggested)', 'hkdev-shop-elements' ),
-			[ $this, 'render_feature_image_meta_box' ],
-			'product',
-			'side',
 			'default'
 		);
 	}
@@ -341,75 +322,12 @@ class Single_Product_Engine {
 	}
 
 	/**
-	 * Render the Feature Image (Suggested) meta box.
-	 *
-	 * @param \WP_Post $post Product post object.
-	 * @return void
-	 */
-	public function render_feature_image_meta_box( $post ) {
-		$img_id = self::get_product_feature_image_id( $post->ID );
-		$preview = '';
-		if ( $img_id ) {
-			$preview = wp_get_attachment_image( $img_id, 'medium', false, array( 'class' => 'hkdev-feature-preview' ) );
-		}
-		wp_nonce_field( 'hkdev_save_product_feature_image', 'hkdev_feature_image_nonce' );
-		?>
-		<p class="description"><?php esc_html_e( 'An optional wide banner image shown on the single product page.', 'hkdev-shop-elements' ); ?></p>
-		<div style="margin: 10px 0;">
-			<?php if ( $img_id ) : ?>
-				<div style="margin-bottom: 8px;"><?php echo $preview; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
-			<?php endif; ?>
-			<input type="hidden" name="hkdev_feature_image_id" id="hkdev_feature_image_id" value="<?php echo intval( $img_id ); ?>">
-			<button type="button" class="button hkdev-feature-set"><?php esc_html_e( $img_id ? 'Change' : 'Set', 'hkdev-shop-elements' ); ?> <?php esc_html_e( 'Feature Image', 'hkdev-shop-elements' ); ?></button>
-			<?php if ( $img_id ) : ?>
-				<button type="button" class="button hkdev-feature-remove" style="margin-left:5px;"><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></button>
-			<?php endif; ?>
-		</div>
-		<script>
-		(function($){
-			'use strict';
-			if ( typeof wp === 'undefined' || ! wp.media ) { return; }
-			var frame = null;
-			$('.hkdev-feature-set').on('click', function(e){
-				e.preventDefault();
-				if ( ! frame ) {
-					frame = wp.media({
-						title: '<?php echo esc_js( __( 'Select Feature Image', 'hkdev-shop-elements' ) ); ?>',
-						library: { type: 'image' },
-						button: { text: '<?php echo esc_js( __( 'Use this image', 'hkdev-shop-elements' ) ); ?>' },
-						multiple: false
-					});
-				}
-				frame.on('open', function(){
-					var id = parseInt($('#hkdev_feature_image_id').val(), 10);
-					frame.state().get('selection').add( wp.media.attachment( id ) );
-				});
-				frame.on('select', function(){
-					var id = frame.state().get('selection').first().id;
-					$('#hkdev_feature_image_id').val(id);
-					if ( ! $('.hkdev-feature-preview').length ) {
-						$('.hkdev-feature-set').before('<div style="margin-bottom:8px;"></div>');
-					}
-				});
-				frame.open();
-			});
-			$('.hkdev-feature-remove').on('click', function(e){
-				e.preventDefault();
-				$('#hkdev_feature_image_id').val('0');
-				$('.hkdev-feature-preview').closest('div').remove();
-			});
-		})(jQuery);
-		</script>
-		<?php
-	}
-
-	/**
-	 * Save FAQ and feature image meta box values.
+	 * Save FAQ meta box values.
 	 *
 	 * @param \WC_Product $product Product object.
 	 * @return void
 	 */
-	public function save_faq_and_feature_image( $product ) {
+	public function save_faq_meta_box( $product ) {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- WC verifies its own nonce on this hook.
 		if ( ! isset( $_POST['hkdev_product_faq_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['hkdev_product_faq_nonce'] ) ), 'hkdev_save_product_faq' ) ) {
 			return;
@@ -437,17 +355,6 @@ class Single_Product_Engine {
 			$product->delete_meta_data( '_hkdev_product_faqs' );
 		} else {
 			$product->update_meta_data( '_hkdev_product_faqs', $faqs );
-		}
-
-		// Feature image (Suggested).
-		if ( ! isset( $_POST['hkdev_feature_image_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['hkdev_feature_image_nonce'] ) ), 'hkdev_save_product_feature_image' ) ) {
-			return;
-		}
-		$img_id = isset( $_POST['hkdev_feature_image_id'] ) ? absint( wp_unslash( $_POST['hkdev_feature_image_id'] ) ) : 0;
-		if ( $img_id > 0 ) {
-			$product->update_meta_data( '_hkdev_feature_image_id', $img_id );
-		} else {
-			$product->delete_meta_data( '_hkdev_feature_image_id' );
 		}
 	}
 
@@ -478,29 +385,6 @@ class Single_Product_Engine {
 		$html .= '</div>';
 
 		return $html;
-	}
-
-	/**
-	 * Render the wide feature image on the frontend.
-	 *
-	 * @param int $product_id Product ID.
-	 * @return string HTML.
-	 */
-	public static function render_feature_image( $product_id ) {
-		$img_id = self::get_product_feature_image_id( $product_id );
-		if ( ! $img_id ) {
-			return '';
-		}
-		return wp_get_attachment_image(
-			$img_id,
-			'full',
-			false,
-			array(
-				'class'   => 'hkdev-sp-feature-img',
-				'loading' => 'lazy',
-				'alt'     => get_post_meta( $img_id, '_wp_attachment_image_alt', true ),
-			)
-		);
 	}
 
 	/**
@@ -813,9 +697,6 @@ class Single_Product_Engine {
 						<?php endforeach; ?>
 					</div>
 				</div>
-
-				<!-- Wide Feature Image (Suggested) -->
-				<?php echo self::render_feature_image( $product_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 				<!-- Details Section -->
 				<div class="hkdev-sp-info-wrap">
