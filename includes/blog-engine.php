@@ -51,6 +51,11 @@ class Blog_Engine {
 		// grid: the clicked tab replaces the widget's own category filter).
 		add_action( 'wp_ajax_hkdev_elements_filter_blog', [ $this, 'ajax_filter_blog' ] );
 		add_action( 'wp_ajax_nopriv_hkdev_elements_filter_blog', [ $this, 'ajax_filter_blog' ] );
+
+		// "Load more" for the Blog widget: appends the next page of the
+		// currently selected category tab to the existing grid.
+		add_action( 'wp_ajax_hkdev_elements_load_more_blog', [ $this, 'ajax_load_more_blog' ] );
+		add_action( 'wp_ajax_nopriv_hkdev_elements_load_more_blog', [ $this, 'ajax_load_more_blog' ] );
 	}
 
 	/* ---------------------------------------------------------------------
@@ -267,9 +272,16 @@ class Blog_Engine {
 			$tabs_html = $this->render_tabs( $atts, $query );
 		}
 
-		$has_tabs = ( '' !== $tabs_html );
+		$has_tabs  = ( '' !== $tabs_html );
+		$max_pages = (int) $query->max_num_pages;
+		$show_more = ( ! $is_archive && 'yes' === $atts['load_more'] && $max_pages > 1 );
+		$more_label = $atts['load_more_text'];
 
-		if ( $has_tabs ) {
+		// Tabs and load-more both talk to the same AJAX contract, so the widget
+		// only needs the config attribute when one of them is active.
+		$is_ajax = ( $has_tabs || $show_more );
+
+		if ( $is_ajax ) {
 			wp_enqueue_script( 'hkdev-elements-blog-js' );
 		}
 
@@ -284,7 +296,7 @@ class Blog_Engine {
 
 		ob_start();
 		?>
-		<div class="<?php echo esc_attr( $wrapper_class ); ?>" data-layout="<?php echo esc_attr( $layout ); ?>" data-columns="<?php echo esc_attr( $columns ); ?>"<?php echo $has_tabs ? ' data-hkdev-blog="1" data-hkdev-blog-config="' . esc_attr( wp_json_encode( $ajax_config ) ) . '"' : ''; ?>>
+		<div class="<?php echo esc_attr( $wrapper_class ); ?>" data-layout="<?php echo esc_attr( $layout ); ?>" data-columns="<?php echo esc_attr( $columns ); ?>"<?php echo $is_ajax ? ' data-hkdev-blog="1" data-hkdev-blog-config="' . esc_attr( wp_json_encode( $ajax_config ) ) . '"' : ''; ?>>
 
 			<?php echo $heading_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
@@ -308,6 +320,20 @@ class Blog_Engine {
 
 			<?php if ( $has_tabs ) : ?>
 			</div>
+			<?php endif; ?>
+
+			<?php if ( $show_more ) : ?>
+				<div class="hkdev-blog-loadmore-wrap">
+					<button type="button" class="hkdev-blog-loadmore"
+							data-page="1"
+							data-max-pages="<?php echo esc_attr( $max_pages ); ?>"
+							data-label="<?php echo esc_attr( $more_label ); ?>"
+							data-loading-label="<?php echo esc_attr__( 'Loading…', 'hkdev-shop-elements' ); ?>">
+						<span class="hkdev-blog-lm-label"><?php echo esc_html( $more_label ); ?></span>
+						<span class="hkdev-blog-lm-spinner" aria-hidden="true"></span>
+					</button>
+					<span class="hkdev-blog-lm-end"><?php echo esc_html__( 'No more posts', 'hkdev-shop-elements' ); ?></span>
+				</div>
 			<?php endif; ?>
 
 			<?php if ( $is_archive ) : ?>
@@ -366,6 +392,9 @@ class Blog_Engine {
 			'show_meta'      => $yes_no( 'show_meta' ),
 			'show_readmore'  => $yes_no( 'show_readmore' ),
 			'readmore_text'  => ! empty( $atts['readmore_text'] ) ? (string) $atts['readmore_text'] : __( 'Read More', 'hkdev-shop-elements' ),
+			// Load more is opt-in as well.
+			'load_more'      => ( isset( $atts['load_more'] ) && 'yes' === $atts['load_more'] ) ? 'yes' : 'no',
+			'load_more_text' => ! empty( $atts['load_more_text'] ) ? (string) $atts['load_more_text'] : __( 'Load More', 'hkdev-shop-elements' ),
 			// Tabs are opt-in: only an explicit "yes" turns them on.
 			'show_tabs'      => ( isset( $atts['show_tabs'] ) && 'yes' === $atts['show_tabs'] ) ? 'yes' : 'no',
 			'tabs'           => isset( $atts['tabs'] ) ? $atts['tabs'] : [],
@@ -533,8 +562,62 @@ class Blog_Engine {
 
 		wp_send_json_success(
 			[
-				'html'  => ob_get_clean(),
-				'count' => (int) $query->found_posts,
+				'html'      => ob_get_clean(),
+				'count'     => (int) $query->found_posts,
+				'max_pages' => (int) $query->max_num_pages,
+			]
+		);
+	}
+
+	/**
+	 * AJAX: append the next page of posts for the "Load more" button.
+	 *
+	 * The clicked tab (when present) travels in `category`, so loading more
+	 * always extends the listing the visitor is currently looking at.
+	 *
+	 * @return void
+	 */
+	public function ajax_load_more_blog() {
+		check_ajax_referer( 'hkdev_elements_blog_filter', 'nonce' );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
+		$raw_config = isset( $_POST['config'] ) ? wp_unslash( $_POST['config'] ) : '';
+		$config     = is_string( $raw_config ) ? json_decode( $raw_config, true ) : [];
+
+		$atts = $this->normalise_atts( is_array( $config ) ? $config : [] );
+
+		// Only a tab click sends a category; without one the widget's own
+		// category filter (already inside the config) stays in charge.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['category'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$tab              = (string) wp_unslash( $_POST['category'] );
+			$atts['category'] = implode( ',', array_filter( array_map( 'sanitize_title', explode( ',', $tab ) ) ) );
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$paged = isset( $_POST['paged'] ) ? absint( wp_unslash( $_POST['paged'] ) ) : 1;
+		$paged = max( 1, $paged );
+
+		$query = $this->build_query( $atts, $paged );
+
+		ob_start();
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				echo $this->render_card( get_the_ID(), 'yes' === $atts['show_image'], 'yes' === $atts['show_excerpt'], 'yes' === $atts['show_meta'], 'yes' === $atts['show_readmore'], $atts['readmore_text'], $atts['image_ratio'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			}
+		}
+		wp_reset_postdata();
+
+		$max_pages = (int) $query->max_num_pages;
+
+		wp_send_json_success(
+			[
+				'html'      => ob_get_clean(),
+				'page'      => $paged,
+				'max_pages' => $max_pages,
+				'has_more'  => $paged < $max_pages,
 			]
 		);
 	}
@@ -542,23 +625,25 @@ class Blog_Engine {
 	/**
 	 * Build a WP_Query for the shortcode (non-archive) context.
 	 *
-	 * @param array $atts Attributes.
+	 * @param array $atts  Attributes.
+	 * @param int   $paged Page to fetch (0 = use the current query var).
 	 * @return \WP_Query
 	 */
-	private function build_query( $atts ) {
-		return new \WP_Query( $this->build_query_args( $atts ) );
+	private function build_query( $atts, $paged = 0 ) {
+		return new \WP_Query( $this->build_query_args( $atts, $paged ) );
 	}
 
 	/**
 	 * Query args for the shortcode / widget context (non-archive).
 	 *
-	 * Shared with the tab counters and the AJAX filter so the badge count and
-	 * the rendered cards can never drift apart.
+	 * Shared with the tab counters, the AJAX filter and the load-more request so
+	 * the badge count and the rendered cards can never drift apart.
 	 *
-	 * @param array $atts Attributes.
+	 * @param array $atts  Attributes.
+	 * @param int   $paged Page to fetch (0 = use the current query var).
 	 * @return array
 	 */
-	private function build_query_args( $atts ) {
+	private function build_query_args( $atts, $paged = 0 ) {
 		$cat_slugs = [];
 		if ( ! empty( $atts['category'] ) ) {
 			$cat_slugs = array_values( array_filter( array_map( 'sanitize_title', explode( ',', (string) $atts['category'] ) ) ) );
@@ -568,7 +653,7 @@ class Blog_Engine {
 			'post_type'           => 'post',
 			'post_status'         => 'publish',
 			'posts_per_page'      => max( 1, absint( $atts['posts_per_page'] ?? 9 ) ),
-			'paged'               => max( 1, get_query_var( 'paged', 1 ) ),
+			'paged'               => $paged > 0 ? max( 1, absint( $paged ) ) : max( 1, get_query_var( 'paged', 1 ) ),
 			'ignore_sticky_posts' => true,
 			'no_found_rows'       => false,
 		];

@@ -157,7 +157,7 @@ class Video_Widget extends Widget_Base {
 			[
 				'label'       => esc_html__( 'YouTube URL', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::TEXT,
-				'default'     => 'https://www.youtube.com/watch?v=EuSkZYM6wKA',
+				'placeholder' => 'https://www.youtube.com/watch?v=...',
 				'label_block' => true,
 				'separator'   => 'before',
 				'description' => esc_html__( 'Paste a YouTube watch, share, embed or Shorts link (or just the video id).', 'hkdev-shop-elements' ),

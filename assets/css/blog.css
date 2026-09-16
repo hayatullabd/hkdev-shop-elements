@@ -334,6 +334,92 @@
 }
 
 /* ------------------------------------------------------------------
+   Load more button
+   ------------------------------------------------------------------ */
+.hkdev-blog-loadmore-wrap {
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	margin: 30px 0 6px !important;
+	min-height: 48px !important;
+}
+.hkdev-blog-loadmore-wrap.is-empty {
+	min-height: 0 !important;
+}
+.hkdev-blog-loadmore {
+	position: relative !important;
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	gap: 10px !important;
+	padding: 13px 34px !important;
+	font-family: inherit !important;
+	font-size: 15px !important;
+	font-weight: 600 !important;
+	line-height: 1.2 !important;
+	color: #ffffff !important;
+	background: var(--hkblog-primary) !important;
+	border: none !important;
+	border-radius: 999px !important;
+	cursor: pointer !important;
+	box-shadow: 0 6px 18px rgba(3, 165, 80, 0.22) !important;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease !important;
+}
+.hkdev-blog-loadmore:hover {
+	color: #ffffff !important;
+	background: var(--hkblog-primary-dark) !important;
+	transform: translateY(-2px) !important;
+	box-shadow: 0 10px 24px rgba(3, 165, 80, 0.3) !important;
+}
+.hkdev-blog-loadmore:focus-visible {
+	outline: 2px solid var(--hkblog-primary) !important;
+	outline-offset: 3px !important;
+}
+.hkdev-blog-loadmore[disabled],
+.hkdev-blog-loadmore.is-loading {
+	cursor: wait !important;
+	opacity: 0.75 !important;
+	transform: none !important;
+	box-shadow: none !important;
+}
+.hkdev-blog-lm-spinner {
+	display: none !important;
+	width: 16px !important;
+	height: 16px !important;
+	border: 2px solid rgba(255, 255, 255, 0.45) !important;
+	border-top-color: #ffffff !important;
+	border-radius: 50% !important;
+	animation: hkdev-blog-lm-spin 0.7s linear infinite !important;
+}
+.hkdev-blog-loadmore.is-loading .hkdev-blog-lm-spinner {
+	display: inline-block !important;
+}
+.hkdev-blog-lm-end {
+	display: none !important;
+	padding: 8px 0 !important;
+	color: var(--hkblog-muted) !important;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+}
+.hkdev-blog-loadmore-wrap.is-empty .hkdev-blog-loadmore {
+	display: none !important;
+}
+.hkdev-blog-loadmore-wrap.is-empty .hkdev-blog-lm-end {
+	display: inline-block !important;
+}
+@keyframes hkdev-blog-lm-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+@media (max-width: 480px) {
+	.hkdev-blog-loadmore {
+		width: 100% !important;
+		padding: 13px 20px !important;
+	}
+}
+
+/* ------------------------------------------------------------------
    Cards
    ------------------------------------------------------------------ */
 .hkdev-blog-card {

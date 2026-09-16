@@ -10,10 +10,10 @@
     --hkdev-yt-muted: #5f6e66;
     --hkdev-yt-bg: transparent;
     --hkdev-yt-video-width: 800px;
-    --hkdev-yt-radius: 14px;
+    --hkdev-yt-radius: 18px;
     --hkdev-yt-ratio: 16 / 9;
-    --hkdev-yt-play-size: 74px;
-    --hkdev-yt-play-bg: rgba(255, 255, 255, 0.92);
+    --hkdev-yt-play-size: 78px;
+    --hkdev-yt-play-bg: rgba(255, 255, 255, 0.94);
     --hkdev-yt-play-color: #03a550;
     --hkdev-yt-play-hover-bg: #ffffff;
     font-family: var(--hkdev-font, 'Hind Siliguri', 'Poppins', sans-serif) !important;
@@ -31,31 +31,32 @@
 .hkdev-yt-container{
     max-width: 900px !important;
     margin: 0 auto !important;
-    padding: 10px 16px !important;
+    padding: 26px 16px !important;
     text-align: center !important;
 }
 
 .hkdev-yt-heading{
-    margin: 0 0 14px !important;
-    font-size: 24px !important;
-    font-weight: 600 !important;
-    line-height: 1.35 !important;
+    margin: 0 0 16px !important;
+    font-size: 26px !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.2px !important;
     color: var(--hkdev-yt-text) !important;
 }
 
 .hkdev-yt-separator{
-    width: 80px !important;
-    height: 3px !important;
-    margin: 0 auto 18px !important;
+    width: 76px !important;
+    height: 4px !important;
+    margin: 0 auto 20px !important;
     border-radius: 999px !important;
     background: var(--hkdev-yt-primary) !important;
 }
 
 .hkdev-yt-description{
-    max-width: 720px !important;
-    margin: 0 auto 26px !important;
+    max-width: 700px !important;
+    margin: 0 auto 30px !important;
     font-size: 16px !important;
-    line-height: 1.65 !important;
+    line-height: 1.7 !important;
     color: var(--hkdev-yt-muted) !important;
 }
 
@@ -68,8 +69,23 @@
 }
 
 .hkdev-yt-video-wrap{
+    position: relative !important;
     max-width: var(--hkdev-yt-video-width, 800px) !important;
     margin: 0 auto !important;
+}
+
+/* Soft brand glow sitting behind the player. */
+.hkdev-yt-video-wrap::before{
+    content: '' !important;
+    position: absolute !important;
+    left: 6% !important;
+    right: 6% !important;
+    bottom: -16px !important;
+    height: 64px !important;
+    background: radial-gradient(ellipse at center, rgba(3, 165, 80, 0.24), rgba(3, 165, 80, 0) 72%) !important;
+    filter: blur(6px) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
 }
 
 .hkdev-yt-lite{
@@ -79,9 +95,15 @@
     aspect-ratio: var(--hkdev-yt-ratio, 16 / 9) !important;
     overflow: hidden !important;
     border-radius: var(--hkdev-yt-radius) !important;
-    background: #000000 !important;
-    box-shadow: 0 12px 34px rgba(0, 0, 0, 0.16) !important;
+    background: #0b0f0c !important;
+    box-shadow: 0 24px 50px -20px rgba(11, 15, 12, 0.5), 0 8px 20px rgba(0, 0, 0, 0.08) !important;
     cursor: pointer !important;
+    transition: transform .35s ease, box-shadow .35s ease !important;
+}
+
+.hkdev-yt-lite:not(.hkdev-yt-playing):hover{
+    transform: translateY(-4px) !important;
+    box-shadow: 0 32px 62px -22px rgba(11, 15, 12, 0.55), 0 10px 24px rgba(0, 0, 0, 0.1) !important;
 }
 
 .hkdev-yt-lite img{
@@ -91,24 +113,25 @@
     height: 100% !important;
     object-fit: cover !important;
     display: block !important;
-    transition: transform .4s ease !important;
+    transition: transform .6s cubic-bezier(.22, .61, .36, 1) !important;
 }
 
-.hkdev-yt-lite:hover img{
-    transform: scale(1.04) !important;
+.hkdev-yt-lite:not(.hkdev-yt-playing):hover img{
+    transform: scale(1.05) !important;
 }
 
 .hkdev-yt-lite::after{
     content: '' !important;
     position: absolute !important;
     inset: 0 !important;
-    background: rgba(0, 0, 0, 0.12) !important;
-    transition: background-color .3s ease !important;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.52) 100%) !important;
+    opacity: 1 !important;
+    transition: opacity .3s ease !important;
     pointer-events: none !important;
 }
 
-.hkdev-yt-lite:hover::after{
-    background: rgba(0, 0, 0, 0.04) !important;
+.hkdev-yt-lite:not(.hkdev-yt-playing):hover::after{
+    opacity: .5 !important;
 }
 
 .hkdev-yt-play{
@@ -117,19 +140,40 @@
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 2 !important;
-    width: var(--hkdev-yt-play-size, 74px) !important;
-    height: var(--hkdev-yt-play-size, 74px) !important;
+    width: var(--hkdev-yt-play-size, 78px) !important;
+    height: var(--hkdev-yt-play-size, 78px) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     border-radius: 50% !important;
-    background: var(--hkdev-yt-play-bg, rgba(255, 255, 255, 0.92)) !important;
+    background: var(--hkdev-yt-play-bg, rgba(255, 255, 255, 0.94)) !important;
     color: var(--hkdev-yt-play-color, #03a550) !important;
-    backdrop-filter: blur(4px) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 10px rgba(255, 255, 255, 0.12) !important;
     transition: transform .3s ease, background-color .3s ease !important;
 }
 
+/* Expanding ring that keeps the eye on the play button. */
+.hkdev-yt-play::before{
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: 50% !important;
+    background: var(--hkdev-yt-play-bg, rgba(255, 255, 255, 0.94)) !important;
+    animation: hkdev-yt-pulse 2.6s cubic-bezier(.22, .61, .36, 1) infinite !important;
+    pointer-events: none !important;
+}
+
+@keyframes hkdev-yt-pulse{
+    0%   { transform: scale(1);   opacity: .5; }
+    70%  { transform: scale(1.9); opacity: 0; }
+    100% { transform: scale(1.9); opacity: 0; }
+}
+
 .hkdev-yt-play svg{
+    position: relative !important;
+    z-index: 1 !important;
     width: 45% !important;
     height: 45% !important;
     margin-left: 8% !important;
@@ -137,7 +181,7 @@
 
 .hkdev-yt-lite:hover .hkdev-yt-play{
     background: var(--hkdev-yt-play-hover-bg, #ffffff) !important;
-    transform: translate(-50%, -50%) scale(1.06) !important;
+    transform: translate(-50%, -50%) scale(1.08) !important;
 }
 
 .hkdev-yt-lite iframe{
@@ -160,6 +204,19 @@
 }
 
 @media (max-width: 600px){
-    .hkdev-yt-heading{ font-size: 20px !important; }
-    .hkdev-yt{ --hkdev-yt-play-size: 58px !important; }
+    .hkdev-yt-container{ padding: 20px 14px !important; }
+    .hkdev-yt-heading{ font-size: 21px !important; }
+    .hkdev-yt-description{ margin-bottom: 24px !important; }
+    .hkdev-yt{ --hkdev-yt-play-size: 60px !important; }
+    .hkdev-yt-play{ box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28), 0 0 0 7px rgba(255, 255, 255, 0.12) !important; }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .hkdev-yt-play::before{ animation: none !important; }
+    .hkdev-yt-lite,
+    .hkdev-yt-lite img,
+    .hkdev-yt-lite::after,
+    .hkdev-yt-play{ transition: none !important; }
+    .hkdev-yt-lite:not(.hkdev-yt-playing):hover{ transform: none !important; }
+    .hkdev-yt-lite:not(.hkdev-yt-playing):hover img{ transform: none !important; }
 }

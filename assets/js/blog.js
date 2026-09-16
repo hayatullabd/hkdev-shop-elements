@@ -1,10 +1,11 @@
 /**
- * HKDEV Blog — category tab filtering.
+ * HKDEV Blog — category tab filtering + "Load more".
  *
  * Mirrors the shop grid behaviour: clicking a tab swaps the card list for that
- * category without reloading the page. The widget's own settings travel in the
- * `data-hkdev-blog-config` JSON attribute, so the AJAX request rebuilds exactly
- * the same query as the first render.
+ * category without reloading the page, and the load-more button appends the
+ * next page of whichever category is currently selected. The widget's own
+ * settings travel in the `data-hkdev-blog-config` JSON attribute, so every AJAX
+ * request rebuilds exactly the same query as the first render.
  *
  * @package HkdevShopElements
  */
@@ -17,8 +18,42 @@
         return;
     }
 
-    var ACTION = 'hkdev_elements_filter_blog';
+    var FILTER_ACTION = 'hkdev_elements_filter_blog';
+    var MORE_ACTION = 'hkdev_elements_load_more_blog';
     var NONCE = (cfg.nonces && cfg.nonces.blog_filter) ? cfg.nonces.blog_filter : '';
+
+    function $moreBtn($wrap) {
+        return $wrap.find('.hkdev-blog-loadmore').first();
+    }
+
+    function idle($btn) {
+        $btn.removeClass('is-loading').prop('disabled', false)
+            .find('.hkdev-blog-lm-label').text($btn.attr('data-label') || 'Load More');
+    }
+
+    /**
+     * Put the button back to its first-page state.
+     *
+     * Used after a tab switch, which replaces the grid with page 1 of another
+     * category: when that page already holds every post of the category there is
+     * nothing left to load. The button is only hidden (never removed), so
+     * switching back to a bigger category brings it straight back.
+     */
+    function resetLoadMore($wrap, maxPages) {
+        var $btn = $moreBtn($wrap);
+        if (!$btn.length) {
+            return;
+        }
+
+        var pages = parseInt(maxPages, 10);
+        if (isNaN(pages)) {
+            pages = parseInt($btn.data('maxPages'), 10) || 1;
+        }
+
+        $btn.data('page', 1).data('maxPages', pages);
+        idle($btn);
+        $btn.closest('.hkdev-blog-loadmore-wrap').toggleClass('is-empty', pages <= 1);
+    }
 
     $(document).on('click', '.hkdev-blog-tab-item', function () {
         var $btn = $(this);
@@ -40,7 +75,7 @@
         $loader.addClass('is-visible');
 
         $.post(cfg.ajax_url, {
-            action: ACTION,
+            action: FILTER_ACTION,
             nonce: NONCE,
             config: $wrap.attr('data-hkdev-blog-config') || '{}',
             category: $btn.attr('data-slug') || ''
@@ -48,12 +83,65 @@
             if (response && response.success && response.data && typeof response.data.html === 'string') {
                 $items.html(response.data.html);
 
+                // The grid now holds page 1 of the selected category.
+                resetLoadMore($wrap, response.data.max_pages);
+
                 // Let themes / other plugins react (e.g. re-init lazy loaders).
                 $wrap.trigger('hkdev:blog-filtered', [response.data.count || 0]);
             }
         }).always(function () {
             $btn.removeClass('is-loading');
             $loader.removeClass('is-visible');
+        });
+    });
+
+    $(document).on('click', '.hkdev-blog-loadmore', function () {
+        var $btn = $(this);
+        var $wrap = $btn.closest('[data-hkdev-blog]');
+        var $items = $wrap.find('.hkdev-blog-items').first();
+
+        if (!$wrap.length || !$items.length || $btn.hasClass('is-loading')) {
+            return;
+        }
+
+        var nextPage = (parseInt($btn.data('page'), 10) || 1) + 1;
+        var $activeTab = $wrap.find('.hkdev-blog-tab-item.is-active').first();
+
+        var payload = {
+            action: MORE_ACTION,
+            nonce: NONCE,
+            config: $wrap.attr('data-hkdev-blog-config') || '{}',
+            paged: nextPage
+        };
+
+        // Without tabs the widget's own category filter (inside the config) has
+        // to stay untouched.
+        if ($activeTab.length) {
+            payload.category = $activeTab.attr('data-slug') || '';
+        }
+
+        $btn.addClass('is-loading').prop('disabled', true)
+            .find('.hkdev-blog-lm-label').text($btn.attr('data-loading-label') || 'Loading...');
+
+        $.post(cfg.ajax_url, payload).done(function (response) {
+            var data = (response && response.success && response.data) ? response.data : null;
+
+            if (!data || typeof data.html !== 'string') {
+                return;
+            }
+
+            if (data.html) {
+                $items.append(data.html);
+                $wrap.trigger('hkdev:blog-loaded', [data.page || nextPage]);
+            }
+
+            if (data.has_more) {
+                $btn.data('page', data.page || nextPage).data('maxPages', data.max_pages);
+            } else {
+                $btn.closest('.hkdev-blog-loadmore-wrap').addClass('is-empty');
+            }
+        }).always(function () {
+            idle($btn);
         });
     });
 })(jQuery);

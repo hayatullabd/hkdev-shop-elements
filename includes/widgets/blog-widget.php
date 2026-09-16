@@ -89,7 +89,7 @@ class Blog_Widget extends Widget_Base {
 	/**
 	 * Register content controls.
 	 */
-	protected function _register_controls() {
+	protected function register_controls() {
 		// Section heading (accent bar + heading + subtitle + "View All" link).
 		// Same trait and renderer as the Shop Grid / Section Heading widgets.
 		$this->register_heading_controls();
@@ -254,6 +254,30 @@ class Blog_Widget extends Widget_Base {
 				'type'      => Controls_Manager::TEXT,
 				'default'   => __( 'Read More', 'hkdev-shop-elements' ),
 				'condition' => [ 'show_readmore' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'show_loadmore',
+			[
+				'label'        => __( 'Load More Button', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => __( 'On', 'hkdev-shop-elements' ),
+				'label_off'    => __( 'Off', 'hkdev-shop-elements' ),
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'separator'    => 'before',
+				'description'  => __( 'Appends the next batch of posts without reloading the page. Hidden when everything already fits on one page.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'loadmore_text',
+			[
+				'label'     => __( 'Load More Text', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::TEXT,
+				'default'   => __( 'Load More', 'hkdev-shop-elements' ),
+				'condition' => [ 'show_loadmore' => 'yes' ],
 			]
 		);
 
@@ -444,6 +468,32 @@ class Blog_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		// ---- Style: Load More ----
+		$this->start_controls_section(
+			'style_loadmore',
+			[
+				'label'     => __( 'Load More', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'show_loadmore' => 'yes' ],
+			]
+		);
+
+		$this->hkdev_typography( 'loadmore_typography', __( 'Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore' );
+
+		$this->hkdev_color( 'loadmore_bg_color', __( 'Background Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 'background-color' );
+
+		$this->hkdev_color( 'loadmore_text_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore' );
+
+		$this->hkdev_color( 'loadmore_bg_hover', __( 'Hover Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore:hover', 'background-color' );
+
+		$this->hkdev_color( 'loadmore_text_hover', __( 'Hover Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore:hover' );
+
+		$this->hkdev_slider( 'loadmore_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 'border-radius', 0, 60 );
+
+		$this->hkdev_dimensions( 'loadmore_padding', __( 'Padding', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 'padding' );
+
+		$this->end_controls_section();
+
 		// ---- Style: Category Tabs ----
 		$this->start_controls_section(
 			'style_tabs',
@@ -522,6 +572,8 @@ class Blog_Widget extends Widget_Base {
 			'show_meta'      => $settings['show_meta'] ?? 'yes',
 			'show_readmore'  => $settings['show_readmore'] ?? 'yes',
 			'readmore_text'  => $settings['readmore_text'] ?? __( 'Read More', 'hkdev-shop-elements' ),
+			'load_more'      => $settings['show_loadmore'] ?? 'yes',
+			'load_more_text' => $settings['loadmore_text'] ?? __( 'Load More', 'hkdev-shop-elements' ),
 			'show_tabs'      => $settings['show_tabs'] ?? 'no',
 			'tabs'           => $this->get_tab_slugs( $settings ),
 			'heading'        => $this->get_heading_config( $settings ),
