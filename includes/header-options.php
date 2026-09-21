@@ -131,6 +131,20 @@ final class Header_Options {
 				return in_array( $value, $allowed, true ) ? $value : $default;
 			};
 
+			$num = static function ( $key ) {
+				return isset( $_POST[ $key ] ) ? absint( wp_unslash( $_POST[ $key ] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			};
+
+			$css_color = static function ( $key ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				return isset( $_POST[ $key ] ) ? \HkdevShopElements\hkdev_elements_sanitize_css_color( wp_unslash( $_POST[ $key ] ) ) : '';
+			};
+
+			$font_stack = static function ( $key ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				return isset( $_POST[ $key ] ) ? \HkdevShopElements\hkdev_elements_sanitize_font_stack( wp_unslash( $_POST[ $key ] ) ) : '';
+			};
+
 			$config = [
 				'enabled'          => $yes_no( 'hkdev_hd_enabled' ),
 				'logo'             => $url( 'hkdev_hd_logo' ),
@@ -157,6 +171,30 @@ final class Header_Options {
 				'show_categories'  => $yes_no( 'hkdev_hd_show_categories' ),
 				'categories_label' => $text( 'hkdev_hd_categories_label' ),
 				'categories_limit' => isset( $_POST['hkdev_hd_categories_limit'] ) ? absint( wp_unslash( $_POST['hkdev_hd_categories_limit'] ) ) : 8, // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+				// ---- Appearance ----
+				'st_font'         => $font_stack( 'hkdev_hd_st_font' ),
+				'st_font_size'    => $num( 'hkdev_hd_st_font_size' ),
+				'st_container'    => $num( 'hkdev_hd_st_container' ),
+				'st_radius'       => $num( 'hkdev_hd_st_radius' ),
+				'st_primary'      => $css_color( 'hkdev_hd_st_primary' ),
+				'st_secondary'    => $css_color( 'hkdev_hd_st_secondary' ),
+				'st_text'         => $css_color( 'hkdev_hd_st_text' ),
+				'st_muted'        => $css_color( 'hkdev_hd_st_muted' ),
+				'st_soft'         => $css_color( 'hkdev_hd_st_soft' ),
+				'st_border'       => $css_color( 'hkdev_hd_st_border' ),
+				'st_topbar_bg'    => $css_color( 'hkdev_hd_st_topbar_bg' ),
+				'st_topbar_color' => $css_color( 'hkdev_hd_st_topbar_color' ),
+				'st_topbar_h'     => $num( 'hkdev_hd_st_topbar_h' ),
+				'st_topbar_fs'    => $num( 'hkdev_hd_st_topbar_fs' ),
+				'st_main_bg'      => $css_color( 'hkdev_hd_st_main_bg' ),
+				'st_main_h'       => $num( 'hkdev_hd_st_main_h' ),
+				'st_navbar_bg'    => $css_color( 'hkdev_hd_st_navbar_bg' ),
+				'st_navbar_color' => $css_color( 'hkdev_hd_st_navbar_color' ),
+				'st_navbar_h'     => $num( 'hkdev_hd_st_navbar_h' ),
+				'st_navbar_fs'    => $num( 'hkdev_hd_st_navbar_fs' ),
+				'st_search_h'     => $num( 'hkdev_hd_st_search_h' ),
+				'st_logo_maxh'    => $num( 'hkdev_hd_st_logo_maxh' ),
 			];
 
 			if ( '' === $config['categories_label'] ) {
@@ -182,6 +220,7 @@ final class Header_Options {
 			'contact' => [ 'dashicons-phone', esc_html__( 'Contact', 'hkdev-shop-elements' ) ],
 			'elements' => [ 'dashicons-screenoptions', esc_html__( 'Elements', 'hkdev-shop-elements' ) ],
 			'cart'    => [ 'dashicons-cart', esc_html__( 'Floating Cart', 'hkdev-shop-elements' ) ],
+			'appearance' => [ 'dashicons-art', esc_html__( 'Appearance', 'hkdev-shop-elements' ) ],
 		];
 		?>
 		<div class="wrap hkdev-hd-wrap">
@@ -519,6 +558,109 @@ final class Header_Options {
 							</div>
 						</section>
 
+						<!-- ============ APPEARANCE ============ -->
+						<section class="hd-card" id="hd-sec-appearance">
+							<header class="hd-card-head">
+								<span class="hd-card-icon"><span class="dashicons dashicons-art"></span></span>
+								<div>
+									<h2><?php esc_html_e( 'Appearance', 'hkdev-shop-elements' ); ?></h2>
+									<p><?php esc_html_e( 'Pixel-perfect control of the header — bar heights, colours, fonts and sizes. Leave a field empty to keep the plugin default.', 'hkdev-shop-elements' ); ?></p>
+								</div>
+							</header>
+							<div class="hd-card-body">
+								<?php
+								$app_groups = [
+									[
+										'title'  => __( 'Typography & Layout', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_font', 'type' => 'text', 'label' => __( 'Font Family', 'hkdev-shop-elements' ), 'ph' => "'Hind Siliguri', sans-serif", 'help' => __( 'Any font stack, e.g. "Poppins", sans-serif.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_font_size', 'type' => 'number', 'label' => __( 'Base Font Size (px)', 'hkdev-shop-elements' ), 'ph' => '15', 'help' => __( 'Header base text size.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_container', 'type' => 'number', 'label' => __( 'Container Width (px)', 'hkdev-shop-elements' ), 'ph' => '1280', 'help' => __( 'Max width of the header content.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_radius', 'type' => 'number', 'label' => __( 'Corner Radius (px)', 'hkdev-shop-elements' ), 'ph' => '12', 'help' => __( 'Radius of buttons, icon boxes and dropdowns.', 'hkdev-shop-elements' ) ],
+										],
+									],
+									[
+										'title'  => __( 'Colours', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_primary', 'type' => 'color', 'label' => __( 'Primary', 'hkdev-shop-elements' ), 'ph' => '#03a550', 'help' => __( 'Buttons, links and highlights.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_secondary', 'type' => 'color', 'label' => __( 'Secondary / Accent', 'hkdev-shop-elements' ), 'ph' => '#f06724', 'help' => __( 'Nav bar and badges.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_text', 'type' => 'color', 'label' => __( 'Body Text', 'hkdev-shop-elements' ), 'ph' => '#141a14', 'help' => '' ],
+											[ 'key' => 'st_muted', 'type' => 'color', 'label' => __( 'Muted Text', 'hkdev-shop-elements' ), 'ph' => '#5f6e66', 'help' => '' ],
+											[ 'key' => 'st_soft', 'type' => 'color', 'label' => __( 'Soft Background', 'hkdev-shop-elements' ), 'ph' => '#f1f8f3', 'help' => '' ],
+											[ 'key' => 'st_border', 'type' => 'color', 'label' => __( 'Border', 'hkdev-shop-elements' ), 'ph' => 'rgba(0,0,0,0.08)', 'help' => '' ],
+										],
+									],
+									[
+										'title'  => __( 'Top Bar (Upper)', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_topbar_bg', 'type' => 'color', 'label' => __( 'Background', 'hkdev-shop-elements' ), 'ph' => '#03a550', 'help' => '' ],
+											[ 'key' => 'st_topbar_color', 'type' => 'color', 'label' => __( 'Text Colour', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
+											[ 'key' => 'st_topbar_h', 'type' => 'number', 'label' => __( 'Height (px)', 'hkdev-shop-elements' ), 'ph' => '42', 'help' => '' ],
+											[ 'key' => 'st_topbar_fs', 'type' => 'number', 'label' => __( 'Font Size (px)', 'hkdev-shop-elements' ), 'ph' => '13', 'help' => '' ],
+										],
+									],
+									[
+										'title'  => __( 'Main Bar (Middle)', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_main_bg', 'type' => 'color', 'label' => __( 'Background', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
+											[ 'key' => 'st_main_h', 'type' => 'number', 'label' => __( 'Height (px)', 'hkdev-shop-elements' ), 'ph' => '88', 'help' => '' ],
+										],
+									],
+									[
+										'title'  => __( 'Nav Bar (Bottom)', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_navbar_bg', 'type' => 'color', 'label' => __( 'Background', 'hkdev-shop-elements' ), 'ph' => '#f06724', 'help' => '' ],
+											[ 'key' => 'st_navbar_color', 'type' => 'color', 'label' => __( 'Menu Text Colour', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
+											[ 'key' => 'st_navbar_h', 'type' => 'number', 'label' => __( 'Height (px)', 'hkdev-shop-elements' ), 'ph' => '54', 'help' => '' ],
+											[ 'key' => 'st_navbar_fs', 'type' => 'number', 'label' => __( 'Menu Font Size (px)', 'hkdev-shop-elements' ), 'ph' => '14', 'help' => '' ],
+										],
+									],
+									[
+										'title'  => __( 'Elements', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_search_h', 'type' => 'number', 'label' => __( 'Search Height (px)', 'hkdev-shop-elements' ), 'ph' => '52', 'help' => '' ],
+											[ 'key' => 'st_logo_maxh', 'type' => 'number', 'label' => __( 'Logo Max Height (px)', 'hkdev-shop-elements' ), 'ph' => '62', 'help' => '' ],
+										],
+									],
+								];
+
+								foreach ( $app_groups as $group ) :
+									?>
+									<div class="hd-app-group">
+										<h3 class="hd-app-group-title"><?php echo esc_html( $group['title'] ); ?></h3>
+										<?php foreach ( $group['fields'] as $field ) : ?>
+											<?php
+											$key   = $field['key'];
+											$val   = isset( $config[ $key ] ) ? $config[ $key ] : '';
+											$fid   = 'hkdev-hd-' . str_replace( '_', '-', $key );
+											$fname = 'hkdev_hd_' . $key;
+											?>
+											<div class="hd-field">
+												<div class="hd-field-info">
+													<label class="hd-field-title" for="<?php echo esc_attr( $fid ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+													<?php if ( ! empty( $field['help'] ) ) : ?>
+														<p class="hd-field-help"><?php echo esc_html( $field['help'] ); ?></p>
+													<?php endif; ?>
+												</div>
+												<div class="hd-field-input">
+													<?php if ( 'color' === $field['type'] ) : ?>
+														<div class="hd-color-wrap">
+															<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-color-text" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+															<input type="color" class="hd-color-pick" value="<?php echo esc_attr( preg_match( '/^#[0-9a-f]{6}$/i', (string) $val ) ? $val : ( preg_match( '/^#[0-9a-f]{6}$/i', $field['ph'] ) ? $field['ph'] : '#000000' ) ); ?>" tabindex="-1" aria-hidden="true">
+														</div>
+													<?php elseif ( 'number' === $field['type'] ) : ?>
+														<input type="number" min="0" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-compact" value="<?php echo esc_attr( $val ? $val : '' ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+													<?php else : ?>
+														<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+													<?php endif; ?>
+												</div>
+											</div>
+										<?php endforeach; ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
+						</section>
+
 					</div><!-- /.hd-content -->
 				</div><!-- /.hd-layout -->
 
@@ -626,6 +768,14 @@ final class Header_Options {
 				.hd-hero h1 { font-size: 22px; }
 				.hd-hero-status { margin-left: 0; }
 			}
+
+			/* ---- Appearance colour fields ---- */
+			.hd-app-group { border-top: 1px solid #f0f2f4; }
+			.hd-app-group:first-child { border-top: 0; }
+			.hd-app-group-title { margin: 0; padding: 18px 0 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #03a550; }
+			.hd-color-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
+			.hd-color-wrap .hd-color-text { flex: 1 1 auto; }
+			.hd-color-pick { flex: 0 0 auto; width: 42px; height: 38px; padding: 2px; border: 1px solid #d0d5d9; border-radius: 9px; background: #fff; cursor: pointer; }
 		</style>
 		<script>
 		jQuery( function ( $ ) {
@@ -705,6 +855,17 @@ final class Header_Options {
 
 			$enable.on( 'change', syncStatus );
 			syncStatus();
+
+			/* ---- Appearance: keep each colour picker and its text field in sync ---- */
+			$( document ).on( 'input change', '.hd-color-pick', function () {
+				$( this ).closest( '.hd-color-wrap' ).find( '.hd-color-text' ).val( $( this ).val() );
+			} );
+			$( document ).on( 'input', '.hd-color-text', function () {
+				var v = $.trim( $( this ).val() );
+				if ( /^#[0-9a-f]{6}$/i.test( v ) ) {
+					$( this ).closest( '.hd-color-wrap' ).find( '.hd-color-pick' ).val( v );
+				}
+			} );
 		} );
 		</script>
 		<?php

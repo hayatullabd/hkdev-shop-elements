@@ -138,6 +138,20 @@ final class Footer_Options {
 				return isset( $_POST[ $key ] ) ? wp_kses_post( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			};
 
+			$num = static function ( $key ) {
+				return isset( $_POST[ $key ] ) ? absint( wp_unslash( $_POST[ $key ] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			};
+
+			$css_color = static function ( $key ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				return isset( $_POST[ $key ] ) ? \HkdevShopElements\hkdev_elements_sanitize_css_color( wp_unslash( $_POST[ $key ] ) ) : '';
+			};
+
+			$font_stack = static function ( $key ) {
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+				return isset( $_POST[ $key ] ) ? \HkdevShopElements\hkdev_elements_sanitize_font_stack( wp_unslash( $_POST[ $key ] ) ) : '';
+			};
+
 			$config = [
 				'enabled'           => $yes_no( 'hkdev_ft_enabled' ),
 				'logo'              => $url( 'hkdev_ft_logo' ),
@@ -167,6 +181,25 @@ final class Footer_Options {
 				'payment_banner_link' => $url( 'hkdev_ft_payment_banner_link' ),
 				'show_backtotop'      => $yes_no( 'hkdev_ft_show_backtotop' ),
 				'copyright'         => $text( 'hkdev_ft_copyright' ),
+
+				// ---- Appearance ----
+				'st_font'         => $font_stack( 'hkdev_ft_st_font' ),
+				'st_font_size'    => $num( 'hkdev_ft_st_font_size' ),
+				'st_container'    => $num( 'hkdev_ft_st_container' ),
+				'st_bg'           => $css_color( 'hkdev_ft_st_bg' ),
+				'st_bg2'          => $css_color( 'hkdev_ft_st_bg2' ),
+				'st_text'         => $css_color( 'hkdev_ft_st_text' ),
+				'st_heading'      => $css_color( 'hkdev_ft_st_heading' ),
+				'st_muted'        => $css_color( 'hkdev_ft_st_muted' ),
+				'st_green'        => $css_color( 'hkdev_ft_st_green' ),
+				'st_orange'       => $css_color( 'hkdev_ft_st_orange' ),
+				'st_border'       => $css_color( 'hkdev_ft_st_border' ),
+				'st_soft'         => $css_color( 'hkdev_ft_st_soft' ),
+				'st_main_pad_y'   => $num( 'hkdev_ft_st_main_pad_y' ),
+				'st_grid_gap'     => $num( 'hkdev_ft_st_grid_gap' ),
+				'st_bottom_pad_y' => $num( 'hkdev_ft_st_bottom_pad_y' ),
+				'st_title_fs'     => $num( 'hkdev_ft_st_title_fs' ),
+				'st_link_fs'      => $num( 'hkdev_ft_st_link_fs' ),
 			];
 
 			if ( '' === $config['menu_title'] ) {
@@ -203,6 +236,7 @@ final class Footer_Options {
 			'columns'    => [ 'dashicons-list-view', esc_html__( 'Link Columns', 'hkdev-shop-elements' ) ],
 			'newsletter' => [ 'dashicons-email-alt', esc_html__( 'Newsletter & Social', 'hkdev-shop-elements' ) ],
 			'bottom'     => [ 'dashicons-money-alt', esc_html__( 'Payments & Copyright', 'hkdev-shop-elements' ) ],
+			'appearance' => [ 'dashicons-art', esc_html__( 'Appearance', 'hkdev-shop-elements' ) ],
 		];
 		?>
 		<div class="wrap hkdev-hd-wrap">
@@ -596,6 +630,89 @@ final class Footer_Options {
 							</div>
 						</section>
 
+						<!-- ============ APPEARANCE ============ -->
+						<section class="hd-card" id="hd-sec-appearance">
+							<header class="hd-card-head">
+								<span class="hd-card-icon"><span class="dashicons dashicons-art"></span></span>
+								<div>
+									<h2><?php esc_html_e( 'Appearance', 'hkdev-shop-elements' ); ?></h2>
+									<p><?php esc_html_e( 'Pixel-perfect control of the footer — colours, fonts, sizes and spacing. Leave a field empty to keep the plugin default.', 'hkdev-shop-elements' ); ?></p>
+								</div>
+							</header>
+							<div class="hd-card-body">
+								<?php
+								$app_groups = [
+									[
+										'title'  => __( 'Typography & Layout', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_font', 'type' => 'text', 'label' => __( 'Font Family', 'hkdev-shop-elements' ), 'ph' => "'Hind Siliguri', sans-serif", 'help' => __( 'Any font stack, e.g. "Poppins", sans-serif.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_font_size', 'type' => 'number', 'label' => __( 'Base Font Size (px)', 'hkdev-shop-elements' ), 'ph' => '15', 'help' => '' ],
+											[ 'key' => 'st_container', 'type' => 'number', 'label' => __( 'Container Width (px)', 'hkdev-shop-elements' ), 'ph' => '1280', 'help' => __( 'Max width of the footer content.', 'hkdev-shop-elements' ) ],
+										],
+									],
+									[
+										'title'  => __( 'Colours', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_bg', 'type' => 'color', 'label' => __( 'Footer Background', 'hkdev-shop-elements' ), 'ph' => '#0b1f15', 'help' => '' ],
+											[ 'key' => 'st_bg2', 'type' => 'color', 'label' => __( 'Bottom Bar Background', 'hkdev-shop-elements' ), 'ph' => '#071710', 'help' => '' ],
+											[ 'key' => 'st_text', 'type' => 'color', 'label' => __( 'Body Text', 'hkdev-shop-elements' ), 'ph' => '#c6d5cb', 'help' => '' ],
+											[ 'key' => 'st_heading', 'type' => 'color', 'label' => __( 'Headings & Titles', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
+											[ 'key' => 'st_muted', 'type' => 'color', 'label' => __( 'Muted Text', 'hkdev-shop-elements' ), 'ph' => '#8ba498', 'help' => '' ],
+											[ 'key' => 'st_green', 'type' => 'color', 'label' => __( 'Accent Green', 'hkdev-shop-elements' ), 'ph' => '#03a550', 'help' => '' ],
+											[ 'key' => 'st_orange', 'type' => 'color', 'label' => __( 'Accent Orange', 'hkdev-shop-elements' ), 'ph' => '#f06724', 'help' => '' ],
+											[ 'key' => 'st_border', 'type' => 'color', 'label' => __( 'Border', 'hkdev-shop-elements' ), 'ph' => 'rgba(255,255,255,0.1)', 'help' => '' ],
+											[ 'key' => 'st_soft', 'type' => 'color', 'label' => __( 'Soft Fill', 'hkdev-shop-elements' ), 'ph' => 'rgba(255,255,255,0.05)', 'help' => '' ],
+										],
+									],
+									[
+										'title'  => __( 'Spacing & Sizes', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_main_pad_y', 'type' => 'number', 'label' => __( 'Main Padding (px)', 'hkdev-shop-elements' ), 'ph' => '58', 'help' => __( 'Top and bottom padding of the main footer area.', 'hkdev-shop-elements' ) ],
+											[ 'key' => 'st_grid_gap', 'type' => 'number', 'label' => __( 'Column Gap (px)', 'hkdev-shop-elements' ), 'ph' => '38', 'help' => '' ],
+											[ 'key' => 'st_bottom_pad_y', 'type' => 'number', 'label' => __( 'Bottom Bar Padding (px)', 'hkdev-shop-elements' ), 'ph' => '26', 'help' => '' ],
+											[ 'key' => 'st_title_fs', 'type' => 'number', 'label' => __( 'Column Title Size (px)', 'hkdev-shop-elements' ), 'ph' => '16', 'help' => '' ],
+											[ 'key' => 'st_link_fs', 'type' => 'number', 'label' => __( 'Link Font Size (px)', 'hkdev-shop-elements' ), 'ph' => '14', 'help' => '' ],
+										],
+									],
+								];
+
+								foreach ( $app_groups as $group ) :
+									?>
+									<div class="hd-app-group">
+										<h3 class="hd-app-group-title"><?php echo esc_html( $group['title'] ); ?></h3>
+										<?php foreach ( $group['fields'] as $field ) : ?>
+											<?php
+											$key   = $field['key'];
+											$val   = isset( $config[ $key ] ) ? $config[ $key ] : '';
+											$fid   = 'hkdev-ft-' . str_replace( '_', '-', $key );
+											$fname = 'hkdev_ft_' . $key;
+											?>
+											<div class="hd-field">
+												<div class="hd-field-info">
+													<label class="hd-field-title" for="<?php echo esc_attr( $fid ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+													<?php if ( ! empty( $field['help'] ) ) : ?>
+														<p class="hd-field-help"><?php echo esc_html( $field['help'] ); ?></p>
+													<?php endif; ?>
+												</div>
+												<div class="hd-field-input">
+													<?php if ( 'color' === $field['type'] ) : ?>
+														<div class="hd-color-wrap">
+															<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-color-text" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+															<input type="color" class="hd-color-pick" value="<?php echo esc_attr( preg_match( '/^#[0-9a-f]{6}$/i', (string) $val ) ? $val : ( preg_match( '/^#[0-9a-f]{6}$/i', $field['ph'] ) ? $field['ph'] : '#000000' ) ); ?>" tabindex="-1" aria-hidden="true">
+														</div>
+													<?php elseif ( 'number' === $field['type'] ) : ?>
+														<input type="number" min="0" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-compact" value="<?php echo esc_attr( $val ? $val : '' ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+													<?php else : ?>
+														<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+													<?php endif; ?>
+												</div>
+											</div>
+										<?php endforeach; ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
+						</section>
+
 					</div><!-- /.hd-content -->
 				</div><!-- /.hd-layout -->
 
@@ -756,6 +873,14 @@ final class Footer_Options {
 				.hd-hero h1 { font-size: 22px; }
 				.hd-hero-status { margin-left: 0; }
 			}
+
+			/* ---- Appearance colour fields ---- */
+			.hd-app-group { border-top: 1px solid #f0f2f4; }
+			.hd-app-group:first-child { border-top: 0; }
+			.hd-app-group-title { margin: 0; padding: 18px 0 2px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: #03a550; }
+			.hd-color-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
+			.hd-color-wrap .hd-color-text { flex: 1 1 auto; }
+			.hd-color-pick { flex: 0 0 auto; width: 42px; height: 38px; padding: 2px; border: 1px solid #d0d5d9; border-radius: 9px; background: #fff; cursor: pointer; }
 		</style>
 		<script>
 		jQuery( function ( $ ) {
@@ -844,6 +969,17 @@ final class Footer_Options {
 
 			$enable.on( 'change', syncStatus );
 			syncStatus();
+
+			/* ---- Appearance: keep each colour picker and its text field in sync ---- */
+			$( document ).on( 'input change', '.hd-color-pick', function () {
+				$( this ).closest( '.hd-color-wrap' ).find( '.hd-color-text' ).val( $( this ).val() );
+			} );
+			$( document ).on( 'input', '.hd-color-text', function () {
+				var v = $.trim( $( this ).val() );
+				if ( /^#[0-9a-f]{6}$/i.test( v ) ) {
+					$( this ).closest( '.hd-color-wrap' ).find( '.hd-color-pick' ).val( v );
+				}
+			} );
 		} );
 		</script>
 		<?php

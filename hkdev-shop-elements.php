@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.46
+ * Version:           0.5.47
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.46' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.47' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -88,6 +88,49 @@ function hkdev_elements_asset_ver( $relative_path ) {
 	$file  = HKDEV_ELEMENTS_PATH . hkdev_elements_asset_path( $relative_path );
 	$mtime = file_exists( $file ) ? filemtime( $file ) : false;
 	return $mtime ? (string) $mtime : HKDEV_ELEMENTS_VERSION;
+}
+
+/**
+ * Sanitize a CSS colour value (hex, rgb()/hsl(), or a named colour).
+ *
+ * The value is printed into a <style> block on the front end, so anything that
+ * is not obviously a colour is rejected outright.
+ *
+ * @param string $value Raw value.
+ * @return string Safe colour, or '' when invalid.
+ */
+function hkdev_elements_sanitize_css_color( $value ) {
+	$value = trim( (string) $value );
+	if ( '' === $value ) {
+		return '';
+	}
+	if ( preg_match( '/^#([0-9a-f]{3}|[0-9a-f]{6})$/i', $value ) ) {
+		return $value;
+	}
+	if ( preg_match( '/^(rgb|rgba|hsl|hsla)\(\s*[0-9.,%\s\/]+\)$/i', $value ) ) {
+		return $value;
+	}
+	if ( preg_match( '/^[a-z]{3,20}$/i', $value ) ) {
+		return $value;
+	}
+	return '';
+}
+
+/**
+ * Sanitize a CSS font stack (e.g. "'Hind Siliguri', sans-serif").
+ *
+ * @param string $value Raw value.
+ * @return string Safe font stack, or '' when invalid.
+ */
+function hkdev_elements_sanitize_font_stack( $value ) {
+	$value = trim( (string) $value );
+	if ( '' === $value ) {
+		return '';
+	}
+	if ( ! preg_match( '/^[a-z0-9 ,\'"-]+$/i', $value ) ) {
+		return '';
+	}
+	return $value;
 }
 
 /**

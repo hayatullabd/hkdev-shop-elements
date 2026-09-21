@@ -113,7 +113,109 @@ class Footer_Engine {
 			'payment_banner_link' => '',
 			'show_backtotop'    => 'yes',
 			'copyright'         => '',
+
+			// ---- Appearance (edited from the Footer admin → Appearance) ----
+			// Empty/0 means "keep the plugin default".
+			'st_font'         => '',
+			'st_font_size'    => 0,
+			'st_container'    => 0,
+			'st_bg'           => '',
+			'st_bg2'          => '',
+			'st_text'         => '',
+			'st_heading'      => '',
+			'st_muted'        => '',
+			'st_green'        => '',
+			'st_orange'       => '',
+			'st_border'       => '',
+			'st_soft'         => '',
+			'st_main_pad_y'   => 0,
+			'st_grid_gap'     => 0,
+			'st_bottom_pad_y' => 0,
+			'st_title_fs'     => 0,
+			'st_link_fs'      => 0,
 		];
+	}
+
+	/**
+	 * Build the front-end <style> block from the Appearance settings.
+	 *
+	 * Scoped to the footer's unique wrapper id so it wins over the stylesheet's
+	 * !important rules (and its media queries) without editing the stylesheet.
+	 * Only values that were actually set are emitted.
+	 *
+	 * @param string $uid  Wrapper id (e.g. hkdev-ft-1234).
+	 * @param array  $atts Merged configuration.
+	 * @return string
+	 */
+	public function style_css( $uid, $atts ) {
+		$selector = '#' . $uid;
+		$rules    = [];
+		$vars     = [];
+
+		$color = static function ( $value ) {
+			return \HkdevShopElements\hkdev_elements_sanitize_css_color( $value );
+		};
+		$font = static function ( $value ) {
+			return \HkdevShopElements\hkdev_elements_sanitize_font_stack( $value );
+		};
+
+		$map = [
+			'st_bg'      => '--ft-bg',
+			'st_bg2'     => '--ft-bg-2',
+			'st_text'    => '--ft-text',
+			'st_heading' => '--ft-heading',
+			'st_muted'   => '--ft-muted',
+			'st_green'   => '--ft-green',
+			'st_orange'  => '--ft-orange',
+			'st_border'  => '--ft-border',
+			'st_soft'    => '--ft-soft',
+		];
+		foreach ( $map as $key => $var ) {
+			$safe = $color( $atts[ $key ] );
+			if ( '' !== $safe ) {
+				$vars[] = $var . ':' . $safe;
+			}
+		}
+
+		if ( '' !== $atts['st_font'] ) {
+			$font_safe = $font( $atts['st_font'] );
+			if ( '' !== $font_safe ) {
+				$vars[] = '--ft-font:' . $font_safe;
+			}
+		}
+		if ( absint( $atts['st_container'] ) > 0 ) {
+			$vars[] = '--ft-container:' . absint( $atts['st_container'] ) . 'px';
+		}
+
+		if ( $vars ) {
+			$rules[] = $selector . '{' . implode( ';', $vars ) . '}';
+		}
+
+		if ( absint( $atts['st_font_size'] ) > 0 ) {
+			$rules[] = $selector . '{font-size:' . absint( $atts['st_font_size'] ) . 'px !important}';
+		}
+
+		if ( absint( $atts['st_main_pad_y'] ) > 0 ) {
+			$pad     = absint( $atts['st_main_pad_y'] );
+			$rules[] = $selector . ' .hkdev-footer-main{padding-top:' . $pad . 'px !important;padding-bottom:' . $pad . 'px !important}';
+		}
+		if ( absint( $atts['st_grid_gap'] ) > 0 ) {
+			$gap     = absint( $atts['st_grid_gap'] );
+			$rules[] = $selector . ' .hkdev-footer-grid{gap:' . $gap . 'px !important}';
+		}
+		if ( absint( $atts['st_bottom_pad_y'] ) > 0 ) {
+			$pad     = absint( $atts['st_bottom_pad_y'] );
+			$rules[] = $selector . ' .hkdev-footer-bottom{padding-top:' . $pad . 'px !important;padding-bottom:' . $pad . 'px !important}';
+		}
+		if ( absint( $atts['st_title_fs'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-footer-title{font-size:' . absint( $atts['st_title_fs'] ) . 'px !important}';
+		}
+		if ( absint( $atts['st_link_fs'] ) > 0 ) {
+			$fs      = absint( $atts['st_link_fs'] );
+			$rules[] = $selector . ' .hkdev-footer-menu li a,' . $selector . ' .hkdev-footer-links li a{' . 'font-size:' . $fs . 'px !important}';
+		}
+
+		return $rules ? '<style>' . implode( '', $rules ) . '</style>' : '';
 	}
 
 	/**
@@ -367,6 +469,7 @@ class Footer_Engine {
 		ob_start();
 		?>
 		<div class="hkdev-footer-wrap" id="<?php echo esc_attr( $uid ); ?>" role="contentinfo">
+			<?php echo $this->style_css( $uid, $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- colours/fonts sanitised in style_css() ?>
 			<span class="hkdev-footer-accent" aria-hidden="true"></span>
 
 			<div class="hkdev-footer-main">

@@ -123,7 +123,149 @@ class Header_Engine {
 			'show_categories'  => 'no',
 			'categories_label' => __( 'All Categories', 'hkdev-shop-elements' ),
 			'categories_limit' => 8,
+
+			// ---- Appearance (edited from the Header admin → Appearance) ----
+			// Empty/0 means "keep the plugin default".
+			'st_font'         => '',
+			'st_font_size'    => 0,
+			'st_container'    => 0,
+			'st_radius'       => 0,
+			'st_primary'      => '',
+			'st_secondary'    => '',
+			'st_text'         => '',
+			'st_muted'        => '',
+			'st_soft'         => '',
+			'st_border'       => '',
+			'st_topbar_bg'    => '',
+			'st_topbar_color' => '',
+			'st_topbar_h'     => 0,
+			'st_topbar_fs'    => 0,
+			'st_main_bg'      => '',
+			'st_main_h'       => 0,
+			'st_navbar_bg'    => '',
+			'st_navbar_color' => '',
+			'st_navbar_h'     => 0,
+			'st_navbar_fs'    => 0,
+			'st_search_h'     => 0,
+			'st_logo_maxh'    => 0,
 		];
+	}
+
+	/**
+	 * Build the front-end <style> block from the Appearance settings.
+	 *
+	 * Everything is scoped to the header's unique wrapper id so it wins over the
+	 * stylesheet's !important rules (and its media queries) without editing the
+	 * stylesheet itself. Only values that were actually set are emitted.
+	 *
+	 * @param string $uid   Wrapper id (e.g. hkdev-hd-1234).
+	 * @param array  $atts  Merged configuration.
+	 * @return string
+	 */
+	public function style_css( $uid, $atts ) {
+		$selector = '#' . $uid;
+		$rules    = [];
+		$vars     = [];
+
+		$color = static function ( $value ) {
+			return \HkdevShopElements\hkdev_elements_sanitize_css_color( $value );
+		};
+		$font = static function ( $value ) {
+			return \HkdevShopElements\hkdev_elements_sanitize_font_stack( $value );
+		};
+
+		// ---- Globally wired design tokens -----------------------------------
+		if ( '' !== $atts['st_primary'] ) {
+			$vars[] = '--hd-primary:' . $color( $atts['st_primary'] );
+		}
+		if ( '' !== $atts['st_secondary'] ) {
+			$vars[] = '--hd-secondary:' . $color( $atts['st_secondary'] );
+			$vars[] = '--hd-secondary-dark:' . $color( $atts['st_secondary'] );
+		}
+		if ( '' !== $atts['st_text'] ) {
+			$vars[] = '--hd-text:' . $color( $atts['st_text'] );
+		}
+		if ( '' !== $atts['st_muted'] ) {
+			$vars[] = '--hd-muted:' . $color( $atts['st_muted'] );
+		}
+		if ( '' !== $atts['st_soft'] ) {
+			$vars[] = '--hd-soft:' . $color( $atts['st_soft'] );
+		}
+		if ( '' !== $atts['st_border'] ) {
+			$vars[] = '--hd-border:' . $color( $atts['st_border'] );
+		}
+		if ( '' !== $atts['st_font'] ) {
+			$font_safe = $font( $atts['st_font'] );
+			if ( '' !== $font_safe ) {
+				$vars[] = '--hd-font:' . $font_safe;
+			}
+		}
+		if ( absint( $atts['st_container'] ) > 0 ) {
+			$vars[] = '--hd-container:' . absint( $atts['st_container'] ) . 'px';
+		}
+		if ( absint( $atts['st_radius'] ) > 0 ) {
+			$vars[] = '--hd-radius:' . absint( $atts['st_radius'] ) . 'px';
+		}
+
+		if ( $vars ) {
+			$rules[] = $selector . '{' . implode( ';', $vars ) . '}';
+		}
+
+		if ( absint( $atts['st_font_size'] ) > 0 ) {
+			$rules[] = $selector . '{font-size:' . absint( $atts['st_font_size'] ) . 'px !important}';
+		}
+
+		// ---- Top bar ---------------------------------------------------------
+		$topbar_bg = $color( $atts['st_topbar_bg'] );
+		if ( '' !== $topbar_bg ) {
+			$rules[] = $selector . ' .hkdev-header-topbar{background:' . $topbar_bg . ' !important}';
+		}
+		$topbar_color = $color( $atts['st_topbar_color'] );
+		if ( '' !== $topbar_color ) {
+			$rules[] = $selector . ' .hkdev-header-topbar{color:' . $topbar_color . ' !important}';
+		}
+		if ( absint( $atts['st_topbar_h'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-topbar .hkdev-header-container{min-height:' . absint( $atts['st_topbar_h'] ) . 'px !important}';
+		}
+		if ( absint( $atts['st_topbar_fs'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-topbar{font-size:' . absint( $atts['st_topbar_fs'] ) . 'px !important}';
+		}
+
+		// ---- Main bar --------------------------------------------------------
+		$main_bg = $color( $atts['st_main_bg'] );
+		if ( '' !== $main_bg ) {
+			$rules[] = $selector . '{background:' . $main_bg . ' !important}';
+			$rules[] = $selector . ' .hkdev-header-main{background:' . $main_bg . ' !important}';
+		}
+		if ( absint( $atts['st_main_h'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-main .hkdev-header-container{min-height:' . absint( $atts['st_main_h'] ) . 'px !important}';
+		}
+
+		// ---- Nav bar ---------------------------------------------------------
+		$navbar_bg = $color( $atts['st_navbar_bg'] );
+		if ( '' !== $navbar_bg ) {
+			$rules[] = $selector . ' .hkdev-header-navbar{background:' . $navbar_bg . ' !important}';
+		}
+		if ( absint( $atts['st_navbar_h'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-navbar .hkdev-header-container{min-height:' . absint( $atts['st_navbar_h'] ) . 'px !important}';
+		}
+		$navbar_color = $color( $atts['st_navbar_color'] );
+		if ( '' !== $navbar_color ) {
+			$rules[] = $selector . ' .hkdev-header-menu>li>a{color:' . $navbar_color . ' !important}';
+		}
+		if ( absint( $atts['st_navbar_fs'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-menu>li>a{font-size:' . absint( $atts['st_navbar_fs'] ) . 'px !important}';
+		}
+
+		// ---- Search + logo ---------------------------------------------------
+		if ( absint( $atts['st_search_h'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-search-form{height:' . absint( $atts['st_search_h'] ) . 'px !important}';
+		}
+		if ( absint( $atts['st_logo_maxh'] ) > 0 ) {
+			$rules[] = $selector . ' .hkdev-header-logo img{max-height:' . absint( $atts['st_logo_maxh'] ) . 'px !important}';
+		}
+
+		return $rules ? '<style>' . implode( '', $rules ) . '</style>' : '';
 	}
 
 	/**
@@ -725,6 +867,8 @@ class Header_Engine {
 		ob_start();
 		?>
 		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> id="<?php echo esc_attr( $uid ); ?>">
+
+			<?php echo $this->style_css( $uid, $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- colours/fonts sanitised in style_css() ?>
 
 			<?php if ( 'yes' === $atts['show_topbar'] ) : ?>
 				<div class="hkdev-header-topbar">
