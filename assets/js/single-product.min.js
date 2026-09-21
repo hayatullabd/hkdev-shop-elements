@@ -105,16 +105,16 @@ jQuery(document).ready(function($) {
             if ($player.length) {
                 $player.stop(true, true).fadeOut(100).empty();
             }
-            // If the container is already hidden (e.g. after coming back
-            // from a video), skip the fadeOut — its callback may not fire
-            // on a hidden element, which would leave the image un-swapped.
             if ($zoomInner.is(':hidden')) {
+                // Coming back from a video: swap the src and show the
+                // container directly (no fadeOut needed on a hidden node).
                 $('#hkdev-sp-main-img').attr('src', fullSrc);
                 $zoomInner.stop(true, true).fadeIn(200);
             } else {
-                $zoomInner.stop(true, true).fadeOut(100, function() {
-                    $('#hkdev-sp-main-img').attr('src', fullSrc);
-                    $(this).stop(true, true).fadeIn(200);
+                // Normal image navigation: fade the image itself and swap
+                // the src in the callback (matches the proven pre-video path).
+                $('#hkdev-sp-main-img').stop(true, true).fadeOut(100, function() {
+                    $(this).attr('src', fullSrc).fadeIn(200);
                 });
             }
         }
