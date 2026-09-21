@@ -339,7 +339,7 @@ class Review_Engine {
 						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
 					</button>
 					<div class="hkdev-rv-pmodal-left">
-						<img class="hkdev-rv-slider-img" src="" alt="" />
+						<img class="hkdev-rv-slider-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
 						<button type="button" class="hkdev-rv-slider-btn hkdev-rv-prev" aria-label="<?php esc_attr_e( 'Previous image', 'hkdev-shop-elements' ); ?>">
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
 						</button>

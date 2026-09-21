@@ -305,7 +305,7 @@ class Shop_Engine {
 			<div class="hkdev-vm-overlay"></div>
 			<div class="hkdev-vm-box">
 				<div class="hkdev-vm-header">
-					<img class="hkdev-vm-thumb" src="" alt="">
+					<img class="hkdev-vm-thumb" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">
 					<h3 class="hkdev-vm-title"></h3>
 					<button type="button" class="hkdev-vm-close" aria-label="<?php esc_attr_e( 'Close', 'hkdev-shop-elements' ); ?>">&times;</button>
 				</div>

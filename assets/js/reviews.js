@@ -4,6 +4,10 @@
 (function ($) {
     'use strict';
 
+    // 1x1 transparent GIF – used instead of an empty src="" so the browser
+    // never issues a wasted request for the page URL.
+    var HKDEV_RV_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
     function escapeHtml(value) {
         return String(value)
             .replace(/&/g, '&amp;')
@@ -183,7 +187,7 @@
             var total = slider.images.length;
 
             if (!total) {
-                $sliderImg.attr('src', '').hide();
+                $sliderImg.attr('src', HKDEV_RV_PLACEHOLDER).hide();
                 $sliderBtn.hide();
                 $sliderCounter.text('');
                 return;
@@ -254,7 +258,7 @@
         function closeModals() {
             $root.find('.hkdev-rv-vmodal, .hkdev-rv-pmodal').prop('hidden', true);
             $vmedia.empty();
-            $sliderImg.attr('src', '');
+            $sliderImg.attr('src', HKDEV_RV_PLACEHOLDER);
             $('body').removeClass('hkdev-rv-locked');
         }
 
@@ -311,7 +315,7 @@
                 var $modal = $(this);
                 $modal.prop('hidden', true);
                 $modal.find('.hkdev-rv-vmodal-media').empty();
-                $modal.find('.hkdev-rv-slider-img').attr('src', '');
+                $modal.find('.hkdev-rv-slider-img').attr('src', HKDEV_RV_PLACEHOLDER);
             });
             $('body').removeClass('hkdev-rv-locked');
         });
