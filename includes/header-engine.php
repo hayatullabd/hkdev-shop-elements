@@ -125,29 +125,50 @@ class Header_Engine {
 			'categories_limit' => 8,
 
 			// ---- Appearance (edited from the Header admin → Appearance) ----
-			// Empty/0 means "keep the plugin default".
-			'st_font'         => '',
-			'st_font_size'    => 0,
-			'st_container'    => 0,
-			'st_radius'       => 0,
-			'st_primary'      => '',
-			'st_secondary'    => '',
-			'st_text'         => '',
-			'st_muted'        => '',
-			'st_soft'         => '',
-			'st_border'       => '',
-			'st_topbar_bg'    => '',
-			'st_topbar_color' => '',
-			'st_topbar_h'     => 0,
-			'st_topbar_fs'    => 0,
-			'st_main_bg'      => '',
-			'st_main_h'       => 0,
-			'st_navbar_bg'    => '',
-			'st_navbar_color' => '',
-			'st_navbar_h'     => 0,
-			'st_navbar_fs'    => 0,
-			'st_search_h'     => 0,
-			'st_logo_maxh'    => 0,
+			// Empty/0 means "keep the plugin default". Size values are per device:
+			// base = desktop, _t = ≤1024px (tablet), _m = ≤767px (mobile).
+			'st_font'          => '',
+			'st_font_size'     => 0,
+			'st_font_size_t'   => 0,
+			'st_font_size_m'   => 0,
+			'st_container'     => 0,
+			'st_container_t'   => 0,
+			'st_container_m'   => 0,
+			'st_radius'        => 0,
+			'st_radius_t'      => 0,
+			'st_radius_m'      => 0,
+			'st_primary'       => '',
+			'st_secondary'     => '',
+			'st_text'          => '',
+			'st_muted'         => '',
+			'st_soft'          => '',
+			'st_border'        => '',
+			'st_topbar_bg'     => '',
+			'st_topbar_color'  => '',
+			'st_topbar_h'      => 0,
+			'st_topbar_h_t'    => 0,
+			'st_topbar_h_m'    => 0,
+			'st_topbar_fs'     => 0,
+			'st_topbar_fs_t'   => 0,
+			'st_topbar_fs_m'   => 0,
+			'st_main_bg'       => '',
+			'st_main_h'        => 0,
+			'st_main_h_t'      => 0,
+			'st_main_h_m'      => 0,
+			'st_navbar_bg'     => '',
+			'st_navbar_color'  => '',
+			'st_navbar_h'      => 0,
+			'st_navbar_h_t'    => 0,
+			'st_navbar_h_m'    => 0,
+			'st_navbar_fs'     => 0,
+			'st_navbar_fs_t'   => 0,
+			'st_navbar_fs_m'   => 0,
+			'st_search_h'      => 0,
+			'st_search_h_t'    => 0,
+			'st_search_h_m'    => 0,
+			'st_logo_maxh'     => 0,
+			'st_logo_maxh_t'   => 0,
+			'st_logo_maxh_m'   => 0,
 		];
 	}
 
@@ -163,9 +184,10 @@ class Header_Engine {
 	 * @return string
 	 */
 	public function style_css( $uid, $atts ) {
-		$selector = '#' . $uid;
-		$rules    = [];
-		$vars     = [];
+		$sel  = '#' . $uid;
+		$base = []; // desktop / all widths
+		$t    = []; // @media (max-width: 1024px) — tablet
+		$m    = []; // @media (max-width: 767px)  — mobile
 
 		$color = static function ( $value ) {
 			return \HkdevShopElements\hkdev_elements_sanitize_css_color( $value );
@@ -174,98 +196,88 @@ class Header_Engine {
 			return \HkdevShopElements\hkdev_elements_sanitize_font_stack( $value );
 		};
 
-		// ---- Globally wired design tokens -----------------------------------
-		if ( '' !== $atts['st_primary'] ) {
-			$vars[] = '--hd-primary:' . $color( $atts['st_primary'] );
-		}
-		if ( '' !== $atts['st_secondary'] ) {
-			$vars[] = '--hd-secondary:' . $color( $atts['st_secondary'] );
-			$vars[] = '--hd-secondary-dark:' . $color( $atts['st_secondary'] );
-		}
-		if ( '' !== $atts['st_text'] ) {
-			$vars[] = '--hd-text:' . $color( $atts['st_text'] );
-		}
-		if ( '' !== $atts['st_muted'] ) {
-			$vars[] = '--hd-muted:' . $color( $atts['st_muted'] );
-		}
-		if ( '' !== $atts['st_soft'] ) {
-			$vars[] = '--hd-soft:' . $color( $atts['st_soft'] );
-		}
-		if ( '' !== $atts['st_border'] ) {
-			$vars[] = '--hd-border:' . $color( $atts['st_border'] );
-		}
-		if ( '' !== $atts['st_font'] ) {
-			$font_safe = $font( $atts['st_font'] );
-			if ( '' !== $font_safe ) {
-				$vars[] = '--hd-font:' . $font_safe;
+		// ---- Colour + font tokens (shared by every device) ------------------
+		$vars   = [];
+		$tokens = [
+			'st_primary'   => [ '--hd-primary' ],
+			'st_secondary' => [ '--hd-secondary', '--hd-secondary-dark' ],
+			'st_text'      => [ '--hd-text' ],
+			'st_muted'     => [ '--hd-muted' ],
+			'st_soft'      => [ '--hd-soft' ],
+			'st_border'    => [ '--hd-border' ],
+		];
+		foreach ( $tokens as $key => $names ) {
+			$safe = $color( $atts[ $key ] );
+			if ( '' !== $safe ) {
+				foreach ( $names as $name ) {
+					$vars[] = $name . ':' . $safe;
+				}
 			}
 		}
-		if ( absint( $atts['st_container'] ) > 0 ) {
-			$vars[] = '--hd-container:' . absint( $atts['st_container'] ) . 'px';
+		if ( '' !== $atts['st_font'] ) {
+			$safe = $font( $atts['st_font'] );
+			if ( '' !== $safe ) {
+				$vars[] = '--hd-font:' . $safe;
+			}
 		}
-		if ( absint( $atts['st_radius'] ) > 0 ) {
-			$vars[] = '--hd-radius:' . absint( $atts['st_radius'] ) . 'px';
-		}
-
 		if ( $vars ) {
-			$rules[] = $selector . '{' . implode( ';', $vars ) . '}';
+			$base[] = $sel . '{' . implode( ';', $vars ) . '}';
 		}
 
-		if ( absint( $atts['st_font_size'] ) > 0 ) {
-			$rules[] = $selector . '{font-size:' . absint( $atts['st_font_size'] ) . 'px !important}';
+		// ---- Bar backgrounds / text colours (shared by every device) --------
+		$paints = [
+			[ 'st_topbar_bg', $sel . ' .hkdev-header-topbar', 'background' ],
+			[ 'st_topbar_color', $sel . ' .hkdev-header-topbar', 'color' ],
+			[ 'st_main_bg', $sel, 'background' ],
+			[ 'st_main_bg', $sel . ' .hkdev-header-main', 'background' ],
+			[ 'st_navbar_bg', $sel . ' .hkdev-header-navbar', 'background' ],
+			[ 'st_navbar_color', $sel . ' .hkdev-header-menu>li>a', 'color' ],
+		];
+		foreach ( $paints as $p ) {
+			$safe = $color( $atts[ $p[0] ] );
+			if ( '' !== $safe ) {
+				$base[] = $p[1] . '{' . $p[2] . ':' . $safe . ' !important}';
+			}
 		}
 
-		// ---- Top bar ---------------------------------------------------------
-		$topbar_bg = $color( $atts['st_topbar_bg'] );
-		if ( '' !== $topbar_bg ) {
-			$rules[] = $selector . ' .hkdev-header-topbar{background:' . $topbar_bg . ' !important}';
-		}
-		$topbar_color = $color( $atts['st_topbar_color'] );
-		if ( '' !== $topbar_color ) {
-			$rules[] = $selector . ' .hkdev-header-topbar{color:' . $topbar_color . ' !important}';
-		}
-		if ( absint( $atts['st_topbar_h'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-topbar .hkdev-header-container{min-height:' . absint( $atts['st_topbar_h'] ) . 'px !important}';
-		}
-		if ( absint( $atts['st_topbar_fs'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-topbar{font-size:' . absint( $atts['st_topbar_fs'] ) . 'px !important}';
-		}
-
-		// ---- Main bar --------------------------------------------------------
-		$main_bg = $color( $atts['st_main_bg'] );
-		if ( '' !== $main_bg ) {
-			$rules[] = $selector . '{background:' . $main_bg . ' !important}';
-			$rules[] = $selector . ' .hkdev-header-main{background:' . $main_bg . ' !important}';
-		}
-		if ( absint( $atts['st_main_h'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-main .hkdev-header-container{min-height:' . absint( $atts['st_main_h'] ) . 'px !important}';
-		}
-
-		// ---- Nav bar ---------------------------------------------------------
-		$navbar_bg = $color( $atts['st_navbar_bg'] );
-		if ( '' !== $navbar_bg ) {
-			$rules[] = $selector . ' .hkdev-header-navbar{background:' . $navbar_bg . ' !important}';
-		}
-		if ( absint( $atts['st_navbar_h'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-navbar .hkdev-header-container{min-height:' . absint( $atts['st_navbar_h'] ) . 'px !important}';
-		}
-		$navbar_color = $color( $atts['st_navbar_color'] );
-		if ( '' !== $navbar_color ) {
-			$rules[] = $selector . ' .hkdev-header-menu>li>a{color:' . $navbar_color . ' !important}';
-		}
-		if ( absint( $atts['st_navbar_fs'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-menu>li>a{font-size:' . absint( $atts['st_navbar_fs'] ) . 'px !important}';
+		// ---- Sizes (per device: desktop / tablet / mobile) ------------------
+		$sizes = [
+			[ $sel, 'font-size', 'st_font_size' ],
+			[ $sel, '--hd-container', 'st_container' ],
+			[ $sel, '--hd-radius', 'st_radius' ],
+			[ $sel . ' .hkdev-header-topbar', 'font-size', 'st_topbar_fs' ],
+			[ $sel . ' .hkdev-header-topbar .hkdev-header-container', 'min-height', 'st_topbar_h' ],
+			[ $sel . ' .hkdev-header-main .hkdev-header-container', 'min-height', 'st_main_h' ],
+			[ $sel . ' .hkdev-header-navbar .hkdev-header-container', 'min-height', 'st_navbar_h' ],
+			[ $sel . ' .hkdev-header-menu>li>a', 'font-size', 'st_navbar_fs' ],
+			[ $sel . ' .hkdev-header-search-form', 'height', 'st_search_h' ],
+			[ $sel . ' .hkdev-header-logo img', 'max-height', 'st_logo_maxh' ],
+		];
+		foreach ( $sizes as $row ) {
+			foreach ( [ '' => 'base', '_t' => 't', '_m' => 'm' ] as $sfx => $which ) {
+				$n = absint( $atts[ $row[2] . $sfx ] );
+				if ( $n <= 0 ) {
+					continue;
+				}
+				$rule = $row[0] . '{' . $row[1] . ':' . $n . 'px !important}';
+				if ( 'base' === $which ) {
+					$base[] = $rule;
+				} elseif ( 't' === $which ) {
+					$t[] = $rule;
+				} else {
+					$m[] = $rule;
+				}
+			}
 		}
 
-		// ---- Search + logo ---------------------------------------------------
-		if ( absint( $atts['st_search_h'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-search-form{height:' . absint( $atts['st_search_h'] ) . 'px !important}';
+		if ( $t ) {
+			$base[] = '@media (max-width:1024px){' . implode( '', $t ) . '}';
 		}
-		if ( absint( $atts['st_logo_maxh'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-header-logo img{max-height:' . absint( $atts['st_logo_maxh'] ) . 'px !important}';
+		if ( $m ) {
+			$base[] = '@media (max-width:767px){' . implode( '', $m ) . '}';
 		}
 
-		return $rules ? '<style>' . implode( '', $rules ) . '</style>' : '';
+		return $base ? '<style>' . implode( '', $base ) . '</style>' : '';
 	}
 
 	/**

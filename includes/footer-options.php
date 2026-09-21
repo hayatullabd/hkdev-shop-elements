@@ -183,23 +183,37 @@ final class Footer_Options {
 				'copyright'         => $text( 'hkdev_ft_copyright' ),
 
 				// ---- Appearance ----
-				'st_font'         => $font_stack( 'hkdev_ft_st_font' ),
-				'st_font_size'    => $num( 'hkdev_ft_st_font_size' ),
-				'st_container'    => $num( 'hkdev_ft_st_container' ),
-				'st_bg'           => $css_color( 'hkdev_ft_st_bg' ),
-				'st_bg2'          => $css_color( 'hkdev_ft_st_bg2' ),
-				'st_text'         => $css_color( 'hkdev_ft_st_text' ),
-				'st_heading'      => $css_color( 'hkdev_ft_st_heading' ),
-				'st_muted'        => $css_color( 'hkdev_ft_st_muted' ),
-				'st_green'        => $css_color( 'hkdev_ft_st_green' ),
-				'st_orange'       => $css_color( 'hkdev_ft_st_orange' ),
-				'st_border'       => $css_color( 'hkdev_ft_st_border' ),
-				'st_soft'         => $css_color( 'hkdev_ft_st_soft' ),
-				'st_main_pad_y'   => $num( 'hkdev_ft_st_main_pad_y' ),
-				'st_grid_gap'     => $num( 'hkdev_ft_st_grid_gap' ),
-				'st_bottom_pad_y' => $num( 'hkdev_ft_st_bottom_pad_y' ),
-				'st_title_fs'     => $num( 'hkdev_ft_st_title_fs' ),
-				'st_link_fs'      => $num( 'hkdev_ft_st_link_fs' ),
+				'st_font'           => $font_stack( 'hkdev_ft_st_font' ),
+				'st_font_size'      => $num( 'hkdev_ft_st_font_size' ),
+				'st_font_size_t'    => $num( 'hkdev_ft_st_font_size_t' ),
+				'st_font_size_m'    => $num( 'hkdev_ft_st_font_size_m' ),
+				'st_container'      => $num( 'hkdev_ft_st_container' ),
+				'st_container_t'    => $num( 'hkdev_ft_st_container_t' ),
+				'st_container_m'    => $num( 'hkdev_ft_st_container_m' ),
+				'st_bg'             => $css_color( 'hkdev_ft_st_bg' ),
+				'st_bg2'            => $css_color( 'hkdev_ft_st_bg2' ),
+				'st_text'           => $css_color( 'hkdev_ft_st_text' ),
+				'st_heading'        => $css_color( 'hkdev_ft_st_heading' ),
+				'st_muted'          => $css_color( 'hkdev_ft_st_muted' ),
+				'st_green'          => $css_color( 'hkdev_ft_st_green' ),
+				'st_orange'         => $css_color( 'hkdev_ft_st_orange' ),
+				'st_border'         => $css_color( 'hkdev_ft_st_border' ),
+				'st_soft'           => $css_color( 'hkdev_ft_st_soft' ),
+				'st_main_pad_y'     => $num( 'hkdev_ft_st_main_pad_y' ),
+				'st_main_pad_y_t'   => $num( 'hkdev_ft_st_main_pad_y_t' ),
+				'st_main_pad_y_m'   => $num( 'hkdev_ft_st_main_pad_y_m' ),
+				'st_grid_gap'       => $num( 'hkdev_ft_st_grid_gap' ),
+				'st_grid_gap_t'     => $num( 'hkdev_ft_st_grid_gap_t' ),
+				'st_grid_gap_m'     => $num( 'hkdev_ft_st_grid_gap_m' ),
+				'st_bottom_pad_y'   => $num( 'hkdev_ft_st_bottom_pad_y' ),
+				'st_bottom_pad_y_t' => $num( 'hkdev_ft_st_bottom_pad_y_t' ),
+				'st_bottom_pad_y_m' => $num( 'hkdev_ft_st_bottom_pad_y_m' ),
+				'st_title_fs'       => $num( 'hkdev_ft_st_title_fs' ),
+				'st_title_fs_t'     => $num( 'hkdev_ft_st_title_fs_t' ),
+				'st_title_fs_m'     => $num( 'hkdev_ft_st_title_fs_m' ),
+				'st_link_fs'        => $num( 'hkdev_ft_st_link_fs' ),
+				'st_link_fs_t'      => $num( 'hkdev_ft_st_link_fs_t' ),
+				'st_link_fs_m'      => $num( 'hkdev_ft_st_link_fs_m' ),
 			];
 
 			if ( '' === $config['menu_title'] ) {
@@ -701,7 +715,24 @@ final class Footer_Options {
 															<input type="color" class="hd-color-pick" value="<?php echo esc_attr( preg_match( '/^#[0-9a-f]{6}$/i', (string) $val ) ? $val : ( preg_match( '/^#[0-9a-f]{6}$/i', $field['ph'] ) ? $field['ph'] : '#000000' ) ); ?>" tabindex="-1" aria-hidden="true">
 														</div>
 													<?php elseif ( 'number' === $field['type'] ) : ?>
-														<input type="number" min="0" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-compact" value="<?php echo esc_attr( $val ? $val : '' ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+														<div class="hd-devices">
+															<?php
+															$devices = [
+																''   => __( 'Desktop', 'hkdev-shop-elements' ),
+																'_t' => __( 'Tablet', 'hkdev-shop-elements' ),
+																'_m' => __( 'Mobile', 'hkdev-shop-elements' ),
+															];
+															foreach ( $devices as $sfx => $dlabel ) :
+																$dkey = $key . $sfx;
+																$did  = $fid . ( '' === $sfx ? '' : '-' . trim( $sfx, '_' ) );
+																$dval = isset( $config[ $dkey ] ) ? $config[ $dkey ] : '';
+																?>
+																<label class="hd-device" for="<?php echo esc_attr( $did ); ?>">
+																	<input type="number" min="0" id="<?php echo esc_attr( $did ); ?>" name="<?php echo esc_attr( 'hkdev_ft_' . $dkey ); ?>" value="<?php echo esc_attr( $dval ? $dval : '' ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+																	<span><?php echo esc_html( $dlabel ); ?></span>
+																</label>
+															<?php endforeach; ?>
+														</div>
 													<?php else : ?>
 														<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
 													<?php endif; ?>
@@ -881,6 +912,10 @@ final class Footer_Options {
 			.hd-color-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
 			.hd-color-wrap .hd-color-text { flex: 1 1 auto; }
 			.hd-color-pick { flex: 0 0 auto; width: 42px; height: 38px; padding: 2px; border: 1px solid #d0d5d9; border-radius: 9px; background: #fff; cursor: pointer; }
+			.hd-devices { display: flex; gap: 8px; width: 100%; }
+			.hd-device { flex: 1 1 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+			.hd-device input { width: 100%; min-width: 0; }
+			.hd-device span { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #646970; }
 		</style>
 		<script>
 		jQuery( function ( $ ) {

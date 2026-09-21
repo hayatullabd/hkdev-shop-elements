@@ -173,28 +173,48 @@ final class Header_Options {
 				'categories_limit' => isset( $_POST['hkdev_hd_categories_limit'] ) ? absint( wp_unslash( $_POST['hkdev_hd_categories_limit'] ) ) : 8, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// ---- Appearance ----
-				'st_font'         => $font_stack( 'hkdev_hd_st_font' ),
-				'st_font_size'    => $num( 'hkdev_hd_st_font_size' ),
-				'st_container'    => $num( 'hkdev_hd_st_container' ),
-				'st_radius'       => $num( 'hkdev_hd_st_radius' ),
-				'st_primary'      => $css_color( 'hkdev_hd_st_primary' ),
-				'st_secondary'    => $css_color( 'hkdev_hd_st_secondary' ),
-				'st_text'         => $css_color( 'hkdev_hd_st_text' ),
-				'st_muted'        => $css_color( 'hkdev_hd_st_muted' ),
-				'st_soft'         => $css_color( 'hkdev_hd_st_soft' ),
-				'st_border'       => $css_color( 'hkdev_hd_st_border' ),
-				'st_topbar_bg'    => $css_color( 'hkdev_hd_st_topbar_bg' ),
-				'st_topbar_color' => $css_color( 'hkdev_hd_st_topbar_color' ),
-				'st_topbar_h'     => $num( 'hkdev_hd_st_topbar_h' ),
-				'st_topbar_fs'    => $num( 'hkdev_hd_st_topbar_fs' ),
-				'st_main_bg'      => $css_color( 'hkdev_hd_st_main_bg' ),
-				'st_main_h'       => $num( 'hkdev_hd_st_main_h' ),
-				'st_navbar_bg'    => $css_color( 'hkdev_hd_st_navbar_bg' ),
-				'st_navbar_color' => $css_color( 'hkdev_hd_st_navbar_color' ),
-				'st_navbar_h'     => $num( 'hkdev_hd_st_navbar_h' ),
-				'st_navbar_fs'    => $num( 'hkdev_hd_st_navbar_fs' ),
-				'st_search_h'     => $num( 'hkdev_hd_st_search_h' ),
-				'st_logo_maxh'    => $num( 'hkdev_hd_st_logo_maxh' ),
+				'st_font'          => $font_stack( 'hkdev_hd_st_font' ),
+				'st_font_size'     => $num( 'hkdev_hd_st_font_size' ),
+				'st_font_size_t'   => $num( 'hkdev_hd_st_font_size_t' ),
+				'st_font_size_m'   => $num( 'hkdev_hd_st_font_size_m' ),
+				'st_container'     => $num( 'hkdev_hd_st_container' ),
+				'st_container_t'   => $num( 'hkdev_hd_st_container_t' ),
+				'st_container_m'   => $num( 'hkdev_hd_st_container_m' ),
+				'st_radius'        => $num( 'hkdev_hd_st_radius' ),
+				'st_radius_t'      => $num( 'hkdev_hd_st_radius_t' ),
+				'st_radius_m'      => $num( 'hkdev_hd_st_radius_m' ),
+				'st_primary'       => $css_color( 'hkdev_hd_st_primary' ),
+				'st_secondary'     => $css_color( 'hkdev_hd_st_secondary' ),
+				'st_text'          => $css_color( 'hkdev_hd_st_text' ),
+				'st_muted'         => $css_color( 'hkdev_hd_st_muted' ),
+				'st_soft'          => $css_color( 'hkdev_hd_st_soft' ),
+				'st_border'        => $css_color( 'hkdev_hd_st_border' ),
+				'st_topbar_bg'     => $css_color( 'hkdev_hd_st_topbar_bg' ),
+				'st_topbar_color'  => $css_color( 'hkdev_hd_st_topbar_color' ),
+				'st_topbar_h'      => $num( 'hkdev_hd_st_topbar_h' ),
+				'st_topbar_h_t'    => $num( 'hkdev_hd_st_topbar_h_t' ),
+				'st_topbar_h_m'    => $num( 'hkdev_hd_st_topbar_h_m' ),
+				'st_topbar_fs'     => $num( 'hkdev_hd_st_topbar_fs' ),
+				'st_topbar_fs_t'   => $num( 'hkdev_hd_st_topbar_fs_t' ),
+				'st_topbar_fs_m'   => $num( 'hkdev_hd_st_topbar_fs_m' ),
+				'st_main_bg'       => $css_color( 'hkdev_hd_st_main_bg' ),
+				'st_main_h'        => $num( 'hkdev_hd_st_main_h' ),
+				'st_main_h_t'      => $num( 'hkdev_hd_st_main_h_t' ),
+				'st_main_h_m'      => $num( 'hkdev_hd_st_main_h_m' ),
+				'st_navbar_bg'     => $css_color( 'hkdev_hd_st_navbar_bg' ),
+				'st_navbar_color'  => $css_color( 'hkdev_hd_st_navbar_color' ),
+				'st_navbar_h'      => $num( 'hkdev_hd_st_navbar_h' ),
+				'st_navbar_h_t'    => $num( 'hkdev_hd_st_navbar_h_t' ),
+				'st_navbar_h_m'    => $num( 'hkdev_hd_st_navbar_h_m' ),
+				'st_navbar_fs'     => $num( 'hkdev_hd_st_navbar_fs' ),
+				'st_navbar_fs_t'   => $num( 'hkdev_hd_st_navbar_fs_t' ),
+				'st_navbar_fs_m'   => $num( 'hkdev_hd_st_navbar_fs_m' ),
+				'st_search_h'      => $num( 'hkdev_hd_st_search_h' ),
+				'st_search_h_t'    => $num( 'hkdev_hd_st_search_h_t' ),
+				'st_search_h_m'    => $num( 'hkdev_hd_st_search_h_m' ),
+				'st_logo_maxh'     => $num( 'hkdev_hd_st_logo_maxh' ),
+				'st_logo_maxh_t'   => $num( 'hkdev_hd_st_logo_maxh_t' ),
+				'st_logo_maxh_m'   => $num( 'hkdev_hd_st_logo_maxh_m' ),
 			];
 
 			if ( '' === $config['categories_label'] ) {
@@ -649,7 +669,24 @@ final class Header_Options {
 															<input type="color" class="hd-color-pick" value="<?php echo esc_attr( preg_match( '/^#[0-9a-f]{6}$/i', (string) $val ) ? $val : ( preg_match( '/^#[0-9a-f]{6}$/i', $field['ph'] ) ? $field['ph'] : '#000000' ) ); ?>" tabindex="-1" aria-hidden="true">
 														</div>
 													<?php elseif ( 'number' === $field['type'] ) : ?>
-														<input type="number" min="0" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-compact" value="<?php echo esc_attr( $val ? $val : '' ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+														<div class="hd-devices">
+															<?php
+															$devices = [
+																''   => __( 'Desktop', 'hkdev-shop-elements' ),
+																'_t' => __( 'Tablet', 'hkdev-shop-elements' ),
+																'_m' => __( 'Mobile', 'hkdev-shop-elements' ),
+															];
+															foreach ( $devices as $sfx => $dlabel ) :
+																$dkey = $key . $sfx;
+																$did  = $fid . ( '' === $sfx ? '' : '-' . trim( $sfx, '_' ) );
+																$dval = isset( $config[ $dkey ] ) ? $config[ $dkey ] : '';
+																?>
+																<label class="hd-device" for="<?php echo esc_attr( $did ); ?>">
+																	<input type="number" min="0" id="<?php echo esc_attr( $did ); ?>" name="<?php echo esc_attr( 'hkdev_hd_' . $dkey ); ?>" value="<?php echo esc_attr( $dval ? $dval : '' ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
+																	<span><?php echo esc_html( $dlabel ); ?></span>
+																</label>
+															<?php endforeach; ?>
+														</div>
 													<?php else : ?>
 														<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
 													<?php endif; ?>
@@ -776,6 +813,10 @@ final class Header_Options {
 			.hd-color-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
 			.hd-color-wrap .hd-color-text { flex: 1 1 auto; }
 			.hd-color-pick { flex: 0 0 auto; width: 42px; height: 38px; padding: 2px; border: 1px solid #d0d5d9; border-radius: 9px; background: #fff; cursor: pointer; }
+			.hd-devices { display: flex; gap: 8px; width: 100%; }
+			.hd-device { flex: 1 1 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+			.hd-device input { width: 100%; min-width: 0; }
+			.hd-device span { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #646970; }
 		</style>
 		<script>
 		jQuery( function ( $ ) {

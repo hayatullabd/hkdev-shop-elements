@@ -115,24 +115,39 @@ class Footer_Engine {
 			'copyright'         => '',
 
 			// ---- Appearance (edited from the Footer admin → Appearance) ----
-			// Empty/0 means "keep the plugin default".
-			'st_font'         => '',
-			'st_font_size'    => 0,
-			'st_container'    => 0,
-			'st_bg'           => '',
-			'st_bg2'          => '',
-			'st_text'         => '',
-			'st_heading'      => '',
-			'st_muted'        => '',
-			'st_green'        => '',
-			'st_orange'       => '',
-			'st_border'       => '',
-			'st_soft'         => '',
-			'st_main_pad_y'   => 0,
-			'st_grid_gap'     => 0,
-			'st_bottom_pad_y' => 0,
-			'st_title_fs'     => 0,
-			'st_link_fs'      => 0,
+			// Empty/0 means "keep the plugin default". Size values are per device:
+			// base = desktop, _t = ≤1024px (tablet), _m = ≤767px (mobile).
+			'st_font'           => '',
+			'st_font_size'      => 0,
+			'st_font_size_t'    => 0,
+			'st_font_size_m'    => 0,
+			'st_container'      => 0,
+			'st_container_t'    => 0,
+			'st_container_m'    => 0,
+			'st_bg'             => '',
+			'st_bg2'            => '',
+			'st_text'           => '',
+			'st_heading'        => '',
+			'st_muted'          => '',
+			'st_green'          => '',
+			'st_orange'         => '',
+			'st_border'         => '',
+			'st_soft'           => '',
+			'st_main_pad_y'     => 0,
+			'st_main_pad_y_t'   => 0,
+			'st_main_pad_y_m'   => 0,
+			'st_grid_gap'       => 0,
+			'st_grid_gap_t'     => 0,
+			'st_grid_gap_m'     => 0,
+			'st_bottom_pad_y'   => 0,
+			'st_bottom_pad_y_t' => 0,
+			'st_bottom_pad_y_m' => 0,
+			'st_title_fs'       => 0,
+			'st_title_fs_t'     => 0,
+			'st_title_fs_m'     => 0,
+			'st_link_fs'        => 0,
+			'st_link_fs_t'      => 0,
+			'st_link_fs_m'      => 0,
 		];
 	}
 
@@ -148,9 +163,10 @@ class Footer_Engine {
 	 * @return string
 	 */
 	public function style_css( $uid, $atts ) {
-		$selector = '#' . $uid;
-		$rules    = [];
-		$vars     = [];
+		$sel  = '#' . $uid;
+		$base = []; // desktop / all widths
+		$t    = []; // @media (max-width: 1024px) — tablet
+		$m    = []; // @media (max-width: 767px)  — mobile
 
 		$color = static function ( $value ) {
 			return \HkdevShopElements\hkdev_elements_sanitize_css_color( $value );
@@ -159,7 +175,9 @@ class Footer_Engine {
 			return \HkdevShopElements\hkdev_elements_sanitize_font_stack( $value );
 		};
 
-		$map = [
+		// ---- Colour + font tokens (shared by every device) ------------------
+		$vars = [];
+		$map  = [
 			'st_bg'      => '--ft-bg',
 			'st_bg2'     => '--ft-bg-2',
 			'st_text'    => '--ft-text',
@@ -176,46 +194,55 @@ class Footer_Engine {
 				$vars[] = $var . ':' . $safe;
 			}
 		}
-
 		if ( '' !== $atts['st_font'] ) {
-			$font_safe = $font( $atts['st_font'] );
-			if ( '' !== $font_safe ) {
-				$vars[] = '--ft-font:' . $font_safe;
+			$safe = $font( $atts['st_font'] );
+			if ( '' !== $safe ) {
+				$vars[] = '--ft-font:' . $safe;
 			}
 		}
-		if ( absint( $atts['st_container'] ) > 0 ) {
-			$vars[] = '--ft-container:' . absint( $atts['st_container'] ) . 'px';
-		}
-
 		if ( $vars ) {
-			$rules[] = $selector . '{' . implode( ';', $vars ) . '}';
+			$base[] = $sel . '{' . implode( ';', $vars ) . '}';
 		}
 
-		if ( absint( $atts['st_font_size'] ) > 0 ) {
-			$rules[] = $selector . '{font-size:' . absint( $atts['st_font_size'] ) . 'px !important}';
+		// ---- Sizes (desktop / tablet / mobile) ------------------------------
+		$sizes = [
+			[ $sel, [ 'font-size' ], 'st_font_size' ],
+			[ $sel, [ '--ft-container' ], 'st_container' ],
+			[ $sel . ' .hkdev-footer-main', [ 'padding-top', 'padding-bottom' ], 'st_main_pad_y' ],
+			[ $sel . ' .hkdev-footer-grid', [ 'gap' ], 'st_grid_gap' ],
+			[ $sel . ' .hkdev-footer-bottom', [ 'padding-top', 'padding-bottom' ], 'st_bottom_pad_y' ],
+			[ $sel . ' .hkdev-footer-title', [ 'font-size' ], 'st_title_fs' ],
+			[ $sel . ' .hkdev-footer-menu li a,' . $sel . ' .hkdev-footer-links li a', [ 'font-size' ], 'st_link_fs' ],
+		];
+		foreach ( $sizes as $row ) {
+			foreach ( [ '' => 'base', '_t' => 't', '_m' => 'm' ] as $sfx => $which ) {
+				$n = absint( $atts[ $row[2] . $sfx ] );
+				if ( $n <= 0 ) {
+					continue;
+				}
+				$decls = '';
+				foreach ( $row[1] as $prop ) {
+					$decls .= $prop . ':' . $n . 'px !important;';
+				}
+				$rule = $row[0] . '{' . $decls . '}';
+				if ( 'base' === $which ) {
+					$base[] = $rule;
+				} elseif ( 't' === $which ) {
+					$t[] = $rule;
+				} else {
+					$m[] = $rule;
+				}
+			}
 		}
 
-		if ( absint( $atts['st_main_pad_y'] ) > 0 ) {
-			$pad     = absint( $atts['st_main_pad_y'] );
-			$rules[] = $selector . ' .hkdev-footer-main{padding-top:' . $pad . 'px !important;padding-bottom:' . $pad . 'px !important}';
+		if ( $t ) {
+			$base[] = '@media (max-width:1024px){' . implode( '', $t ) . '}';
 		}
-		if ( absint( $atts['st_grid_gap'] ) > 0 ) {
-			$gap     = absint( $atts['st_grid_gap'] );
-			$rules[] = $selector . ' .hkdev-footer-grid{gap:' . $gap . 'px !important}';
-		}
-		if ( absint( $atts['st_bottom_pad_y'] ) > 0 ) {
-			$pad     = absint( $atts['st_bottom_pad_y'] );
-			$rules[] = $selector . ' .hkdev-footer-bottom{padding-top:' . $pad . 'px !important;padding-bottom:' . $pad . 'px !important}';
-		}
-		if ( absint( $atts['st_title_fs'] ) > 0 ) {
-			$rules[] = $selector . ' .hkdev-footer-title{font-size:' . absint( $atts['st_title_fs'] ) . 'px !important}';
-		}
-		if ( absint( $atts['st_link_fs'] ) > 0 ) {
-			$fs      = absint( $atts['st_link_fs'] );
-			$rules[] = $selector . ' .hkdev-footer-menu li a,' . $selector . ' .hkdev-footer-links li a{' . 'font-size:' . $fs . 'px !important}';
+		if ( $m ) {
+			$base[] = '@media (max-width:767px){' . implode( '', $m ) . '}';
 		}
 
-		return $rules ? '<style>' . implode( '', $rules ) . '</style>' : '';
+		return $base ? '<style>' . implode( '', $base ) . '</style>' : '';
 	}
 
 	/**
