@@ -283,6 +283,7 @@
 	}
 
 	var searchTimer = null;
+	var priceTimer  = null;
 
 	function init($cat) {
 		if (!$cat.length || $cat.data('hkcat-init')) {
@@ -306,6 +307,9 @@
 			}, 400);
 		});
 
+		// Sliding a price handle filters live — no Enter needed. The labels update
+		// on every move; the request is debounced so dragging does not fire one
+		// per pixel, and releasing the handle (change) applies straight away.
 		$cat.on('input', '.hkdev-cat-price-min-range, .hkdev-cat-price-max-range', function () {
 			var $price = $cat.find('.hkdev-cat-price');
 			var min = $price.find('.hkdev-cat-price-min-range').val();
@@ -321,6 +325,19 @@
 			}
 			$price.find('.hkdev-cat-price-min').val(min);
 			$price.find('.hkdev-cat-price-max').val(max);
+
+			updatePriceLabels($cat);
+
+			window.clearTimeout(priceTimer);
+			priceTimer = window.setTimeout(function () {
+				apply($cat);
+			}, 300);
+		});
+
+		$cat.on('change', '.hkdev-cat-price-min-range, .hkdev-cat-price-max-range', function () {
+			window.clearTimeout(priceTimer);
+			updatePriceLabels($cat);
+			apply($cat);
 		});
 
 		$cat.on('change', '.hkdev-cat-price-min, .hkdev-cat-price-max', function () {
