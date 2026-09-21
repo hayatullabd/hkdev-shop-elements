@@ -4,8 +4,6 @@
    & social, then a bottom bar with payment badges and
    copyright.  Brand: green #03A550 / orange #F06724.
 ========================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap');
-
 .hkdev-footer-wrap {
     --ft-bg: #0b1f15;
     --ft-bg-2: #071710;

@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.42
+ * Version:           0.5.43
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.42' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.43' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -250,11 +250,21 @@ function hkdev_elements_register_assets() {
 		[],
 		'6.5.1'
 	);
+
+	// Google Fonts — enqueued as a dependency of the widget stylesheets that
+	// use the Hind Siliguri brand font. This single <link> replaces the
+	// per-file @import statements that were each firing their own font request.
+	wp_register_style(
+		'hkdev-elements-font',
+		'https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap',
+		[],
+		'1.0.0'
+	);
 	wp_register_style(
 		'hkdev-elements-swiper-css',
-		'https://cdn.jsdelivr.net/npm/swiper@11.0.0/swiper-bundle.min.css',
+		hkdev_elements_asset_url( 'assets/css/swiper-bundle.min.css' ),
 		[],
-		'11.0.0'
+		hkdev_elements_asset_ver( 'assets/css/swiper-bundle.min.css' )
 	);
 	wp_register_script(
 		'hkdev-elements-swiper-js',
@@ -266,7 +276,7 @@ function hkdev_elements_register_assets() {
 	wp_register_style(
 		'hkdev-elements-shop-style',
 		hkdev_elements_asset_url( 'assets/css/shop.css' ),
-		[],
+		[ 'hkdev-elements-font' ],
 		hkdev_elements_asset_ver( 'assets/css/shop.css' )
 	);
 	wp_register_script(
@@ -279,7 +289,7 @@ function hkdev_elements_register_assets() {
 	wp_register_style(
 		'hkdev-elements-single-product-style',
 		hkdev_elements_asset_url( 'assets/css/single-product.css' ),
-		[],
+		[ 'hkdev-elements-font' ],
 		hkdev_elements_asset_ver( 'assets/css/single-product.css' )
 	);
 	wp_register_script(
@@ -318,7 +328,7 @@ function hkdev_elements_register_assets() {
 	wp_register_style(
 		'hkdev-elements-header-style',
 		hkdev_elements_asset_url( 'assets/css/header.css' ),
-		[],
+		[ 'hkdev-elements-font' ],
 		hkdev_elements_asset_ver( 'assets/css/header.css' )
 	);
 	wp_register_script(
@@ -331,7 +341,7 @@ function hkdev_elements_register_assets() {
 	wp_register_style(
 		'hkdev-elements-footer-style',
 		hkdev_elements_asset_url( 'assets/css/footer.css' ),
-		[],
+		[ 'hkdev-elements-font' ],
 		hkdev_elements_asset_ver( 'assets/css/footer.css' )
 	);
 	wp_register_script(
@@ -516,6 +526,22 @@ function hkdev_elements_register_assets() {
 	);
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_register_assets', 5 );
+
+/**
+ * Preconnect to the external origins the plugin relies on (Google Fonts host
+ * + font file host, Font Awesome CDN, Swiper CDN) so DNS + TLS are resolved
+ * ahead of the first request. Saves ~100-200 ms on first font/CDN load.
+ */
+function hkdev_elements_resource_hints( $urls, $relation_type ) {
+	if ( 'preconnect' === $relation_type ) {
+		$urls[] = [ 'href' => 'https://fonts.googleapis.com' ];
+		$urls[] = [ 'href' => 'https://fonts.gstatic.com', 'crossorigin' => '' ];
+		$urls[] = [ 'href' => 'https://cdnjs.cloudflare.com' ];
+		$urls[] = [ 'href' => 'https://cdn.jsdelivr.net' ];
+	}
+	return $urls;
+}
+add_filter( 'wp_resource_hints', __NAMESPACE__ . '\\hkdev_elements_resource_hints', 10, 2 );
 
 /**
  * Re-queue the plugin stylesheets so they always print after the theme's and

@@ -3,7 +3,7 @@
    shop.css (Product Grid, Cards, Badges, Tabs, Carousel, Toast)
    Brand: green #03A550 / orange #F06724 / black / white (logo).
 ========================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap');:root{
+:root{
     --hkdev-font: 'Hind Siliguri', sans-serif;/* Brand tokens — identical to single-product.css */
 
     

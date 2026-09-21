@@ -3,8 +3,6 @@
    3-row layout: top utility bar → logo + search + actions →
    category / menu bar.  Brand: green #03A550 / orange #F06724.
 ========================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700;800&display=swap');
-
 /* Shared by the header bar, the mobile panel and the mini cart (the two
    drawers live outside .hkdev-header-wrap, so the tokens are global). */
 :root {
