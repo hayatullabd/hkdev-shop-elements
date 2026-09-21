@@ -151,6 +151,15 @@ class Header_Engine {
 			'st_topbar_fs'     => 0,
 			'st_topbar_fs_t'   => 0,
 			'st_topbar_fs_m'   => 0,
+			'st_topbar_icon'   => 0,
+			'st_topbar_icon_t' => 0,
+			'st_topbar_icon_m' => 0,
+			'st_social_size'   => 0,
+			'st_social_size_t' => 0,
+			'st_social_size_m' => 0,
+			'st_social_icon'   => 0,
+			'st_social_icon_t' => 0,
+			'st_social_icon_m' => 0,
 			'st_main_bg'       => '',
 			'st_main_h'        => 0,
 			'st_main_h_t'      => 0,
@@ -242,16 +251,19 @@ class Header_Engine {
 
 		// ---- Sizes (per device: desktop / tablet / mobile) ------------------
 		$sizes = [
-			[ $sel, 'font-size', 'st_font_size' ],
-			[ $sel, '--hd-container', 'st_container' ],
-			[ $sel, '--hd-radius', 'st_radius' ],
-			[ $sel . ' .hkdev-header-topbar', 'font-size', 'st_topbar_fs' ],
-			[ $sel . ' .hkdev-header-topbar .hkdev-header-container', 'min-height', 'st_topbar_h' ],
-			[ $sel . ' .hkdev-header-main .hkdev-header-container', 'min-height', 'st_main_h' ],
-			[ $sel . ' .hkdev-header-navbar .hkdev-header-container', 'min-height', 'st_navbar_h' ],
-			[ $sel . ' .hkdev-header-menu>li>a', 'font-size', 'st_navbar_fs' ],
-			[ $sel . ' .hkdev-header-search-form', 'height', 'st_search_h' ],
-			[ $sel . ' .hkdev-header-logo img', 'max-height', 'st_logo_maxh' ],
+			[ $sel, [ 'font-size' ], 'st_font_size' ],
+			[ $sel, [ '--hd-container' ], 'st_container' ],
+			[ $sel, [ '--hd-radius' ], 'st_radius' ],
+			[ $sel . ' .hkdev-header-topbar', [ 'font-size' ], 'st_topbar_fs' ],
+			[ $sel . ' .hkdev-header-announcement i,' . $sel . ' .hkdev-header-toplink i', [ 'font-size' ], 'st_topbar_icon' ],
+			[ $sel . ' .hkdev-header-social', [ 'width', 'height' ], 'st_social_size' ],
+			[ $sel . ' .hkdev-header-social i', [ 'font-size' ], 'st_social_icon' ],
+			[ $sel . ' .hkdev-header-topbar .hkdev-header-container', [ 'min-height' ], 'st_topbar_h' ],
+			[ $sel . ' .hkdev-header-main .hkdev-header-container', [ 'min-height' ], 'st_main_h' ],
+			[ $sel . ' .hkdev-header-navbar .hkdev-header-container', [ 'min-height' ], 'st_navbar_h' ],
+			[ $sel . ' .hkdev-header-menu>li>a', [ 'font-size' ], 'st_navbar_fs' ],
+			[ $sel . ' .hkdev-header-search-form', [ 'height' ], 'st_search_h' ],
+			[ $sel . ' .hkdev-header-logo img', [ 'max-height' ], 'st_logo_maxh' ],
 		];
 		foreach ( $sizes as $row ) {
 			foreach ( [ '' => 'base', '_t' => 't', '_m' => 'm' ] as $sfx => $which ) {
@@ -259,7 +271,11 @@ class Header_Engine {
 				if ( $n <= 0 ) {
 					continue;
 				}
-				$rule = $row[0] . '{' . $row[1] . ':' . $n . 'px !important}';
+				$decls = '';
+				foreach ( $row[1] as $prop ) {
+					$decls .= $prop . ':' . $n . 'px !important;';
+				}
+				$rule = $row[0] . '{' . $decls . '}';
 				if ( 'base' === $which ) {
 					$base[] = $rule;
 				} elseif ( 't' === $which ) {
