@@ -799,7 +799,6 @@ class Hero_Slider_Widget extends Widget_Base {
 		);
 
 		$this->hkdev_slider( 'hero_dot_size', esc_html__( 'Dot Size', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-dot-size', 4, 30 );
-		$this->hkdev_slider( 'hero_dot_active_w', esc_html__( 'Active Dot Width', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-dot-active-width', 8, 70 );
 		$this->hkdev_slider( 'hero_dot_gap', esc_html__( 'Gap Between Dots', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-dots-gap', 0, 40 );
 		$this->hkdev_slider( 'hero_dots_bottom', esc_html__( 'Bottom Distance', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-dots-bottom', 0, 120 );
 		$this->hkdev_color( 'hero_dot_bg', esc_html__( 'Dot Colour', 'hkdev-shop-elements' ), $scope, '--hkdev-hero-dot-bg' );

@@ -568,13 +568,14 @@ button.hkdev-order-btn{
 }.hkdev-carousel-dots .swiper-pagination-bullet{
     width: 7px !important;
     height: 7px !important;
-    background: rgba(0, 0, 0, 0.18) !important;
-    opacity: 1;
-    transition: all var(--hkdev-transition);
-}.hkdev-carousel-dots .swiper-pagination-bullet-active{
-    width: 22px !important;
-    border-radius: 999px !important;
+    border-radius: 50% !important;
     background: var(--hkdev-brand-primary) !important;
+    opacity: 0.3;
+    transition: opacity 0.25s ease;
+}.hkdev-carousel-dots .swiper-pagination-bullet-active{
+    width: 7px !important;
+    background: var(--hkdev-brand-primary) !important;
+    opacity: 1;
 }.hkdev-nav-btn{
     position: absolute !important;
     top: 50% !important;
