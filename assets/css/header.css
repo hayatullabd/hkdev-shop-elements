@@ -752,6 +752,12 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     color: #ffffff !important;
 }
 
+/* Category the visitor navigated away from (remembered on return). */
+.hkdev-header-menu > li.is-hkdev-marked > a {
+    background: rgba(255, 255, 255, 0.28) !important;
+    color: #ffffff !important;
+}
+
 .hkdev-header-menu > li.menu-item-has-children > a::after {
     content: "\f107" !important;
     font-family: "Font Awesome 6 Free" !important;

@@ -962,6 +962,9 @@ button.hkdev-order-btn{
     transform: translateY(calc(-1 * var(--hkdev-cat-lift, 5px))) !important;
     border-color: var(--hkdev-cat-hover-border, var(--hkdev-brand-primary, #03a550)) !important;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.10) !important;
+}/* Category the visitor navigated away from (remembered on return). */.hkdev-cat-card.is-hkdev-marked{
+    border-color: var(--hkdev-cat-hover-border, var(--hkdev-brand-primary, #03a550)) !important;
+    box-shadow: 0 0 0 2px var(--hkdev-brand-primary, #03a550) !important;
 }.hkdev-cat-thumb{
     position: relative !important;
     display: block !important;

@@ -11,6 +11,48 @@
 		var $panel = $('.hkdev-header-panel').first();
 		var $overlay = $('.hkdev-header-overlay').first();
 
+		// ---- Remember the category the visitor navigated from ----------------
+		// Clicking a category in the menu bar leaves the page; on return the
+		// same item stays marked so it is obvious which one you were on.
+		var catMarkKey = 'hkdevCatMark:' + window.location.pathname;
+
+		function catMarkPath(href) {
+			try {
+				var a = document.createElement('a');
+				a.href = href;
+				return a.pathname.replace(/\/+$/, '');
+			} catch (err) {
+				return '';
+			}
+		}
+
+		$(document).on('click', '.hkdev-header-menu > li > a', function () {
+			try {
+				window.sessionStorage.setItem(catMarkKey, catMarkPath(this.getAttribute('href')));
+			} catch (err) {}
+		});
+
+		function markHeaderCategory() {
+			var saved;
+			try {
+				saved = window.sessionStorage.getItem(catMarkKey);
+			} catch (err) {
+				return;
+			}
+			if (!saved) {
+				return;
+			}
+
+			$('.hkdev-header-menu > li').each(function () {
+				var $li = $(this);
+				var href = $li.children('a').first().attr('href');
+				$li.toggleClass('is-hkdev-marked', !!href && catMarkPath(href) === saved);
+			});
+		}
+
+		markHeaderCategory();
+		window.addEventListener('load', markHeaderCategory);
+
 		function openPanel() {
 			$panel.addClass('is-open').attr('aria-hidden', 'false');
 			$overlay.addClass('is-open');

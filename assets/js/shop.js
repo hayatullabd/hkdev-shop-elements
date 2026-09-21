@@ -39,6 +39,49 @@ jQuery(function($) {
     }
 
     // ==========================================================
+    // REMEMBER THE CATEGORY THE VISITOR NAVIGATED FROM
+    // ==========================================================
+    // Clicking a category card leaves the page; on return the same card stays
+    // marked so it is obvious which category you were browsing.
+    const catMarkKey = 'hkdevCatMark:' + window.location.pathname;
+
+    function catMarkPath(href) {
+        try {
+            const a = document.createElement('a');
+            a.href = href;
+            return a.pathname.replace(/\/+$/, '');
+        } catch (e) {
+            return '';
+        }
+    }
+
+    $(document).on('click', '.hkdev-cat-card', function () {
+        try {
+            window.sessionStorage.setItem(catMarkKey, catMarkPath(this.getAttribute('href')));
+        } catch (e) {}
+    });
+
+    function markCategoryCards() {
+        let saved = null;
+        try {
+            saved = window.sessionStorage.getItem(catMarkKey);
+        } catch (e) {
+            return;
+        }
+        if (!saved) {
+            return;
+        }
+
+        $('.hkdev-cat-card').each(function () {
+            const href = this.getAttribute('href');
+            $(this).toggleClass('is-hkdev-marked', !!href && catMarkPath(href) === saved);
+        });
+    }
+
+    markCategoryCards();
+    window.addEventListener('load', markCategoryCards);
+
+    // ==========================================================
     // CAROUSEL (Swiper)
     // ==========================================================
     const carouselDefaults = {
