@@ -369,6 +369,37 @@
 
 		if ($nav.length) {
 			var navEl = $nav[0];
+
+			// Keep the menu bar where the visitor left it: scroll along to a
+			// category, open it, then come back — the bar is already there, no
+			// repeated scrolling. The header is site-wide, so the position is
+			// remembered for the whole session.
+			var navStoreKey = 'hkdevHeaderNavScroll';
+
+			var navRestore = function () {
+				try {
+					var savedNav = window.sessionStorage.getItem(navStoreKey);
+					if (savedNav !== null && savedNav !== '') {
+						navEl.scrollLeft = parseInt(savedNav, 10) || 0;
+					}
+				} catch (err) {}
+			};
+
+			navRestore();
+			window.addEventListener('load', navRestore);
+
+			var navSaveTimer = null;
+			navEl.addEventListener('scroll', function () {
+				if (navSaveTimer) {
+					window.clearTimeout(navSaveTimer);
+				}
+				navSaveTimer = window.setTimeout(function () {
+					try {
+						window.sessionStorage.setItem(navStoreKey, String(Math.round(navEl.scrollLeft)));
+					} catch (err) {}
+				}, 150);
+			});
+
 			var navDown = false;
 			var navStartX = 0;
 			var navStartScroll = 0;

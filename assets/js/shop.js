@@ -64,6 +64,32 @@ jQuery(function($) {
         }
     }
 
+    // Remember which slide a carousel was left on, so returning to the page
+    // keeps the same category/product in view instead of resetting to slide 1.
+    function hkdevCarouselStoreKey($wrapper) {
+        const all = $('.hkdev-shop-wrapper[data-style="carousel"]');
+        let idx = all.index($wrapper);
+        if (idx < 0) idx = 0;
+        return 'hkdevCarouselSlide:' + window.location.pathname + ':' + idx;
+    }
+
+    function hkdevReadStoredSlide(key) {
+        try {
+            const value = window.sessionStorage.getItem(key);
+            if (value === null || value === '') return null;
+            const num = parseInt(value, 10);
+            return isNaN(num) ? null : num;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function hkdevWriteStoredSlide(key, index) {
+        try {
+            window.sessionStorage.setItem(key, String(index));
+        } catch (e) {}
+    }
+
     function initHkdevSwiper(wrapper) {
         // Accepts the wrapper element or its id. Resolving purely from an id
         // meant a wrapper without one looked up '#undefined', bailed, and left
@@ -92,6 +118,8 @@ jQuery(function($) {
         const cfg = hkdevCarouselConfig($wrapper);
         const desktopCols = parseInt($wrapper.data('columns'), 10) || 4;
         const $dots = $wrapper.find('.hkdev-carousel-dots');
+        const slideKey = hkdevCarouselStoreKey($wrapper);
+        const savedSlide = hkdevReadStoredSlide(slideKey);
 
         const options = {
             slidesPerView: cfg.mobile,
@@ -114,9 +142,16 @@ jQuery(function($) {
             on: {
                 init: function () {
                     $container.removeClass('hkdev-loading-carousel');
+                },
+                slideChange: function () {
+                    hkdevWriteStoredSlide(slideKey, this.activeIndex);
                 }
             }
         };
+
+        if (savedSlide !== null && savedSlide > 0) {
+            options.initialSlide = savedSlide;
+        }
 
         if (cfg.dots && $dots.length) {
             options.pagination = { el: $dots[0], clickable: true };
