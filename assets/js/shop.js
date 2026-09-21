@@ -522,9 +522,21 @@ jQuery(function($) {
     });
 
     // ==========================================================
-    // CHECKOUT MODAL (opened by the variation modal "Buy Now")
+    // CHECKOUT MODAL (opened by the "Buy Now" buttons)
     // ==========================================================
     const checkoutModalAction = 'hkdev_elements_co_modal';
+    const checkoutModalScope = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.checkout_modal_scope)
+        ? hkdev_elements_ajax.checkout_modal_scope
+        : 'both';
+    const checkoutPageUrl = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.checkout_url)
+        ? hkdev_elements_ajax.checkout_url
+        : '/checkout/';
+
+    function shouldOpenCheckoutModal(productType) {
+        if (checkoutModalScope === 'none') return false;
+        if (checkoutModalScope === 'both') return true;
+        return checkoutModalScope === productType;
+    }
 
     function ensureCheckoutModal() {
         let $m = $('#hkdev-co-modal');
@@ -624,7 +636,54 @@ jQuery(function($) {
                 if (res && res.success) {
                     $(document.body).trigger('added_to_cart', [res.data.fragments, res.data.cart_hash, $btn]);
                     vmClose($modal);
-                    openCheckoutModal();
+                    if (shouldOpenCheckoutModal('variable')) {
+                        openCheckoutModal();
+                    } else {
+                        window.location.href = checkoutPageUrl;
+                    }
+                } else {
+                    showToast('Could not add product to cart. Try again.', 'error');
+                }
+            },
+            error: function() {
+                $btn.prop('disabled', false).css('opacity', '1');
+                showToast('Server error occurred. Please try again.', 'error');
+            }
+        });
+    });
+
+    // Simple product "Buy Now" — add to cart via AJAX, then open the checkout
+    // modal (or redirect to the checkout page when the modal is disabled).
+    $(document).on('click', '.hkdev-buy-now', function(e) {
+        e.preventDefault();
+
+        const $btn = $(this);
+        const productId = $btn.attr('data-product-id');
+        const btnCheckoutUrl = $btn.attr('data-checkout_url') || checkoutPageUrl;
+
+        if (!productId) return;
+        if ($btn.prop('disabled')) return;
+        $btn.prop('disabled', true).css('opacity', '0.7');
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            data: {
+                action: addToCartAction,
+                nonce: addToCartNonce,
+                product_id: productId,
+                variation_id: 0,
+                quantity: 1
+            },
+            success: function(res) {
+                $btn.prop('disabled', false).css('opacity', '1');
+                if (res && res.success) {
+                    $(document.body).trigger('added_to_cart', [res.data.fragments, res.data.cart_hash, $btn]);
+                    if (shouldOpenCheckoutModal('simple')) {
+                        openCheckoutModal();
+                    } else {
+                        window.location.href = btnCheckoutUrl;
+                    }
                 } else {
                     showToast('Could not add product to cart. Try again.', 'error');
                 }

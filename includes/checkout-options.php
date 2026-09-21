@@ -97,6 +97,16 @@ final class Checkout_Options {
 
         register_setting(
             'hkdev_elements_checkout_fields_group',
+            'hkdev_elements_checkout_modal_scope',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => [ $this, 'sanitize_modal_scope' ],
+                'default'           => 'both',
+            ]
+        );
+
+        register_setting(
+            'hkdev_elements_checkout_fields_group',
             Checkout_Engine::instance()->config_option_name(),
             [
                 'type'              => 'array',
@@ -186,6 +196,17 @@ final class Checkout_Options {
         }
 
         return $clean;
+    }
+
+    /**
+     * Sanitize the checkout modal scope setting.
+     *
+     * @param string $value Submitted value.
+     * @return string
+     */
+    public function sanitize_modal_scope( $value ) {
+        $allowed = [ 'simple', 'variable', 'both', 'none' ];
+        return in_array( $value, $allowed, true ) ? $value : 'both';
     }
 
     /**
@@ -279,17 +300,19 @@ final class Checkout_Options {
             delete_option( $engine->config_option_name() );
             delete_option( 'hkdev_elements_show_coupon' );
             delete_option( 'hkdev_elements_billing_as_delivery' );
+            delete_option( 'hkdev_elements_checkout_modal_scope' );
             echo '<div class="notice notice-success is-dismissible"><p>'
                 . esc_html__( 'Fields reset to defaults.', 'hkdev-shop-elements' )
                 . '</p></div>';
         }
 
-        $groups              = $this->get_groups();
-        $fields              = $engine->get_field_config();
-        $show_coupon         = get_option( 'hkdev_elements_show_coupon', 'yes' );
-        $billing_as_delivery = get_option( 'hkdev_elements_billing_as_delivery', 'no' );
-        $option_name         = $engine->config_option_name();
-        $is_first            = true;
+        $groups                = $this->get_groups();
+        $fields                = $engine->get_field_config();
+        $show_coupon           = get_option( 'hkdev_elements_show_coupon', 'yes' );
+        $billing_as_delivery   = get_option( 'hkdev_elements_billing_as_delivery', 'no' );
+        $checkout_modal_scope  = get_option( 'hkdev_elements_checkout_modal_scope', 'both' );
+        $option_name           = $engine->config_option_name();
+        $is_first              = true;
 
         ?>
         <div class="wrap hkdev-admin-wrap">
@@ -345,6 +368,18 @@ final class Checkout_Options {
                                         <span class="hkdev-toggle-slider"></span>
                                     </label>
                                     <span class="hkdev-toggle-text"><?php esc_html_e( 'Use billing address as delivery address', 'hkdev-shop-elements' ); ?></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php esc_html_e( 'Checkout Modal', 'hkdev-shop-elements' ); ?></th>
+                                <td>
+                                    <select name="hkdev_elements_checkout_modal_scope">
+                                        <option value="both" <?php selected( 'both', $checkout_modal_scope ); ?>><?php esc_html_e( 'Simple & Variable Products', 'hkdev-shop-elements' ); ?></option>
+                                        <option value="simple" <?php selected( 'simple', $checkout_modal_scope ); ?>><?php esc_html_e( 'Simple Products Only', 'hkdev-shop-elements' ); ?></option>
+                                        <option value="variable" <?php selected( 'variable', $checkout_modal_scope ); ?>><?php esc_html_e( 'Variable Products Only', 'hkdev-shop-elements' ); ?></option>
+                                        <option value="none" <?php selected( 'none', $checkout_modal_scope ); ?>><?php esc_html_e( 'Disabled', 'hkdev-shop-elements' ); ?></option>
+                                    </select>
+                                    <p class="description"><?php esc_html_e( 'Choose where the Buy Now checkout modal opens. When disabled, Buy Now redirects to the checkout page.', 'hkdev-shop-elements' ); ?></p>
                                 </td>
                             </tr>
                         </tbody></table>
