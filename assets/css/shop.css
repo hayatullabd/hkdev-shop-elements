@@ -185,7 +185,8 @@
     scrollbar-color: var(--hkdev-brand-primary) transparent;
     -webkit-overflow-scrolling: touch;
     scroll-snap-type: x mandatory !important;
-    scroll-padding-left: 2px !important;
+    scroll-padding-left: 8px !important;
+    scroll-padding-right: 8px !important;
 }.hkdev-tab-item{
     flex: 0 0 auto;
     display: inline-flex;
@@ -204,6 +205,9 @@
     cursor: pointer !important;
     transition: all var(--hkdev-transition);
     white-space: nowrap !important;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
 }.hkdev-tab-item:hover{
     border-color: var(--hkdev-hover-border) !important;
     background: #e5f4e6 !important;
