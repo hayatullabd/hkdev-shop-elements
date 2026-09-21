@@ -437,15 +437,27 @@ class Checkout_Engine {
 	}
 
 	/**
-	 * Build a stable synthetic email for guest checkouts that do not collect a
-	 * billing email address. Kept in one place so the value shown to the
-	 * customer and the value stored on the order always match.
+	 * Build a synthetic email for guest checkouts that do not collect a billing
+	 * email address. Uses the customer's phone number as the local part and the
+	 * site domain, so the stored order email stays readable and traceable
+	 * instead of a random "@order.local" placeholder.
 	 *
+	 * @param string $phone Customer phone number (digits only are kept).
 	 * @return string
 	 */
-	private function guest_email() {
-		$session = WC()->session;
-		return 'guest_' . substr( md5( $session ? $session->get_customer_id() : wp_get_session_token() ), 0, 8 ) . '@order.local';
+	private function guest_email( $phone = '' ) {
+		$local = preg_replace( '/[^0-9]/', '', (string) $phone );
+		if ( '' === $local ) {
+			$local = 'guest';
+		}
+
+		$domain = wp_parse_url( home_url(), PHP_URL_HOST );
+		$domain = preg_replace( '/^www\./i', '', (string) $domain );
+		if ( '' === $domain ) {
+			$domain = 'example.com';
+		}
+
+		return $local . '@' . $domain;
 	}
 
 	public function custom_checkout_shortcode() {
@@ -1443,7 +1455,7 @@ class Checkout_Engine {
 			$city     = ( $b_enabled( 'billing_city' ) && ! empty( $_POST['billing_city'] ) ) ? sanitize_text_field( wp_unslash( $_POST['billing_city'] ) ) : 'Dhaka';
 			$state    = ( $b_enabled( 'billing_state' ) ) ? sanitize_text_field( wp_unslash( $_POST['billing_state'] ?? '' ) ) : '';
 			$postcode = ( $b_enabled( 'billing_postcode' ) ) ? sanitize_text_field( wp_unslash( $_POST['billing_postcode'] ?? '' ) ) : '';
-			$email    = ( $b_enabled( 'billing_email' ) && ! empty( $_POST['billing_email'] ) ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : $this->guest_email();
+			$email    = ( $b_enabled( 'billing_email' ) && ! empty( $_POST['billing_email'] ) ) ? sanitize_email( wp_unslash( $_POST['billing_email'] ) ) : $this->guest_email( $phone );
 
 			$order->set_billing_first_name( $first );
 			$order->set_billing_phone( $phone );
