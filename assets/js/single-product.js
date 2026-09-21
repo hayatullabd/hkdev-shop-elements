@@ -105,10 +105,18 @@ jQuery(document).ready(function($) {
             if ($player.length) {
                 $player.stop(true, true).fadeOut(100).empty();
             }
-            $zoomInner.stop(true, true).fadeOut(100, function() {
+            // If the container is already hidden (e.g. after coming back
+            // from a video), skip the fadeOut — its callback may not fire
+            // on a hidden element, which would leave the image un-swapped.
+            if ($zoomInner.is(':hidden')) {
                 $('#hkdev-sp-main-img').attr('src', fullSrc);
-                $(this).stop(true, true).fadeIn(200);
-            });
+                $zoomInner.stop(true, true).fadeIn(200);
+            } else {
+                $zoomInner.stop(true, true).fadeOut(100, function() {
+                    $('#hkdev-sp-main-img').attr('src', fullSrc);
+                    $(this).stop(true, true).fadeIn(200);
+                });
+            }
         }
 
         const container = $('.hkdev-sp-thumbnails');
@@ -236,7 +244,12 @@ jQuery(document).ready(function($) {
 
             if (match.image && match.image.src) {
                 $('#hkdev-sp-main-img').attr('src', match.image.src);
-                $('.hkdev-sp-thumb').removeClass('active');
+                // Re-activate the thumb that matches the variation image so
+                // arrow navigation keeps working after a variation change.
+                var $vThumb = $('.hkdev-sp-thumb').removeClass('active').filter(function() {
+                    return $(this).data('full') === match.image.src;
+                });
+                ($vThumb.length ? $vThumb : $('.hkdev-sp-thumb').first()).addClass('active');
             }
 
             $('.sku-val').text(match.sku || 'N/A');

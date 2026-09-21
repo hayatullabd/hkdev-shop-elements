@@ -647,6 +647,12 @@ class Single_Product_Engine {
 
 						// --- Product videos (multiple, with per-thumb embed data) ---
 						$video_urls = self::get_product_video_urls( $product_id );
+
+						// Show the gallery arrows only when there is more than one
+						// thumbnail to navigate between (main image + gallery images
+						// or main image + video). With a single image the arrows
+						// have nothing to switch to, so they are omitted.
+						$show_gallery_arrows = ! empty( $main_image_id ) && ( ! empty( $attachment_ids ) || ! empty( $video_urls ) );
 						?>
 						<span class="hkdev-sp-sale-badge" style="<?php echo esc_attr( $badge_style ); ?>"><?php echo esc_html( $display_percentage ); ?></span>
 
@@ -654,8 +660,10 @@ class Single_Product_Engine {
 							<i class="fa-solid fa-magnifying-glass-plus"></i>
 						</button>
 
+						<?php if ( $show_gallery_arrows ) : ?>
 						<button type="button" class="hkdev-sp-arrow prev-arrow" id="hkdev-sp-prev-img"><i class="fa-solid fa-chevron-left"></i></button>
 						<button type="button" class="hkdev-sp-arrow next-arrow" id="hkdev-sp-next-img"><i class="fa-solid fa-chevron-right"></i></button>
+						<?php endif; ?>
 
 						<div class="hkdev-sp-zoom-inner" id="hkdev-sp-zoom-container">
 							<img id="hkdev-sp-main-img" src="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>">
