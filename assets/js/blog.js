@@ -74,6 +74,11 @@
         $btn.addClass('is-active').attr('aria-selected', 'true').addClass('is-loading');
         $loader.addClass('is-visible');
 
+        // Bring the clicked tab fully into view so it is never left cut.
+        if ($btn[0] && typeof $btn[0].scrollIntoView === 'function') {
+            $btn[0].scrollIntoView({ block: 'nearest', inline: 'center' });
+        }
+
         $.post(cfg.ajax_url, {
             action: FILTER_ACTION,
             nonce: NONCE,

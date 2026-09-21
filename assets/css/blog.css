@@ -251,6 +251,9 @@
 	gap: 8px !important;
 	overflow-x: auto !important;
 	padding: 2px 2px 6px !important;
+	scroll-snap-type: x mandatory !important;
+	scroll-padding-left: 8px !important;
+	scroll-padding-right: 8px !important;
 	scrollbar-width: thin;
 	scrollbar-color: var(--hkblog-primary) transparent;
 	-webkit-overflow-scrolling: touch;
@@ -274,6 +277,9 @@
 	text-decoration: none !important;
 	appearance: none !important;
 	-webkit-appearance: none !important;
+	scroll-snap-align: start !important;
+	max-width: none !important;
+	overflow: visible !important;
 	transition: all 0.2s ease !important;
 }
 .hkdev-blog-tab-item:hover {

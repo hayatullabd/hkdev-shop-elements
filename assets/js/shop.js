@@ -265,6 +265,11 @@ jQuery(function($) {
         
         $wrapper.find('.hkdev-tab-item').removeClass('active'); 
         $btn.addClass('active');
+
+        // Bring the clicked tab fully into view so it is never left cut.
+        if ($btn[0] && typeof $btn[0].scrollIntoView === 'function') {
+            $btn[0].scrollIntoView({ block: 'nearest', inline: 'center' });
+        }
         $loader.fadeIn(150).css('display', 'flex'); 
         
         $.ajax({
