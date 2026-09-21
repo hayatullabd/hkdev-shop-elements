@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.44
+ * Version:           0.5.45
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.44' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.45' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -566,6 +566,60 @@ function hkdev_elements_force_style_order() {
 	}
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_force_style_order', 999 );
+
+/**
+ * Load Font Awesome asynchronously.
+ *
+ * Font Awesome is a large icon stylesheet (~100 KB) that does not define the
+ * page layout, so it must not block the first paint. The stylesheet is turned
+ * into a high-priority <link rel="preload"> that promotes itself to a real
+ * stylesheet the moment it loads — keeping the icon flash as short as possible
+ * — with a <noscript> copy for visitors without JavaScript. Layout-critical
+ * stylesheets are deliberately left render-blocking.
+ *
+ * @param string $tag    Full <link> markup.
+ * @param string $handle Style handle.
+ * @return string
+ */
+function hkdev_elements_async_fontawesome( $tag, $handle ) {
+	if ( is_admin() || 'hkdev-elements-fontawesome' !== $handle ) {
+		return $tag;
+	}
+	if ( false === strpos( $tag, "rel='stylesheet'" ) ) {
+		return $tag;
+	}
+
+	$async = str_replace(
+		"rel='stylesheet'",
+		"rel='preload' as='style' onload=\"this.onload=null;this.rel='stylesheet';\"",
+		$tag
+	);
+
+	return $async . '<noscript>' . $tag . '</noscript>';
+}
+add_filter( 'style_loader_tag', __NAMESPACE__ . '\\hkdev_elements_async_fontawesome', 10, 2 );
+
+/**
+ * Preload the primary body font.
+ *
+ * The brand font is requested from inside a render-blocking stylesheet, which
+ * gives it a low fetch priority. Hinting it high lets the largest text paint
+ * with the real font sooner. Only emitted when the font stylesheet is actually
+ * enqueued, so pages that do not use it pay nothing.
+ *
+ * @return void
+ */
+function hkdev_elements_preload_primary_font() {
+	if ( is_admin() || ! wp_style_is( 'hkdev-elements-font', 'enqueued' ) ) {
+		return;
+	}
+
+	printf(
+		'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin />' . "\n",
+		esc_url( hkdev_elements_asset_url( 'assets/fonts/hind-siliguri-400-latin.woff2' ) )
+	);
+}
+add_action( 'wp_head', __NAMESPACE__ . '\\hkdev_elements_preload_primary_font', 1 );
 
 /**
  * Enqueue plugin shop assets when no other provider (theme/plugin) already
