@@ -223,6 +223,42 @@ jQuery(function($) {
     });
 
     // ==========================================================
+    // CATEGORY TABS: remember the horizontal scroll position
+    // ==========================================================
+    // Keeps the tab strip where the visitor left it when they open a category
+    // from the header menu and come back, so they don't have to slide again.
+    // (The CSS scroll-snap keeps every stop on a full tab.)
+    (function () {
+        var PREFIX = 'hkdevTabsScroll:';
+        var $scrolls = $('.hkdev-tabs-scroll');
+
+        function restore(el, key) {
+            var saved = null;
+            try { saved = window.sessionStorage.getItem(key); } catch (e) {}
+            if (saved !== null && saved !== '') {
+                el.scrollLeft = parseInt(saved, 10) || 0;
+            }
+        }
+
+        $scrolls.each(function (index) {
+            var el  = this;
+            var key = PREFIX + window.location.pathname + ':' + index;
+
+            // Restore now and again after full load (fonts/layout settle).
+            restore(el, key);
+            $(window).on('load', function () { restore(el, key); });
+
+            var timer = null;
+            $(el).on('scroll', function () {
+                if (timer) { window.clearTimeout(timer); }
+                timer = window.setTimeout(function () {
+                    try { window.sessionStorage.setItem(key, String(Math.round(el.scrollLeft))); } catch (e) {}
+                }, 150);
+            });
+        });
+    })();
+
+    // ==========================================================
     // LOAD MORE (shop grid)
     // ==========================================================
     const loadMoreAction = 'hkdev_elements_load_more_products';

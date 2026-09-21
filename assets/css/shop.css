@@ -184,10 +184,13 @@
     scrollbar-width: thin;
     scrollbar-color: var(--hkdev-brand-primary) transparent;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory !important;
+    scroll-padding-left: 2px !important;
 }.hkdev-tab-item{
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center !important;
+    scroll-snap-align: start !important;
     gap: 6px !important;
     padding: 6px 14px !important;
     font-family: var(--hkdev-font) !important;
