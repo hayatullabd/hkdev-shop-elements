@@ -429,6 +429,14 @@
 			var navStoreKey = 'hkdevHeaderNavScroll';
 
 			var navRestore = function () {
+				if (isReloadNavigation()) {
+					navEl.scrollLeft = 0;
+					try {
+						window.sessionStorage.removeItem(navStoreKey);
+					} catch (err) {}
+					return;
+				}
+
 				try {
 					var savedNav = window.sessionStorage.getItem(navStoreKey);
 					if (savedNav !== null && savedNav !== '') {
