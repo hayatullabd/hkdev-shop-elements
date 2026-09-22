@@ -44,6 +44,20 @@ jQuery(function($) {
     // Clicking a category card leaves the page; on return the same card stays
     // marked so it is obvious which category you were browsing.
     const catMarkKey = 'hkdevCatMark:' + window.location.pathname;
+    function isReloadNavigation() {
+        try {
+            if (window.performance && typeof window.performance.getEntriesByType === 'function') {
+                const navEntries = window.performance.getEntriesByType('navigation');
+                if (navEntries && navEntries.length && navEntries[0].type) {
+                    return navEntries[0].type === 'reload';
+                }
+            }
+            if (window.performance && window.performance.navigation) {
+                return window.performance.navigation.type === 1;
+            }
+        } catch (e) {}
+        return false;
+    }
 
     function catMarkPath(href) {
         try {
@@ -63,6 +77,15 @@ jQuery(function($) {
 
     function markCategoryCards() {
         let saved = null;
+
+        if (isReloadNavigation()) {
+            try {
+                window.sessionStorage.removeItem(catMarkKey);
+            } catch (e) {}
+            $('.hkdev-cat-card').removeClass('is-hkdev-marked');
+            return;
+        }
+
         try {
             saved = window.sessionStorage.getItem(catMarkKey);
         } catch (e) {

@@ -15,6 +15,20 @@
 		// Clicking a category in the menu bar leaves the page; on return the
 		// same item stays marked so it is obvious which one you were on.
 		var catMarkKey = 'hkdevCatMark:' + window.location.pathname;
+		function isReloadNavigation() {
+			try {
+				if (window.performance && typeof window.performance.getEntriesByType === 'function') {
+					var navEntries = window.performance.getEntriesByType('navigation');
+					if (navEntries && navEntries.length && navEntries[0].type) {
+						return navEntries[0].type === 'reload';
+					}
+				}
+				if (window.performance && window.performance.navigation) {
+					return window.performance.navigation.type === 1;
+				}
+			} catch (err) {}
+			return false;
+		}
 
 		function catMarkPath(href) {
 			try {
@@ -34,6 +48,15 @@
 
 		function markHeaderCategory() {
 			var saved;
+
+			if (isReloadNavigation()) {
+				try {
+					window.sessionStorage.removeItem(catMarkKey);
+				} catch (err) {}
+				$('.hkdev-header-menu > li').removeClass('is-hkdev-marked');
+				return;
+			}
+
 			try {
 				saved = window.sessionStorage.getItem(catMarkKey);
 			} catch (err) {
