@@ -1168,7 +1168,9 @@ class Shop_Engine {
 								<div class="hkdev-no-product-msg"><?php echo esc_html__( 'Product Not Found', 'hkdev-shop-elements' ); ?></div>
 							<?php endif; ?>
 						</div>
-						<div class="hkdev-carousel-dots swiper-pagination"></div>
+						<div class="hkdev-carousel-dots-wrap">
+							<div class="hkdev-carousel-dots swiper-pagination"></div>
+						</div>
 					</div>
 					<div class="hkdev-nav-btn hkdev-prev-<?php echo esc_attr( $unique_id ); ?> kh-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
 					<div class="hkdev-nav-btn hkdev-next-<?php echo esc_attr( $unique_id ); ?> kh-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg></div>

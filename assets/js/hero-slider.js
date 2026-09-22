@@ -83,15 +83,24 @@
             });
 
             $dots.each(function (index) {
-                const dist = Math.abs(index - current);
                 const $dot = $(this);
+                const dist = Math.abs(index - current);
                 $dot.toggleClass('is-active', index === current);
                 $dot.toggleClass('is-near', dist === 1);
                 $dot.toggleClass('is-far', dist === 2);
-                // Keep a compact window (active ± 2) when there are many slides.
-                $dot.toggleClass('is-off', count > 5 && dist > 2);
-                $dot.attr('tabindex', dist > 2 && count > 5 ? '-1' : '0');
-                $dot.attr('aria-hidden', dist > 2 && count > 5 ? 'true' : 'false');
+
+                // 20+ slides: a 5-dot window, centred on the banner. Active
+                // sits in the middle of that window whenever it can.
+                var windowStart = 0;
+                var windowEnd = count - 1;
+                if (count > 5) {
+                    windowStart = Math.min(Math.max(0, current - 2), count - 5);
+                    windowEnd = windowStart + 4;
+                }
+                var off = index < windowStart || index > windowEnd;
+                $dot.toggleClass('is-off', off);
+                $dot.attr('tabindex', off ? '-1' : '0');
+                $dot.attr('aria-hidden', off ? 'true' : 'false');
             });
 
             if (transition === 'slide' && $track.length) {

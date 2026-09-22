@@ -201,7 +201,7 @@ jQuery(function($) {
                 el: $dots[0],
                 clickable: true,
                 dynamicBullets: true,
-                dynamicMainBullets: 3
+                dynamicMainBullets: 5
             };
         }
 
