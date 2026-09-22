@@ -440,6 +440,18 @@ function hkdev_elements_register_assets() {
 		[],
 		hkdev_elements_asset_ver( 'assets/css/hero-slider.css' )
 	);
+	wp_register_style(
+		'hkdev-elements-faq-style',
+		hkdev_elements_asset_url( 'assets/css/faq.css' ),
+		[ 'hkdev-elements-font' ],
+		hkdev_elements_asset_ver( 'assets/css/faq.css' )
+	);
+	wp_register_style(
+		'hkdev-elements-policy-link-style',
+		hkdev_elements_asset_url( 'assets/css/policy-link.css' ),
+		[ 'hkdev-elements-font' ],
+		hkdev_elements_asset_ver( 'assets/css/policy-link.css' )
+	);
 	wp_register_script(
 		'hkdev-elements-hero-js',
 		hkdev_elements_asset_url( 'assets/js/hero-slider.js' ),
