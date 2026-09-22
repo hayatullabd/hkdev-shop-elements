@@ -266,9 +266,10 @@ jQuery(function($) {
         $wrapper.find('.hkdev-tab-item').removeClass('active'); 
         $btn.addClass('active');
 
-        // Bring the clicked tab fully into view so it is never left cut.
+        // Bring the clicked tab to the left edge so it is fully visible and
+        // clearly the active one (start-aligned, matching the strip's snap).
         if ($btn[0] && typeof $btn[0].scrollIntoView === 'function') {
-            $btn[0].scrollIntoView({ block: 'nearest', inline: 'center' });
+            $btn[0].scrollIntoView({ block: 'nearest', inline: 'start' });
         }
         $loader.fadeIn(150).css('display', 'flex'); 
         
@@ -338,6 +339,73 @@ jQuery(function($) {
                     try { window.sessionStorage.setItem(key, String(Math.round(el.scrollLeft))); } catch (e) {}
                 }, 150);
             });
+        });
+    })();
+
+    // ==========================================================
+    // CATEGORY TABS: arrow navigation
+    // ==========================================================
+    // Arrows slide the strip by exactly one full tab (never a half-cut tab),
+    // hide when everything already fits, and disable at either end.
+    (function () {
+        $('.hkdev-tabs-container').each(function () {
+            var $wrap = $(this);
+            var $scroll = $wrap.find('.hkdev-tabs-scroll');
+            var el = $scroll[0];
+            if (!el) return;
+
+            var $prev = $wrap.find('.hkdev-tabs-arrow.hkdev-tabs-prev');
+            var $next = $wrap.find('.hkdev-tabs-arrow.hkdev-tabs-next');
+
+            function max() {
+                return Math.max(0, el.scrollWidth - el.clientWidth);
+            }
+
+            function sync() {
+                if (max() <= 1) {
+                    $prev.addClass('is-hidden');
+                    $next.addClass('is-hidden');
+                    return;
+                }
+                $prev.removeClass('is-hidden');
+                $next.removeClass('is-hidden');
+                $prev.toggleClass('is-disabled', el.scrollLeft <= 1);
+                $next.toggleClass('is-disabled', el.scrollLeft >= max() - 1);
+            }
+
+            function step(direction) {
+                var items = el.querySelectorAll('.hkdev-tab-item');
+                if (!items.length) return;
+                var view = el.getBoundingClientRect();
+                var target = null;
+                var i;
+
+                if (direction > 0) {
+                    for (i = 0; i < items.length; i++) {
+                        if (items[i].getBoundingClientRect().left > view.left + 1) {
+                            target = items[i];
+                            break;
+                        }
+                    }
+                } else {
+                    for (i = items.length - 1; i >= 0; i--) {
+                        if (items[i].getBoundingClientRect().left < view.left - 1) {
+                            target = items[i];
+                            break;
+                        }
+                    }
+                }
+
+                if (target && typeof target.scrollIntoView === 'function') {
+                    target.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' });
+                }
+            }
+
+            $prev.on('click', function (e) { e.preventDefault(); step(-1); });
+            $next.on('click', function (e) { e.preventDefault(); step(1); });
+            $scroll.on('scroll', sync);
+            $(window).on('resize orientationchange load', sync);
+            sync();
         });
     })();
 

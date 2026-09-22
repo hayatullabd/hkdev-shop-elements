@@ -1136,6 +1136,7 @@ class Shop_Engine {
 				if ( ! empty( $categories ) && ! is_wp_error( $categories ) ) :
 					?>
 					<div class="hkdev-tabs-container">
+						<button type="button" class="hkdev-tabs-arrow hkdev-tabs-prev" aria-label="<?php esc_attr_e( 'Previous categories', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
 						<div class="hkdev-tabs-scroll">
 							<button class="hkdev-tab-item active" data-slug="<?php echo esc_attr( $atts['category'] ); ?>"><?php echo esc_html__( 'All', 'hkdev-shop-elements' ); ?> <span class="hkdev-tab-count"><?php echo absint( $query->found_posts ); ?></span></button>
 							<?php foreach ( $categories as $cat ) : ?>
@@ -1144,6 +1145,7 @@ class Shop_Engine {
 								</button>
 							<?php endforeach; ?>
 						</div>
+						<button type="button" class="hkdev-tabs-arrow hkdev-tabs-next" aria-label="<?php esc_attr_e( 'Next categories', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
 					</div>
 				<?php endif; ?>
 			<?php endif; ?>

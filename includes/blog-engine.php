@@ -424,8 +424,9 @@ class Blog_Engine {
 
 		ob_start();
 		?>
-		<div class="hkdev-blog-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Filter posts by category', 'hkdev-shop-elements' ); ?>">
-			<div class="hkdev-blog-tabs-scroll">
+		<div class="hkdev-blog-tabs">
+			<button type="button" class="hkdev-blog-tabs-arrow hkdev-blog-tabs-prev" aria-label="<?php esc_attr_e( 'Previous categories', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+			<div class="hkdev-blog-tabs-scroll" role="tablist" aria-label="<?php esc_attr_e( 'Filter posts by category', 'hkdev-shop-elements' ); ?>">
 				<button type="button" class="hkdev-blog-tab-item is-active" role="tab" aria-selected="true" data-slug="<?php echo esc_attr( $all_slug ); ?>">
 					<?php esc_html_e( 'All', 'hkdev-shop-elements' ); ?>
 					<span class="hkdev-blog-tab-count"><?php echo absint( $query->found_posts ); ?></span>
@@ -437,6 +438,7 @@ class Blog_Engine {
 					</button>
 				<?php endforeach; ?>
 			</div>
+			<button type="button" class="hkdev-blog-tabs-arrow hkdev-blog-tabs-next" aria-label="<?php esc_attr_e( 'Next categories', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
 		</div>
 		<?php
 		return ob_get_clean();
