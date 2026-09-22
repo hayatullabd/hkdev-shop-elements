@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.83
+ * Version:           0.5.84
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.83' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.84' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -734,6 +734,30 @@ function hkdev_elements_enqueue_assets() {
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_assets', 30 );
 
 /**
+ * Whether a post contains a given shortcode in post_content or Elementor data.
+ *
+ * @param \WP_Post|null $post      Post object.
+ * @param string        $shortcode Shortcode tag without brackets.
+ * @return bool
+ */
+function hkdev_elements_page_has_shortcode( $post, $shortcode ) {
+	if ( ! is_a( $post, 'WP_Post' ) ) {
+		return false;
+	}
+
+	if ( has_shortcode( $post->post_content, $shortcode ) ) {
+		return true;
+	}
+
+	$elementor_data = get_post_meta( $post->ID, '_elementor_data', true );
+	if ( is_string( $elementor_data ) && '' !== $elementor_data ) {
+		return false !== strpos( $elementor_data, '[' . $shortcode );
+	}
+
+	return false;
+}
+
+/**
  * Enqueue tracking and 404 assets on pages that use the shortcodes.
  * Loads on all pages since shortcodes can be used anywhere.
  */
@@ -743,17 +767,23 @@ function hkdev_elements_enqueue_tracking_404_assets() {
 	}
 
 	global $post;
-	if ( is_a( $post, 'WP_Post' ) ) {
-		if ( has_shortcode( $post->post_content, 'hkdev_track_order' ) ) {
-			wp_enqueue_style( 'hkdev-elements-tracking-style' );
-			wp_enqueue_script( 'hkdev-elements-tracking-js' );
-		}
-		if ( has_shortcode( $post->post_content, 'hkdev_404' ) ) {
-			wp_enqueue_style( 'hkdev-elements-404-style' );
-		}
-		if ( has_shortcode( $post->post_content, 'hkdev_my_account' ) ) {
+	if ( hkdev_elements_page_has_shortcode( $post, 'hkdev_track_order' ) ) {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+		wp_enqueue_style( 'hkdev-elements-tracking-style' );
+		wp_enqueue_script( 'hkdev-elements-tracking-js' );
+	}
+	if ( hkdev_elements_page_has_shortcode( $post, 'hkdev_404' ) ) {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+		wp_enqueue_style( 'hkdev-elements-404-style' );
+	}
+	if ( hkdev_elements_page_has_shortcode( $post, 'hkdev_my_account' ) ) {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+		if ( is_user_logged_in() ) {
 			wp_enqueue_style( 'hkdev-elements-account-style' );
 			wp_enqueue_script( 'hkdev-elements-account-js' );
+		} else {
+			wp_enqueue_style( 'hkdev-elements-auth-style' );
+			wp_enqueue_script( 'hkdev-elements-auth-js' );
 		}
 	}
 }

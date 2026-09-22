@@ -36,6 +36,8 @@ class Account_Engine {
 	}
 
 	public function account_shortcode( $atts = [] ) {
+		$this->enqueue_assets();
+
 		if ( ! is_user_logged_in() ) {
 			return '<div class="hkdev-account-login-prompt"><p>' . esc_html__( 'Please login to view your account.', 'hkdev-shop-elements' ) . '</p><button type="button" class="hkdev-account-login-btn hkdev-auth-open" data-form="login">' . esc_html__( 'Login / Register', 'hkdev-shop-elements' ) . '</button></div>';
 		}
@@ -309,6 +311,24 @@ class Account_Engine {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Ensure account (and auth modal) assets load when the shortcode renders.
+	 *
+	 * @return void
+	 */
+	private function enqueue_assets() {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_enqueue_style( 'hkdev-elements-auth-style' );
+			wp_enqueue_script( 'hkdev-elements-auth-js' );
+			return;
+		}
+
+		wp_enqueue_style( 'hkdev-elements-account-style' );
+		wp_enqueue_script( 'hkdev-elements-account-js' );
 	}
 
 	public function ajax_update_profile() {

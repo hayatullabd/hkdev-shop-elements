@@ -25,6 +25,8 @@ class Page404_Engine {
 	}
 
 	public function page404_shortcode( $atts = [] ) {
+		$this->enqueue_assets();
+
 		$atts = shortcode_atts(
 			[
 				'title'         => __( '404', 'hkdev-shop-elements' ),
@@ -113,5 +115,15 @@ class Page404_Engine {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Ensure 404 block assets load when the shortcode renders.
+	 *
+	 * @return void
+	 */
+	private function enqueue_assets() {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+		wp_enqueue_style( 'hkdev-elements-404-style' );
 	}
 }
