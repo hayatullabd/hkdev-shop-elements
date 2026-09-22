@@ -944,7 +944,7 @@ class Header_Engine {
 	 * @return string
 	 */
 	public function header_shortcode( $atts = [] ) {
-		if ( ! class_exists( '\WooCommerce' ) || is_admin() ) {
+		if ( ! class_exists( '\WooCommerce' ) || ( is_admin() && ! $this->is_elementor_edit() ) ) {
 			return '';
 		}
 

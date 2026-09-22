@@ -483,13 +483,95 @@ class Single_Product_Engine {
 	}
 
 	/**
+	 * Whether the current request is an Elementor editor / preview request.
+	 *
+	 * @return bool
+	 */
+	public function is_elementor_edit() {
+		return Header_Engine::instance()->is_elementor_edit();
+	}
+
+	/**
+	 * Resolve which product to render in the widget / shortcode.
+	 *
+	 * @param array $atts Parsed shortcode attributes.
+	 * @return \WC_Product|null
+	 */
+	private function resolve_product_for_render( $atts ) {
+		global $product;
+
+		if ( ! empty( $atts['id'] ) ) {
+			$by_id = wc_get_product( absint( $atts['id'] ) );
+			if ( $by_id instanceof \WC_Product ) {
+				return $by_id;
+			}
+		}
+
+		if ( is_product() && $product instanceof \WC_Product ) {
+			return $product;
+		}
+
+		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance ) ) {
+			$elementor = \Elementor\Plugin::$instance;
+
+			if ( isset( $elementor->editor ) && method_exists( $elementor->editor, 'is_edit_mode' ) && $elementor->editor->is_edit_mode() ) {
+				$editor_post_id = method_exists( $elementor->editor, 'get_post_id' ) ? absint( $elementor->editor->get_post_id() ) : 0;
+				if ( $editor_post_id && 'product' === get_post_type( $editor_post_id ) ) {
+					$editor_product = wc_get_product( $editor_post_id );
+					if ( $editor_product instanceof \WC_Product ) {
+						return $editor_product;
+					}
+				}
+			}
+
+			if ( isset( $elementor->preview ) && method_exists( $elementor->preview, 'is_preview_mode' ) && $elementor->preview->is_preview_mode() ) {
+				$preview_post_id = method_exists( $elementor->preview, 'get_post_id' ) ? absint( $elementor->preview->get_post_id() ) : 0;
+				if ( ! $preview_post_id ) {
+					// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$preview_post_id = isset( $_GET['preview_id'] ) ? absint( wp_unslash( $_GET['preview_id'] ) ) : 0;
+				}
+				if ( $preview_post_id && 'product' === get_post_type( $preview_post_id ) ) {
+					$preview_product = wc_get_product( $preview_post_id );
+					if ( $preview_product instanceof \WC_Product ) {
+						return $preview_product;
+					}
+				}
+			}
+		}
+
+		$current_id = get_the_ID();
+		if ( $current_id && 'product' === get_post_type( $current_id ) ) {
+			$current_product = wc_get_product( $current_id );
+			if ( $current_product instanceof \WC_Product ) {
+				return $current_product;
+			}
+		}
+
+		if ( $this->is_elementor_edit() && function_exists( 'wc_get_products' ) ) {
+			$sample = wc_get_products(
+				[
+					'limit'   => 1,
+					'status'  => 'publish',
+					'orderby' => 'date',
+					'order'   => 'DESC',
+				]
+			);
+			if ( ! empty( $sample[0] ) && $sample[0] instanceof \WC_Product ) {
+				return $sample[0];
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * Render the custom single product layout.
 	 *
 	 * @param array $atts Widget/shortcode attributes.
 	 * @return string
 	 */
 	public function custom_single_product_shortcode( $atts = [] ) {
-		if ( is_admin() ) {
+		if ( is_admin() && ! $this->is_elementor_edit() ) {
 			return '';
 		}
 
@@ -510,20 +592,14 @@ class Single_Product_Engine {
 		global $product, $post;
 		$previous_product = $product;
 
-		if ( ! empty( $atts['id'] ) ) {
-			$product_id = absint( $atts['id'] );
-			$product    = wc_get_product( $product_id );
-		} elseif ( is_product() && is_a( $product, 'WC_Product' ) ) {
-			$product_id = $product->get_id();
-		} else {
-			$product_id = get_the_ID();
-			$product    = wc_get_product( $product_id );
-		}
+		$product = $this->resolve_product_for_render( $atts );
 
-		if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+		if ( ! $product instanceof \WC_Product ) {
 			$product = $previous_product;
 			return '<div style="text-align:center; padding: 60px; color: #e5533d; font-family: \'Hind Siliguri\', sans-serif; background: #fff; border-radius: 12px; border: 1px solid #eee;">' . esc_html__( 'Product not found.', 'hkdev-shop-elements' ) . '</div>';
 		}
+
+		$product_id = $product->get_id();
 
 		// Set global post so WooCommerce hooks keep working.
 		$post = get_post( $product_id );
