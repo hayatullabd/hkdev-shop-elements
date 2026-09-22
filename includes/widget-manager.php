@@ -320,6 +320,19 @@ final class Widget_Manager {
 	}
 
 	/**
+	 * Load the shared policy page widget base class once.
+	 *
+	 * @return void
+	 */
+	private static function require_policy_link_base_widget() {
+		if ( class_exists( Widgets\Policy_Link_Base_Widget::class ) ) {
+			return;
+		}
+
+		require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/policy-link-base-widget.php';
+	}
+
+	/**
 	 * Register all plugin widgets.
 	 *
 	 * Widget class files are required here, not at plugins_loaded: they extend
@@ -344,25 +357,21 @@ final class Widget_Manager {
 			require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/' . $include_file;
 		}
 
-		$needs_policy_base = false;
-
 		foreach ( $registry as $group ) {
 			foreach ( $group['widgets'] as $slug => $meta ) {
 				if ( ! $options->is_widget_enabled( $slug ) ) {
 					continue;
 				}
 
+				// Policy page widgets extend Policy_Link_Base_Widget, so the base
+				// file must load before any of their class files are parsed.
 				if ( ! empty( $meta['policy_base'] ) ) {
-					$needs_policy_base = true;
+					self::require_policy_link_base_widget();
 				}
 
 				require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/' . $meta['file'];
 				$widgets[] = $meta['class'];
 			}
-		}
-
-		if ( $needs_policy_base ) {
-			require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/policy-link-base-widget.php';
 		}
 
 		foreach ( $widgets as $widget_class ) {
