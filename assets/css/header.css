@@ -906,6 +906,10 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     transition: background 0.2s ease, color 0.2s ease !important;
 }
 
+.hkdev-header-cat-item {
+    position: relative !important;
+}
+
 .hkdev-header-cat-item > a:hover {
     background: var(--hd-soft) !important;
     color: var(--hd-primary) !important;
@@ -922,20 +926,49 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
 }
 
 .hkdev-header-cat-item .cat-caret {
+    margin-left: auto !important;
     font-size: 10px !important;
     color: var(--hd-muted) !important;
+    opacity: 0.8 !important;
+    transition: transform 0.2s ease, color 0.2s ease, opacity 0.2s ease !important;
 }
 
 .hkdev-header-cat-children {
     list-style: none !important;
-    margin: 0 0 4px 14px !important;
-    padding: 0 0 4px 12px !important;
-    border-left: 2px solid var(--hd-border) !important;
+    position: absolute !important;
+    top: -4px !important;
+    left: calc(100% - 6px) !important;
+    min-width: 240px !important;
+    margin: 0 !important;
+    padding: 8px !important;
+    border: 1px solid var(--hd-border) !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.13) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(6px) !important;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease !important;
+    z-index: 2 !important;
+}
+
+.hkdev-header-cat-item.has-children:hover > .hkdev-header-cat-children,
+.hkdev-header-cat-item.has-children:focus-within > .hkdev-header-cat-children {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
+.hkdev-header-cat-item.has-children:hover > a .cat-caret,
+.hkdev-header-cat-item.has-children:focus-within > a .cat-caret {
+    color: var(--hd-primary) !important;
+    opacity: 1 !important;
+    transform: translateX(1px) !important;
 }
 
 .hkdev-header-cat-children a {
     display: block !important;
-    padding: 7px 10px !important;
+    padding: 8px 10px !important;
     border-radius: 8px !important;
     font-size: 13.5px !important;
     font-weight: 500 !important;
