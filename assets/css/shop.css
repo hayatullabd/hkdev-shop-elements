@@ -194,6 +194,11 @@
 }.hkdev-tabs-scroll.is-dragging{
     cursor: grabbing !important;
     user-select: none !important;
+}.hkdev-tabs-end-spacer{
+    flex: 0 0 0;
+    width: 0;
+    height: 1px !important;
+    pointer-events: none !important;
 }.hkdev-tab-item{
     flex: 0 0 auto;
     display: inline-flex;

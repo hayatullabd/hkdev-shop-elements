@@ -337,8 +337,9 @@ jQuery(function($) {
     })();
 
     // ==========================================================
-    // CATEGORY TABS: arrow / wheel / drag — same behaviour as the header menu.
-    // The chip look stays; scrolling is free (no snap, no hiding cut tabs).
+    // CATEGORY TABS: one full chip at a time. The strip is clipped to the last
+    // fully visible tab so a half-cut name never shows (overflow always cuts
+    // otherwise, because chips have different widths).
     (function () {
         $('.hkdev-tabs-container').each(function () {
             var $wrap = $(this);
@@ -352,6 +353,12 @@ jQuery(function($) {
             var startX = 0;
             var startScroll = 0;
             var moved = false;
+            var stepping = false;
+            var anim = 0;
+
+            function itemNodes() {
+                return el.querySelectorAll('.hkdev-tab-item');
+            }
 
             function max() {
                 return Math.max(0, el.scrollWidth - el.clientWidth);
@@ -361,7 +368,144 @@ jQuery(function($) {
                 return el.scrollWidth > el.clientWidth + 1;
             }
 
+            function contentLeft() {
+                var cs = window.getComputedStyle(el);
+                var box = el.getBoundingClientRect();
+                return box.left + el.clientLeft + (parseFloat(cs.paddingLeft) || 0);
+            }
+
+            function ensureSpacer() {
+                var spacer = el.querySelector('.hkdev-tabs-end-spacer');
+                if (!spacer) {
+                    spacer = document.createElement('span');
+                    spacer.className = 'hkdev-tabs-end-spacer';
+                    spacer.setAttribute('aria-hidden', 'true');
+                    el.appendChild(spacer);
+                }
+                spacer.style.flex = '0 0 0px';
+                spacer.style.width = '0px';
+                var list = itemNodes();
+                var last = list.length ? list[list.length - 1] : null;
+                if (!last || el.scrollWidth <= el.clientWidth + 1) return;
+                var extra = Math.max(0, el.clientWidth - last.offsetWidth);
+                spacer.style.flex = '0 0 ' + extra + 'px';
+                spacer.style.width = extra + 'px';
+            }
+
+            function applyClip() {
+                var box = el.getBoundingClientRect();
+                if (!scrollable()) {
+                    el.style.clipPath = '';
+                    el.style.webkitClipPath = '';
+                    return;
+                }
+                var left = contentLeft();
+                var right = box.left + el.clientLeft + el.clientWidth;
+                var list = itemNodes();
+                var lastRight = null;
+                var firstLeft = null;
+                var i, r;
+                for (i = 0; i < list.length; i++) {
+                    r = list[i].getBoundingClientRect();
+                    if (r.width < 1) continue;
+                    if (r.left >= left - 2 && r.right <= right + 2) {
+                        if (firstLeft === null) firstLeft = r.left;
+                        lastRight = r.right;
+                    }
+                }
+                if (lastRight === null) {
+                    el.style.clipPath = '';
+                    el.style.webkitClipPath = '';
+                    return;
+                }
+                var insetL = Math.max(0, (firstLeft !== null ? firstLeft : left) - box.left);
+                var insetR = Math.max(0, box.right - lastRight);
+                el.style.clipPath = 'inset(0 ' + insetR.toFixed(2) + 'px 0 ' + insetL.toFixed(2) + 'px)';
+                el.style.webkitClipPath = el.style.clipPath;
+            }
+
+            function currentIndex() {
+                var list = itemNodes();
+                var left = contentLeft();
+                var i, r;
+                for (i = 0; i < list.length; i++) {
+                    r = list[i].getBoundingClientRect();
+                    if (r.left >= left - 2) return i;
+                }
+                return Math.max(0, list.length - 1);
+            }
+
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+
+            function animateTo(left) {
+                left = Math.max(0, Math.min(max(), left));
+                if (anim) {
+                    window.cancelAnimationFrame(anim);
+                    anim = 0;
+                }
+                var start = el.scrollLeft;
+                var dist = left - start;
+                if (Math.abs(dist) < 1) {
+                    el.scrollLeft = left;
+                    stepping = false;
+                    sync();
+                    return;
+                }
+                var duration = Math.min(420, Math.max(260, Math.abs(dist) * 0.5 + 220));
+                var t0 = null;
+                stepping = true;
+                function frame(now) {
+                    if (t0 === null) t0 = now;
+                    var p = Math.min(1, (now - t0) / duration);
+                    el.scrollLeft = start + dist * easeOutCubic(p);
+                    applyClip();
+                    if (p < 1) {
+                        anim = window.requestAnimationFrame(frame);
+                    } else {
+                        anim = 0;
+                        el.scrollLeft = left;
+                        stepping = false;
+                        sync();
+                    }
+                }
+                anim = window.requestAnimationFrame(frame);
+            }
+
+            function scrollToItem(item) {
+                if (!item) return;
+                var left = el.scrollLeft + (item.getBoundingClientRect().left - contentLeft());
+                animateTo(left);
+            }
+
+            function step(direction) {
+                var list = itemNodes();
+                if (!list.length) return;
+                var next = currentIndex() + direction;
+                if (next < 0 || next >= list.length) return;
+                scrollToItem(list[next]);
+            }
+
+            function snapNearest() {
+                var list = itemNodes();
+                if (!list.length) return;
+                var left = contentLeft();
+                var best = 0;
+                var bestDist = Infinity;
+                var i, dist;
+                for (i = 0; i < list.length; i++) {
+                    dist = Math.abs(list[i].getBoundingClientRect().left - left);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = i;
+                    }
+                }
+                scrollToItem(list[best]);
+            }
+
             function sync() {
+                applyClip();
                 if (max() <= 1) {
                     $prev.addClass('is-hidden');
                     $next.addClass('is-hidden');
@@ -369,24 +513,19 @@ jQuery(function($) {
                 }
                 $prev.removeClass('is-hidden');
                 $next.removeClass('is-hidden');
-                $prev.toggleClass('is-disabled', el.scrollLeft <= 1);
-                $next.toggleClass('is-disabled', el.scrollLeft >= max() - 1);
-            }
-
-            function step(direction) {
-                el.scrollBy({
-                    left: direction * Math.max(200, Math.round(el.clientWidth * 0.7)),
-                    behavior: 'smooth'
-                });
+                var idx = currentIndex();
+                var list = itemNodes();
+                $prev.toggleClass('is-disabled', idx <= 0 && el.scrollLeft <= 1);
+                $next.toggleClass('is-disabled', idx >= list.length - 1 || el.scrollLeft >= max() - 1);
             }
 
             el.addEventListener('wheel', function (e) {
                 if (!scrollable()) return;
                 var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
                 if (!delta) return;
-                if ((delta < 0 && el.scrollLeft <= 0) || (delta > 0 && el.scrollLeft >= max() - 1)) return;
                 e.preventDefault();
-                el.scrollLeft += delta;
+                if (stepping) return;
+                step(delta > 0 ? 1 : -1);
             }, { passive: false });
 
             el.addEventListener('pointerdown', function (e) {
@@ -403,12 +542,15 @@ jQuery(function($) {
                 var diff = e.clientX - startX;
                 if (Math.abs(diff) > 3) moved = true;
                 el.scrollLeft = startScroll - diff;
+                applyClip();
             });
 
             window.addEventListener('pointerup', function () {
                 if (!down) return;
                 down = false;
                 $scroll.removeClass('is-dragging');
+                if (moved) snapNearest();
+                else sync();
             });
 
             el.addEventListener('click', function (e) {
@@ -422,8 +564,12 @@ jQuery(function($) {
             $prev.on('click', function (e) { e.preventDefault(); step(-1); });
             $next.on('click', function (e) { e.preventDefault(); step(1); });
             $scroll.on('scroll', sync);
-            $(window).on('resize orientationchange load', sync);
-            sync();
+            $(window).on('resize orientationchange load', function () {
+                ensureSpacer();
+                sync();
+            });
+            ensureSpacer();
+            window.requestAnimationFrame(sync);
         });
     })();
 

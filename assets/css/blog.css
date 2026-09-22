@@ -267,6 +267,12 @@
 	cursor: grabbing !important;
 	user-select: none !important;
 }
+.hkdev-blog-tabs-end-spacer {
+	flex: 0 0 0;
+	width: 0;
+	height: 1px !important;
+	pointer-events: none !important;
+}
 .hkdev-blog-tab-item {
 	flex: 0 0 auto !important;
 	display: inline-flex !important;
