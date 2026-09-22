@@ -836,10 +836,7 @@ class Header_Engine {
 		// ---- Account / auth ---------------------------------------------
 		$is_logged_in = is_user_logged_in();
 
-		// ---- Navbar quick links ----------------------------------------
-		$shop_url  = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
-		$deals_url = add_query_arg( 'on_sale', '1', $shop_url );
-		$show_navbar  = ( $menu_html || $track_url || $deals_url );
+		$show_navbar  = (bool) $menu_html;
 		$show_mini    = ( 'yes' === $atts['mini_cart'] && 'yes' === $atts['show_cart'] );
 		$sticky_class = ( 'yes' === $atts['sticky'] ) ? ' hkdev-header-sticky' : '';
 
@@ -972,23 +969,6 @@ class Header_Engine {
 			<?php if ( $show_navbar ) : ?>
 				<div class="hkdev-header-navbar">
 					<div class="hkdev-header-container">
-
-						<div class="hkdev-header-quick" aria-label="<?php esc_attr_e( 'Quick links', 'hkdev-shop-elements' ); ?>">
-							<a class="hkdev-header-quick-chip is-deals" href="<?php echo esc_url( $deals_url ); ?>">
-								<i class="fa-solid fa-bolt"></i>
-								<span><?php esc_html_e( 'Hot Deals', 'hkdev-shop-elements' ); ?></span>
-							</a>
-							<?php if ( $track_url ) : ?>
-								<a class="hkdev-header-quick-chip is-track" href="<?php echo esc_url( $track_url ); ?>">
-									<i class="fa-solid fa-truck-fast"></i>
-									<span><?php esc_html_e( 'Track Order', 'hkdev-shop-elements' ); ?></span>
-								</a>
-							<?php endif; ?>
-							<span class="hkdev-header-quick-offer">
-								<i class="fa-solid fa-tag"></i>
-								<?php esc_html_e( 'Free delivery over 1000', 'hkdev-shop-elements' ); ?>
-							</span>
-						</div>
 
 						<?php if ( $menu_html ) : ?>
 							<div class="hkdev-header-nav-wrap">
