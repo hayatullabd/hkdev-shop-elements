@@ -33,6 +33,8 @@ class Tracking_Engine {
 	}
 
 	public function tracking_shortcode( $atts = [] ) {
+		$this->enqueue_assets();
+
 		$atts = shortcode_atts(
 			[
 				'title'       => __( 'Track Your Order', 'hkdev-shop-elements' ),
@@ -86,6 +88,18 @@ class Tracking_Engine {
 		</div>
 		<?php
 		return ob_get_clean();
+	}
+
+	/**
+	 * Ensure tracking assets load when the shortcode is rendered (Elementor,
+	 * widgets, or any context where post_content has_shortcode() misses).
+	 *
+	 * @return void
+	 */
+	private function enqueue_assets() {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+		wp_enqueue_style( 'hkdev-elements-tracking-style' );
+		wp_enqueue_script( 'hkdev-elements-tracking-js' );
 	}
 
 	public function ajax_track_order() {

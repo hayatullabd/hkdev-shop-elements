@@ -418,7 +418,8 @@ class Footer_Engine {
 		}
 
 		$sitewide_context = ( isset( $atts['__sitewide'] ) && 'yes' === (string) $atts['__sitewide'] );
-		if ( $this->is_active() && ! $sitewide_context && ! is_customize_preview() ) {
+		$is_editor        = Header_Engine::instance()->is_elementor_edit();
+		if ( $this->is_active() && ! $sitewide_context && ! $is_editor && ! is_customize_preview() ) {
 			// Site-wide footer is already rendered through wp_footer hook.
 			return '';
 		}
