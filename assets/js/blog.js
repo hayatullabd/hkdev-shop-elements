@@ -131,11 +131,15 @@
                 var i;
 
                 if (direction > 0) {
+                    var current = -1;
                     for (i = 0; i < items.length; i++) {
-                        if (items[i].getBoundingClientRect().left > view.left + 1) {
-                            target = items[i];
+                        if (items[i].getBoundingClientRect().left >= view.left - 1) {
+                            current = i;
                             break;
                         }
+                    }
+                    if (current >= 0 && current + 1 < items.length) {
+                        target = items[current + 1];
                     }
                 } else {
                     for (i = items.length - 1; i >= 0; i--) {
