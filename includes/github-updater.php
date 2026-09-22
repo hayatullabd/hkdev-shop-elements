@@ -126,6 +126,7 @@ class GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'inject_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_information' ], 20, 3 );
 		add_filter( 'upgrader_source_selection', [ $this, 'fix_source_dir' ], 10, 4 );
+		add_filter( 'upgrader_pre_install', [ $this, 'remember_activation_before_install' ], 10, 2 );
 		add_action( 'upgrader_process_complete', [ $this, 'maybe_reactivate_after_update' ], 20, 2 );
 		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 4 );
 
@@ -265,40 +266,29 @@ class GitHub_Updater {
 	 * @param string $source      Extracted source path.
 	 * @param string $remote_source Remote working directory.
 	 * @param object $upgrader    Upgrader instance.
-	 * @param array  $hook_extra  Extra hook arguments.
-	 * @return string
+	 * @param array  $hook_extra  Extra hook arguments (WordPress passes hook_extra
+	 *                            directly here, not the full install args array).
+	 * @return string|\WP_Error
 	 */
 	public function fix_source_dir( $source, $remote_source, $upgrader, $args = [] ) {
-		// WordPress passes the full install-package arguments array here, not
-		// the hook_extra sub-array. Read the plugin key from the right place.
-		$hook_extra = ( isset( $args['hook_extra'] ) && is_array( $args['hook_extra'] ) ) ? $args['hook_extra'] : [];
+		$hook_extra = $this->parse_hook_extra( $args );
 
-		// Only act on an update of this exact plugin.
-		if ( empty( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== $this->plugin_basename ) {
+		if ( ! $this->is_this_plugin_update( $hook_extra, $upgrader ) ) {
 			return $source;
 		}
+
 		$this->remember_activation_state();
 
 		global $wp_filesystem;
 		if ( ! $wp_filesystem ) {
-			return $source;
+			return new \WP_Error(
+				'hkdev_updater_no_fs',
+				esc_html__( 'Update failed: WordPress filesystem is unavailable.', 'hkdev-shop-elements' )
+			);
 		}
 
-		$source = trailingslashit( $source );
-
-		// Archives that wrap everything in a single folder: step into it so the
-		// path we rename is the one that actually holds the plugin.
-		if ( ! $this->looks_like_plugin( $source ) ) {
-			$children = $wp_filesystem->dirlist( $source );
-			if ( is_array( $children ) && 1 === count( $children ) ) {
-				$child = key( $children );
-				if ( $wp_filesystem->is_dir( $source . $child ) && $this->looks_like_plugin( trailingslashit( $source . $child ) ) ) {
-					$source = trailingslashit( $source . $child );
-				}
-			}
-		}
-
-		if ( ! $this->looks_like_plugin( $source ) ) {
+		$plugin_root = $this->find_plugin_root( $source );
+		if ( '' === $plugin_root ) {
 			if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
 				\HkdevShopElements\hkdev_elements_log_message(
 					'GitHub updater: extracted package does not look like plugin root; aborting update to avoid deactivation.'
@@ -311,31 +301,59 @@ class GitHub_Updater {
 			);
 		}
 
-		if ( basename( untrailingslashit( $source ) ) === $this->slug ) {
-			return $source;
+		if ( basename( untrailingslashit( $plugin_root ) ) === $this->slug ) {
+			return trailingslashit( $plugin_root );
 		}
 
 		$remote = untrailingslashit( $remote_source );
-		$parent = ( untrailingslashit( $source ) === $remote ) ? dirname( $remote ) : $remote;
+		$parent = ( untrailingslashit( $plugin_root ) === $remote ) ? dirname( $remote ) : $remote;
 		$target = trailingslashit( $parent ) . $this->slug;
 
-		if ( $wp_filesystem->move( $source, $target, true ) ) {
-			if ( ! $this->looks_like_plugin( trailingslashit( $target ) ) ) {
-				if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
-					\HkdevShopElements\hkdev_elements_log_message(
-						'GitHub updater: moved package missing plugin root files; aborting update to prevent broken install.'
-					);
-				}
-
-				return new \WP_Error(
-					'hkdev_invalid_update_target',
-					esc_html__( 'Update failed: plugin files were not found after installation.', 'hkdev-shop-elements' )
-				);
-			}
-			return trailingslashit( $target );
+		if ( $wp_filesystem->exists( $target ) ) {
+			$wp_filesystem->delete( $target, true );
 		}
 
-		return $source;
+		$moved = $wp_filesystem->move( $plugin_root, $target, true );
+		if ( ! $moved && function_exists( 'copy_dir' ) ) {
+			$copied = copy_dir( $plugin_root, $target );
+			if ( ! is_wp_error( $copied ) ) {
+				$wp_filesystem->delete( $plugin_root, true );
+				$moved = true;
+			}
+		}
+
+		if ( ! $moved || ! $this->looks_like_plugin( $target ) ) {
+			if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
+				\HkdevShopElements\hkdev_elements_log_message(
+					sprintf(
+						'GitHub updater: failed to move extracted package to %s',
+						$target
+					)
+				);
+			}
+
+			return new \WP_Error(
+				'hkdev_invalid_update_target',
+				esc_html__( 'Update failed: plugin files could not be installed to the correct folder.', 'hkdev-shop-elements' )
+			);
+		}
+
+		return trailingslashit( $target );
+	}
+
+	/**
+	 * Remember activation state before WordPress clears the destination folder.
+	 *
+	 * @param bool  $reply Whether to proceed with install.
+	 * @param array $hook_extra Upgrader hook args.
+	 * @return bool
+	 */
+	public function remember_activation_before_install( $reply, $hook_extra ) {
+		if ( is_array( $hook_extra ) && ! empty( $hook_extra['plugin'] ) && $hook_extra['plugin'] === $this->plugin_basename ) {
+			$this->remember_activation_state();
+		}
+
+		return $reply;
 	}
 
 	/**
@@ -473,14 +491,27 @@ class GitHub_Updater {
 		$tag     = (string) $release['tag_name'];
 		$package = '';
 
-		// Prefer an uploaded .zip asset (it already has the correct folder).
+		// Prefer a correctly structured release asset: hkdev-shop-elements.zip first.
 		if ( ! empty( $release['assets'] ) && is_array( $release['assets'] ) ) {
+			$preferred = $this->slug . '.zip';
+			$fallback  = '';
+
 			foreach ( $release['assets'] as $asset ) {
 				$name = isset( $asset['name'] ) ? (string) $asset['name'] : '';
-				if ( ! empty( $asset['browser_download_url'] ) && preg_match( '/\.zip$/i', $name ) ) {
+				if ( empty( $asset['browser_download_url'] ) || ! preg_match( '/\.zip$/i', $name ) ) {
+					continue;
+				}
+				if ( $name === $preferred ) {
 					$package = (string) $asset['browser_download_url'];
 					break;
 				}
+				if ( '' === $fallback ) {
+					$fallback = (string) $asset['browser_download_url'];
+				}
+			}
+
+			if ( '' === $package && '' !== $fallback ) {
+				$package = $fallback;
 			}
 		}
 
@@ -597,6 +628,96 @@ class GitHub_Updater {
 		$token = defined( 'HKDEV_ELEMENTS_GITHUB_TOKEN' ) ? (string) HKDEV_ELEMENTS_GITHUB_TOKEN : '';
 
 		return (string) apply_filters( 'hkdev_elements_github_token', $token );
+	}
+
+	/**
+	 * Normalize the hook_extra array WordPress passes to upgrader filters.
+	 *
+	 * Core passes hook_extra directly as the 4th argument to
+	 * upgrader_source_selection, not the full install-package args array.
+	 *
+	 * @param mixed $args Filter argument.
+	 * @return array
+	 */
+	private function parse_hook_extra( $args ) {
+		if ( ! is_array( $args ) ) {
+			return [];
+		}
+
+		if ( isset( $args['hook_extra'] ) && is_array( $args['hook_extra'] ) ) {
+			return $args['hook_extra'];
+		}
+
+		if ( isset( $args['plugin'] ) || isset( $args['type'] ) || isset( $args['action'] ) ) {
+			return $args;
+		}
+
+		return [];
+	}
+
+	/**
+	 * Whether the current upgrader run targets this plugin.
+	 *
+	 * @param array       $hook_extra Parsed hook extra.
+	 * @param object|null $upgrader   Upgrader instance.
+	 * @return bool
+	 */
+	private function is_this_plugin_update( $hook_extra, $upgrader ) {
+		if ( ! empty( $hook_extra['plugin'] ) && $hook_extra['plugin'] === $this->plugin_basename ) {
+			return true;
+		}
+
+		if ( is_object( $upgrader ) && isset( $upgrader->skin ) && is_object( $upgrader->skin ) ) {
+			if ( ! empty( $upgrader->skin->plugin ) && $upgrader->skin->plugin === $this->plugin_basename ) {
+				return true;
+			}
+			if ( ! empty( $upgrader->skin->plugin_info['Name'] ) && 'HKDEV Shop Elements' === $upgrader->skin->plugin_info['Name'] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Locate the plugin root inside an extracted archive (supports GitHub zipballs).
+	 *
+	 * @param string $dir Starting directory.
+	 * @param int    $depth Recursion guard.
+	 * @return string Plugin root path or empty string.
+	 */
+	private function find_plugin_root( $dir, $depth = 0 ) {
+		global $wp_filesystem;
+
+		if ( ! $wp_filesystem || $depth > 4 ) {
+			return '';
+		}
+
+		$dir = trailingslashit( $dir );
+		if ( $this->looks_like_plugin( $dir ) ) {
+			return $dir;
+		}
+
+		$children = $wp_filesystem->dirlist( $dir );
+		if ( ! is_array( $children ) ) {
+			return '';
+		}
+
+		foreach ( $children as $name => $info ) {
+			if ( ! is_array( $info ) || empty( $info['type'] ) || 'd' !== $info['type'] ) {
+				continue;
+			}
+			if ( '.' === $name || '..' === $name ) {
+				continue;
+			}
+
+			$found = $this->find_plugin_root( $dir . $name, $depth + 1 );
+			if ( '' !== $found ) {
+				return $found;
+			}
+		}
+
+		return '';
 	}
 
 	/**
