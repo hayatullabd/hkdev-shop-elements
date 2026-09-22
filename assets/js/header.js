@@ -82,19 +82,6 @@
 			}
 		});
 
-		// ---- Categories dropdown --------------------------------------
-		$(document).on('click', '.hkdev-header-cats-btn', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			$(this).closest('.hkdev-header-cats').toggleClass('is-open');
-		});
-
-		$(document).on('click', function (e) {
-			if (!$(e.target).closest('.hkdev-header-cats').length) {
-				$('.hkdev-header-cats').removeClass('is-open');
-			}
-		});
-
 		// ---- Mobile submenu accordion ---------------------------------
 		if ($panel.length) {
 			$panel.find('.hkdev-header-menu li.menu-item-has-children').each(function () {

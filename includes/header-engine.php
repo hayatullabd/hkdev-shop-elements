@@ -836,25 +836,10 @@ class Header_Engine {
 		// ---- Account / auth ---------------------------------------------
 		$is_logged_in = is_user_logged_in();
 
-		// ---- Categories -------------------------------------------------
-		$cats = [];
-		if ( 'yes' === $atts['show_categories'] && taxonomy_exists( 'product_cat' ) ) {
-			$cats = get_terms(
-				[
-					'taxonomy'   => 'product_cat',
-					'hide_empty' => true,
-					'parent'     => 0,
-					'number'     => absint( $atts['categories_limit'] ) ? absint( $atts['categories_limit'] ) : 8,
-					'orderby'    => 'name',
-					'order'      => 'ASC',
-				]
-			);
-			if ( is_wp_error( $cats ) ) {
-				$cats = [];
-			}
-		}
-
-		$show_navbar  = ( $menu_html || ! empty( $cats ) );
+		// ---- Navbar quick links ----------------------------------------
+		$shop_url  = function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' );
+		$deals_url = add_query_arg( 'on_sale', '1', $shop_url );
+		$show_navbar  = ( $menu_html || $track_url || $deals_url );
 		$show_mini    = ( 'yes' === $atts['mini_cart'] && 'yes' === $atts['show_cart'] );
 		$sticky_class = ( 'yes' === $atts['sticky'] ) ? ' hkdev-header-sticky' : '';
 
@@ -867,23 +852,6 @@ class Header_Engine {
 		if ( '' !== $sticky_class && ( 'none' !== $hide_desk || 'none' !== $hide_mobile ) ) {
 			$sticky_class .= ' hkdev-header-autohide';
 			$hide_attr     = ' data-hide-desk="' . esc_attr( $hide_desk ) . '" data-hide-mobile="' . esc_attr( $hide_mobile ) . '"';
-		}
-
-		// Sub-categories of each top-level category. Built once and reused by the
-		// desktop dropdown and the mobile panel so the terms are queried only once.
-		$cat_children = [];
-		foreach ( $cats as $cat ) {
-			$children = get_terms(
-				[
-					'taxonomy'   => 'product_cat',
-					'hide_empty' => true,
-					'parent'     => $cat->term_id,
-					'number'     => 6,
-					'orderby'    => 'name',
-					'order'      => 'ASC',
-				]
-			);
-			$cat_children[ $cat->term_id ] = ( ! is_wp_error( $children ) && ! empty( $children ) ) ? $children : [];
 		}
 
 		$socials = [
@@ -1005,55 +973,22 @@ class Header_Engine {
 				<div class="hkdev-header-navbar">
 					<div class="hkdev-header-container">
 
-						<?php if ( ! empty( $cats ) ) : ?>
-							<div class="hkdev-header-cats">
-								<button type="button" class="hkdev-header-cats-btn">
-									<i class="fa-solid fa-grip"></i>
-									<span><?php echo esc_html( $atts['categories_label'] ); ?></span>
-									<i class="fa-solid fa-chevron-down hkdev-header-cats-caret"></i>
-								</button>
-								<div class="hkdev-header-cats-dropdown">
-									<ul class="hkdev-header-cats-list">
-										<?php
-										foreach ( $cats as $cat ) :
-											$cat_link = get_term_link( $cat );
-											if ( is_wp_error( $cat_link ) ) {
-												continue;
-											}
-											$children     = isset( $cat_children[ $cat->term_id ] ) ? $cat_children[ $cat->term_id ] : [];
-											$has_children = ! empty( $children );
-											?>
-											<li class="hkdev-header-cat-item<?php echo $has_children ? ' has-children' : ''; ?>">
-												<a href="<?php echo esc_url( $cat_link ); ?>">
-													<span class="cat-name"><?php echo esc_html( $cat->name ); ?></span>
-													<span class="cat-count"><?php echo esc_html( $cat->count ); ?></span>
-													<?php if ( $has_children ) : ?>
-														<i class="fa-solid fa-chevron-right cat-caret"></i>
-													<?php endif; ?>
-												</a>
-												<?php if ( $has_children ) : ?>
-													<ul class="hkdev-header-cat-children">
-														<?php foreach ( $children as $child ) : ?>
-															<?php
-															$child_link = get_term_link( $child );
-															if ( is_wp_error( $child_link ) ) {
-																continue;
-															}
-															?>
-															<li>
-																<a href="<?php echo esc_url( $child_link ); ?>">
-																	<?php echo esc_html( $child->name ); ?>
-																</a>
-															</li>
-														<?php endforeach; ?>
-													</ul>
-												<?php endif; ?>
-											</li>
-										<?php endforeach; ?>
-									</ul>
-								</div>
-							</div>
-						<?php endif; ?>
+						<div class="hkdev-header-quick" aria-label="<?php esc_attr_e( 'Quick links', 'hkdev-shop-elements' ); ?>">
+							<a class="hkdev-header-quick-chip is-deals" href="<?php echo esc_url( $deals_url ); ?>">
+								<i class="fa-solid fa-bolt"></i>
+								<span><?php esc_html_e( 'Hot Deals', 'hkdev-shop-elements' ); ?></span>
+							</a>
+							<?php if ( $track_url ) : ?>
+								<a class="hkdev-header-quick-chip is-track" href="<?php echo esc_url( $track_url ); ?>">
+									<i class="fa-solid fa-truck-fast"></i>
+									<span><?php esc_html_e( 'Track Order', 'hkdev-shop-elements' ); ?></span>
+								</a>
+							<?php endif; ?>
+							<span class="hkdev-header-quick-offer">
+								<i class="fa-solid fa-tag"></i>
+								<?php esc_html_e( 'Free delivery over 1000', 'hkdev-shop-elements' ); ?>
+							</span>
+						</div>
 
 						<?php if ( $menu_html ) : ?>
 							<div class="hkdev-header-nav-wrap">
@@ -1107,57 +1042,6 @@ class Header_Engine {
 					</a>
 				<?php endif; ?>
 			</div>
-
-			<?php if ( 'yes' === $atts['show_categories'] && ! empty( $cats ) ) : ?>
-				<div class="hkdev-header-panel-cats">
-					<div class="hkdev-header-panel-cats-head">
-						<span class="hkdev-header-panel-cats-icon"><i class="fa-solid fa-grip"></i></span>
-						<span class="hkdev-header-panel-cats-title"><?php echo esc_html( $atts['categories_label'] ); ?></span>
-						<span class="hkdev-header-panel-cats-total"><?php echo esc_html( count( $cats ) ); ?></span>
-					</div>
-
-					<div class="hkdev-header-panel-cats-body">
-						<?php
-						foreach ( $cats as $cat ) :
-							$cat_link = get_term_link( $cat );
-							if ( is_wp_error( $cat_link ) ) {
-								continue;
-							}
-							$children = isset( $cat_children[ $cat->term_id ] ) ? $cat_children[ $cat->term_id ] : [];
-							?>
-							<?php if ( ! empty( $children ) ) : ?>
-								<details class="hkdev-header-pcat is-parent">
-									<summary>
-										<span class="hkdev-header-pcat-name"><?php echo esc_html( $cat->name ); ?></span>
-										<span class="hkdev-header-pcat-count"><?php echo esc_html( $cat->count ); ?></span>
-										<i class="fa-solid fa-chevron-down hkdev-header-pcat-caret" aria-hidden="true"></i>
-									</summary>
-									<ul class="hkdev-header-pcat-children">
-										<li class="hkdev-header-pcat-all">
-											<a href="<?php echo esc_url( $cat_link ); ?>"><?php esc_html_e( 'All', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $cat->name ); ?></a>
-										</li>
-										<?php
-										foreach ( $children as $child ) :
-											$child_link = get_term_link( $child );
-											if ( is_wp_error( $child_link ) ) {
-												continue;
-											}
-											?>
-											<li><a href="<?php echo esc_url( $child_link ); ?>"><?php echo esc_html( $child->name ); ?></a></li>
-										<?php endforeach; ?>
-									</ul>
-								</details>
-							<?php else : ?>
-								<a class="hkdev-header-pcat" href="<?php echo esc_url( $cat_link ); ?>">
-									<span class="hkdev-header-pcat-name"><?php echo esc_html( $cat->name ); ?></span>
-									<span class="hkdev-header-pcat-count"><?php echo esc_html( $cat->count ); ?></span>
-									<i class="fa-solid fa-chevron-right hkdev-header-pcat-arrow" aria-hidden="true"></i>
-								</a>
-							<?php endif; ?>
-						<?php endforeach; ?>
-					</div>
-				</div>
-			<?php endif; ?>
 
 			<?php if ( $call_link ) : ?>
 				<div class="hkdev-header-panel-contact">
