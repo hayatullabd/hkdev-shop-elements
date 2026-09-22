@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.88
+ * Version:           0.5.89
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.88' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.89' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -163,6 +163,66 @@ function hkdev_elements_price_args( $args ) {
 }
 
 /**
+ * Require a plugin file when it exists.
+ *
+ * A failed GitHub update can leave the plugin folder incomplete while it
+ * stays active in WordPress. A blind require_once on a missing file fatals
+ * the whole site, so every bootstrap include goes through this helper.
+ *
+ * @param string $relative_path Path relative to the plugin root.
+ * @return bool True when the file was loaded.
+ */
+function hkdev_elements_require_file( $relative_path ) {
+	$file = HKDEV_ELEMENTS_PATH . ltrim( $relative_path, '/' );
+	if ( ! file_exists( $file ) ) {
+		return false;
+	}
+
+	require_once $file;
+
+	return true;
+}
+
+/**
+ * Surface an incomplete install without taking the site down.
+ *
+ * @param string $missing_path Missing path relative to the plugin root.
+ * @return void
+ */
+function hkdev_elements_handle_incomplete_install( $missing_path ) {
+	static $handled = false;
+
+	if ( $handled ) {
+		return;
+	}
+	$handled = true;
+
+	hkdev_elements_log_message(
+		sprintf(
+			'Incomplete install: missing %s. Reinstall hkdev-shop-elements from the latest GitHub release zip.',
+			$missing_path
+		)
+	);
+
+	if ( is_admin() ) {
+		add_action(
+			'admin_notices',
+			static function () use ( $missing_path ) {
+				printf(
+					'<div class="notice notice-error"><p><strong>%s</strong> %s <code>%s</code>. %s <a href="%s" target="_blank" rel="noopener noreferrer">%s</a></p></div>',
+					esc_html__( 'HKDEV Shop Elements is incomplete.', 'hkdev-shop-elements' ),
+					esc_html__( 'A required file is missing:', 'hkdev-shop-elements' ),
+					esc_html( $missing_path ),
+					esc_html__( 'Please delete the plugin folder and reinstall from the latest release zip, then activate again.', 'hkdev-shop-elements' ),
+					esc_url( 'https://github.com/hayatullabd/hkdev-shop-elements/releases/latest/download/hkdev-shop-elements.zip' ),
+					esc_html__( 'Download hkdev-shop-elements.zip', 'hkdev-shop-elements' )
+				);
+			}
+		);
+	}
+}
+
+/**
  * Bootstrap.
  *
  * The engine only needs WooCommerce, so it loads at plugins_loaded. Elementor
@@ -179,81 +239,80 @@ function hkdev_elements_boot() {
 	// Whole-number pricing across every WooCommerce price output.
 	add_filter( 'wc_price_args', __NAMESPACE__ . '\\hkdev_elements_price_args' );
 
-	require_once HKDEV_ELEMENTS_PATH . 'includes/shop-engine.php';
-	Includes\Shop_Engine::instance();
+	$modules = [
+		[ 'includes/shop-engine.php', static function () {
+			Includes\Shop_Engine::instance();
+		} ],
+		[ 'includes/single-product-engine.php', static function () {
+			Includes\Single_Product_Engine::instance();
+		} ],
+		[ 'includes/header-engine.php', static function () {
+			Includes\Header_Engine::instance();
+		} ],
+		[ 'includes/footer-engine.php', static function () {
+			Includes\Footer_Engine::instance();
+		} ],
+		[ 'includes/cart-engine.php', static function () {
+			Includes\Cart_Engine::instance();
+		} ],
+		[ 'includes/checkout-engine.php', static function () {
+			Includes\Checkout_Engine::instance();
+		} ],
+		[ 'includes/contact-form-engine.php', static function () {
+			Includes\Contact_Form_Engine::instance();
+		} ],
+		[ 'includes/catalog-engine.php', static function () {
+			Includes\Catalog_Engine::instance();
+		} ],
+		[ 'includes/review-engine.php', static function () {
+			Includes\Review_Engine::instance();
+		} ],
+		[ 'includes/video-engine.php', static function () {
+			Includes\Video_Engine::instance();
+		} ],
+		[ 'includes/checkout-options.php', static function () {
+			Includes\Checkout_Options::instance()->init();
+		} ],
+		[ 'includes/header-options.php', static function () {
+			Includes\Header_Options::instance()->init();
+		} ],
+		[ 'includes/footer-options.php', static function () {
+			Includes\Footer_Options::instance()->init();
+		} ],
+		[ 'includes/contact-form-options.php', static function () {
+			Includes\Contact_Form_Options::instance()->init();
+		} ],
+		[ 'includes/widget-options.php', static function () {
+			Includes\Widget_Options::instance()->init();
+		} ],
+		[ 'includes/widget-manager.php', static function () {
+			Includes\Widget_Manager::instance()->init();
+		} ],
+		[ 'includes/auth-engine.php', static function () {
+			Includes\Auth_Engine::instance();
+		} ],
+		[ 'includes/account-engine.php', static function () {
+			Includes\Account_Engine::instance();
+		} ],
+		[ 'includes/tracking-engine.php', static function () {
+			Includes\Tracking_Engine::instance();
+		} ],
+		[ 'includes/404-engine.php', static function () {
+			Includes\Page404_Engine::instance();
+		} ],
+		[ 'includes/blog-engine.php', static function () {
+			Includes\Blog_Engine::instance();
+		} ],
+	];
 
-	require_once HKDEV_ELEMENTS_PATH . 'includes/single-product-engine.php';
-	Includes\Single_Product_Engine::instance();
+	foreach ( $modules as $module ) {
+		if ( ! hkdev_elements_require_file( $module[0] ) ) {
+			hkdev_elements_handle_incomplete_install( $module[0] );
+			return;
+		}
 
-	require_once HKDEV_ELEMENTS_PATH . 'includes/header-engine.php';
-	Includes\Header_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/footer-engine.php';
-	Includes\Footer_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/cart-engine.php';
-	Includes\Cart_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/checkout-engine.php';
-	Includes\Checkout_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/contact-form-engine.php';
-	Includes\Contact_Form_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/catalog-engine.php';
-	Includes\Catalog_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/review-engine.php';
-	Includes\Review_Engine::instance();
-
-	require_once HKDEV_ELEMENTS_PATH . 'includes/video-engine.php';
-	Includes\Video_Engine::instance();
-
-	// Admin settings (Checkout Fields on/off). Only hooks admin_menu, safe to
-	// init unconditionally.
-	require_once HKDEV_ELEMENTS_PATH . 'includes/checkout-options.php';
-	Includes\Checkout_Options::instance()->init();
-
-	// Admin settings for the site-wide header.
-	require_once HKDEV_ELEMENTS_PATH . 'includes/header-options.php';
-	Includes\Header_Options::instance()->init();
-
-	// Admin settings for the site-wide footer.
-	require_once HKDEV_ELEMENTS_PATH . 'includes/footer-options.php';
-	Includes\Footer_Options::instance()->init();
-
-	// Admin settings for the contact form + the submissions inbox submenu.
-	require_once HKDEV_ELEMENTS_PATH . 'includes/contact-form-options.php';
-	Includes\Contact_Form_Options::instance()->init();
-
-	// Admin widget enable / disable grid.
-	require_once HKDEV_ELEMENTS_PATH . 'includes/widget-options.php';
-	Includes\Widget_Options::instance()->init();
-
-	// Widget manager hooks elementor/* actions. When Elementor is not active
-	// those actions never fire, so calling init() unconditionally is safe.
-	require_once HKDEV_ELEMENTS_PATH . 'includes/widget-manager.php';
-	Includes\Widget_Manager::instance()->init();
-
-	// Auth Engine (Login/Signup modal).
-	require_once HKDEV_ELEMENTS_PATH . 'includes/auth-engine.php';
-	Includes\Auth_Engine::instance();
-
-	// Account Engine (My Account page).
-	require_once HKDEV_ELEMENTS_PATH . 'includes/account-engine.php';
-	Includes\Account_Engine::instance();
-
-	// Tracking Engine (Order tracking).
-	require_once HKDEV_ELEMENTS_PATH . 'includes/tracking-engine.php';
-	Includes\Tracking_Engine::instance();
-
-	// 404 Engine (Custom 404 page).
-	require_once HKDEV_ELEMENTS_PATH . 'includes/404-engine.php';
-	Includes\Page404_Engine::instance();
-
-	// Blog Engine (Blog widget + archive page design).
-	require_once HKDEV_ELEMENTS_PATH . 'includes/blog-engine.php';
-	Includes\Blog_Engine::instance();
+		$module[1]();
+	}
 
 	// Register shortcodes for the new systems.
 	add_shortcode( 'hkdev_login', [ Includes\Auth_Engine::instance(), 'render_auth_modal' ] );
@@ -277,7 +336,10 @@ function hkdev_elements_github_updater() {
 		return;
 	}
 
-	require_once HKDEV_ELEMENTS_PATH . 'includes/github-updater.php';
+	if ( ! hkdev_elements_require_file( 'includes/github-updater.php' ) ) {
+		hkdev_elements_handle_incomplete_install( 'includes/github-updater.php' );
+		return;
+	}
 
 	new Includes\GitHub_Updater( __FILE__, HKDEV_ELEMENTS_GITHUB_REPO );
 }
