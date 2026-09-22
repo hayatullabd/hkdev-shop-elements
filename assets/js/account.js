@@ -5,6 +5,9 @@
     'use strict';
 
     $(function () {
+        var ajaxUrl = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.ajax_url)
+            ? hkdev_elements_ajax.ajax_url
+            : '/wp-admin/admin-ajax.php';
         var $root = $('#hkdev-account-root');
         if (!$root.length) {
             return;
@@ -34,7 +37,7 @@
             $btn.prop('disabled', true);
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: $form.serialize() + '&action=hkdev_elements_account_update_profile',
                 dataType: 'json',
@@ -65,7 +68,7 @@
             var data = $form.serialize() + '&action=hkdev_elements_account_update_address&address_type=' + type;
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: data,
                 dataType: 'json',
@@ -92,7 +95,7 @@
             $btn.prop('disabled', true);
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: $form.serialize() + '&action=hkdev_elements_account_change_password',
                 dataType: 'json',

@@ -36,7 +36,7 @@ class Tracking_Engine {
 		$atts = shortcode_atts(
 			[
 				'title'       => __( 'Track Your Order', 'hkdev-shop-elements' ),
-				'description' => __( 'Enter your phone number to track your order. Order ID is optional.', 'hkdev-shop-elements' ),
+				'description' => __( 'Enter your Order ID and phone number to track your order securely.', 'hkdev-shop-elements' ),
 				'show_status_legend' => 'yes',
 			],
 			$atts,
@@ -59,8 +59,8 @@ class Tracking_Engine {
 							<input type="tel" id="hkdev-track-phone" name="phone" required placeholder="<?php esc_attr_e( '01XXXXXXXXX', 'hkdev-shop-elements' ); ?>">
 						</div>
 						<div class="hkdev-tracking-field">
-							<label for="hkdev-track-order-id"><?php esc_html_e( 'Order ID', 'hkdev-shop-elements' ); ?> <small><?php esc_html_e( '(optional)', 'hkdev-shop-elements' ); ?></small></label>
-							<input type="text" id="hkdev-track-order-id" name="order_id" placeholder="<?php esc_attr_e( 'Leave empty to search by phone', 'hkdev-shop-elements' ); ?>">
+							<label for="hkdev-track-order-id"><?php esc_html_e( 'Order ID', 'hkdev-shop-elements' ); ?> <span class="required">*</span></label>
+							<input type="text" id="hkdev-track-order-id" name="order_id" required placeholder="<?php esc_attr_e( 'Enter your order number', 'hkdev-shop-elements' ); ?>">
 						</div>
 					</div>
 					<button type="submit" class="hkdev-tracking-submit">
@@ -95,33 +95,25 @@ class Tracking_Engine {
 		$phone    = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
 
 		if ( '' === trim( $phone ) ) {
-			wp_send_json_error( [ 'message' => esc_html__( 'Please enter your Phone Number.', 'hkdev-shop-elements' ) ] );
+			wp_send_json_error( [ 'message' => esc_html__( 'Please enter your phone number.', 'hkdev-shop-elements' ) ] );
+		}
+		if ( ! $order_id ) {
+			wp_send_json_error( [ 'message' => esc_html__( 'Please enter a valid Order ID.', 'hkdev-shop-elements' ) ] );
 		}
 
 		$orders = [];
+		$order = wc_get_order( $order_id );
 
-		if ( $order_id ) {
-			$order = wc_get_order( $order_id );
-
-			if ( ! $order ) {
-				wp_send_json_error( [ 'message' => esc_html__( 'Order not found. Please check the Order ID.', 'hkdev-shop-elements' ) ] );
-			}
-
-			// The phone must match the order, otherwise anyone could read the
-			// customer's data by guessing a (sequential) order ID.
-			if ( ! $this->order_matches_phone( $order, $phone ) ) {
-				wp_send_json_error( [ 'message' => esc_html__( 'Phone number does not match this order. Please check and try again.', 'hkdev-shop-elements' ) ] );
-			}
-
-			$orders[] = $order;
-		} else {
-			// Order ID is optional: look the order(s) up by phone number.
-			$orders = $this->find_orders_by_phone( $phone, 10 );
-
-			if ( empty( $orders ) ) {
-				wp_send_json_error( [ 'message' => esc_html__( 'No orders found for this phone number. Please check and try again.', 'hkdev-shop-elements' ) ] );
-			}
+		if ( ! $order ) {
+			wp_send_json_error( [ 'message' => esc_html__( 'Order not found. Please check the Order ID.', 'hkdev-shop-elements' ) ] );
 		}
+
+		// The phone must match the order, otherwise anyone could read customer
+		// data by guessing a (sequential) order ID.
+		if ( ! $this->order_matches_phone( $order, $phone ) ) {
+			wp_send_json_error( [ 'message' => esc_html__( 'Phone number does not match this order. Please check and try again.', 'hkdev-shop-elements' ) ] );
+		}
+		$orders[] = $order;
 
 		$results = [];
 		foreach ( $orders as $order ) {
@@ -234,72 +226,6 @@ class Tracking_Engine {
 	 */
 	private function digits( $value ) {
 		return preg_replace( '/[^0-9]/', '', (string) $value );
-	}
-
-	/**
-	 * Find recent orders placed with the given phone number.
-	 *
-	 * @return \WC_Order[]
-	 */
-	private function find_orders_by_phone( $phone, $limit = 10 ) {
-		$digits = $this->digits( $phone );
-
-		if ( strlen( $digits ) < 6 ) {
-			return [];
-		}
-
-		$needle = substr( $digits, -10 );
-
-		$args = [
-			'limit'   => (int) $limit,
-			'orderby' => 'date',
-			'order'   => 'DESC',
-		];
-
-		$use_hpos = class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
-			&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
-
-		if ( $use_hpos ) {
-			// With HPOS the address (incl. phone) lives in its own table, so a
-			// meta_query on _billing_phone finds nothing. Query the address
-			// fields instead.
-			$args['field_query'] = [
-				'relation' => 'OR',
-				[
-					'field'   => 'billing_phone',
-					'value'   => $needle,
-					'compare' => 'LIKE',
-				],
-				[
-					'field'   => 'shipping_phone',
-					'value'   => $needle,
-					'compare' => 'LIKE',
-				],
-			];
-		} else {
-			$args['meta_query'] = [
-				'relation' => 'OR',
-				[
-					'key'     => '_billing_phone',
-					'value'   => $needle,
-					'compare' => 'LIKE',
-				],
-				[
-					'key'     => '_shipping_phone',
-					'value'   => $needle,
-					'compare' => 'LIKE',
-				],
-			];
-		}
-
-		$orders = [];
-		foreach ( wc_get_orders( $args ) as $order ) {
-			if ( $order instanceof \WC_Order && $this->order_matches_phone( $order, $phone ) ) {
-				$orders[] = $order;
-			}
-		}
-
-		return $orders;
 	}
 
 	private function get_order_status_progress( $current_status ) {

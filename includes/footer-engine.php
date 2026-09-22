@@ -284,7 +284,7 @@ class Footer_Engine {
 			return;
 		}
 
-		echo $this->footer_shortcode( [] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->footer_shortcode( [ '__sitewide' => 'yes' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -414,6 +414,12 @@ class Footer_Engine {
 	 */
 	public function footer_shortcode( $atts = [] ) {
 		if ( is_admin() ) {
+			return '';
+		}
+
+		$sitewide_context = ( isset( $atts['__sitewide'] ) && 'yes' === (string) $atts['__sitewide'] );
+		if ( $this->is_active() && ! $sitewide_context && ! is_customize_preview() ) {
+			// Site-wide footer is already rendered through wp_footer hook.
 			return '';
 		}
 

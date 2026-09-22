@@ -9,6 +9,9 @@
         if (!$modal.length) {
             return;
         }
+        var ajaxUrl = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.ajax_url)
+            ? hkdev_elements_ajax.ajax_url
+            : '/wp-admin/admin-ajax.php';
 
         // Open modal
         $(document).on('click', '.hkdev-auth-open', function (e) {
@@ -87,7 +90,7 @@
             $btnText.hide();
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: $form.serialize(),
                 dataType: 'json',
@@ -133,7 +136,7 @@
             $btnText.hide();
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: $form.serialize(),
                 dataType: 'json',
@@ -172,7 +175,7 @@
             $btnText.hide();
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: $form.serialize(),
                 dataType: 'json',

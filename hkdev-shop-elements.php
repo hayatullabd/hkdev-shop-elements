@@ -256,6 +256,7 @@ function hkdev_elements_boot() {
 	add_shortcode( 'hkdev_my_account', [ Includes\Account_Engine::instance(), 'account_shortcode' ] );
 	add_shortcode( 'hkdev_track_order', [ Includes\Tracking_Engine::instance(), 'tracking_shortcode' ] );
 	add_shortcode( 'hkdev_404', [ Includes\Page404_Engine::instance(), 'page404_shortcode' ] );
+	add_shortcode( 'hkdev_contact_form', [ Includes\Contact_Form_Engine::instance(), 'contact_form_shortcode' ] );
 }
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\hkdev_elements_boot' );
 
@@ -573,13 +574,6 @@ function hkdev_elements_register_assets() {
 		true
 	);
 
-	wp_localize_script(
-		'jquery',
-		'hkdevElementsAjax',
-		[
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-		]
-	);
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_register_assets', 5 );
 
@@ -611,6 +605,8 @@ function hkdev_elements_force_style_order() {
 		'hkdev-elements-video-style',
 		'hkdev-elements-hero-style',
 		'hkdev-elements-blog-style',
+		'hkdev-elements-faq-style',
+		'hkdev-elements-policy-link-style',
 	];
 
 	foreach ( $handles as $handle ) {
