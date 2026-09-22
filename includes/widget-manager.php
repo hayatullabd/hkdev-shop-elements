@@ -395,6 +395,10 @@ final class Widget_Manager {
 			return;
 		}
 
+		if ( ! class_exists( '\Elementor\Controls_Manager' ) ) {
+			return;
+		}
+
 		if ( ! is_object( $element ) || ! method_exists( $element, 'get_categories' ) ) {
 			return;
 		}

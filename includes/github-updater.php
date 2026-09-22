@@ -309,10 +309,6 @@ class GitHub_Updater {
 		$parent = ( untrailingslashit( $plugin_root ) === $remote ) ? dirname( $remote ) : $remote;
 		$target = trailingslashit( $parent ) . $this->slug;
 
-		if ( $wp_filesystem->exists( $target ) ) {
-			$wp_filesystem->delete( $target, true );
-		}
-
 		$moved = $wp_filesystem->move( $plugin_root, $target, true );
 		if ( ! $moved && function_exists( 'copy_dir' ) ) {
 			$copied = copy_dir( $plugin_root, $target );
