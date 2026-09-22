@@ -134,16 +134,31 @@ jQuery(function($) {
     }
 
     function hkdevPaintPager(sw, $dots) {
-        var idx = typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
         var total = $(sw.el).find('.swiper-slide:not(.swiper-slide-duplicate)').length;
         if (total < 2) {
             $dots.empty();
             return;
         }
-        var slots = Math.min(5, total);
+        var perView = sw.params.slidesPerView;
+        if (perView === 'auto' || !perView) {
+            perView = 1;
+        }
+        perView = Math.max(1, Number(perView) || 1);
+        // With 3–5 columns the last reachable slide is not the last item,
+        // so the pager must use that last snap or the pill never reaches the right.
+        var lastIdx = sw.params.loop
+            ? Math.max(0, total - 1)
+            : Math.max(0, total - Math.ceil(perView));
+        var idx = typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
+        if (sw.isEnd && !sw.params.loop) {
+            idx = lastIdx;
+        }
+        idx = Math.max(0, Math.min(idx, lastIdx));
+        var steps = lastIdx + 1;
+        var slots = Math.min(5, steps);
         var start = 0;
-        if (total > slots) {
-            start = Math.min(Math.max(0, idx - 2), total - slots);
+        if (steps > slots) {
+            start = Math.min(Math.max(0, idx - 2), steps - slots);
         }
         var $btns = $dots.children('.swiper-pagination-bullet');
         if ($btns.length !== slots) {
@@ -226,6 +241,16 @@ jQuery(function($) {
                 },
                 slideChange: function () {
                     hkdevWriteStoredSlide(slideKey, this.activeIndex);
+                    if (cfg.dots && $dots.length) {
+                        hkdevPaintPager(this, $dots);
+                    }
+                },
+                reachEnd: function () {
+                    if (cfg.dots && $dots.length) {
+                        hkdevPaintPager(this, $dots);
+                    }
+                },
+                breakpoint: function () {
                     if (cfg.dots && $dots.length) {
                         hkdevPaintPager(this, $dots);
                     }
