@@ -98,6 +98,12 @@ class GitHub_Updater {
 	 * @var string
 	 */
 	private $cache_key;
+	/**
+	 * Transient key storing pre-update activation state.
+	 *
+	 * @var string
+	 */
+	private $activation_state_key;
 
 	/**
 	 * @param string $plugin_file Absolute path to the main plugin file.
@@ -110,6 +116,7 @@ class GitHub_Updater {
 		$this->repository      = trim( (string) $repository, "/ \t\n\r\0\x0B" );
 		$this->version         = defined( 'HKDEV_ELEMENTS_VERSION' ) ? (string) HKDEV_ELEMENTS_VERSION : '0';
 		$this->cache_key       = 'hkdev_elements_github_release';
+		$this->activation_state_key = 'hkdev_elements_update_state_' . md5( $this->plugin_basename );
 
 		// Not configured yet – stay completely silent.
 		if ( '' === $this->repository || false === strpos( $this->repository, '/' ) ) {
@@ -119,6 +126,7 @@ class GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'inject_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_information' ], 20, 3 );
 		add_filter( 'upgrader_source_selection', [ $this, 'fix_source_dir' ], 10, 4 );
+		add_action( 'upgrader_process_complete', [ $this, 'maybe_reactivate_after_update' ], 20, 2 );
 		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 4 );
 
 		// Priority 1: must run before core's _maybe_update_plugins() (priority
@@ -269,6 +277,7 @@ class GitHub_Updater {
 		if ( empty( $hook_extra['plugin'] ) || $hook_extra['plugin'] !== $this->plugin_basename ) {
 			return $source;
 		}
+		$this->remember_activation_state();
 
 		global $wp_filesystem;
 		if ( ! $wp_filesystem ) {
@@ -289,6 +298,19 @@ class GitHub_Updater {
 			}
 		}
 
+		if ( ! $this->looks_like_plugin( $source ) ) {
+			if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
+				\HkdevShopElements\hkdev_elements_log_message(
+					'GitHub updater: extracted package does not look like plugin root; aborting update to avoid deactivation.'
+				);
+			}
+
+			return new \WP_Error(
+				'hkdev_invalid_update_package',
+				esc_html__( 'Update package is invalid: plugin root files were not found.', 'hkdev-shop-elements' )
+			);
+		}
+
 		if ( basename( untrailingslashit( $source ) ) === $this->slug ) {
 			return $source;
 		}
@@ -298,10 +320,79 @@ class GitHub_Updater {
 		$target = trailingslashit( $parent ) . $this->slug;
 
 		if ( $wp_filesystem->move( $source, $target, true ) ) {
+			if ( ! $this->looks_like_plugin( trailingslashit( $target ) ) ) {
+				if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
+					\HkdevShopElements\hkdev_elements_log_message(
+						'GitHub updater: moved package missing plugin root files; aborting update to prevent broken install.'
+					);
+				}
+
+				return new \WP_Error(
+					'hkdev_invalid_update_target',
+					esc_html__( 'Update failed: plugin files were not found after installation.', 'hkdev-shop-elements' )
+				);
+			}
 			return trailingslashit( $target );
 		}
 
 		return $source;
+	}
+
+	/**
+	 * Reactivate the plugin after a successful self-update when it was active
+	 * before the update and the main plugin file still exists.
+	 *
+	 * @param \WP_Upgrader $upgrader Upgrader instance.
+	 * @param array        $hook_extra Upgrader hook args.
+	 * @return void
+	 */
+	public function maybe_reactivate_after_update( $upgrader, $hook_extra ) {
+		if ( empty( $hook_extra['action'] ) || 'update' !== $hook_extra['action'] ) {
+			return;
+		}
+		if ( empty( $hook_extra['type'] ) || 'plugin' !== $hook_extra['type'] ) {
+			return;
+		}
+		if ( empty( $hook_extra['plugins'] ) || ! is_array( $hook_extra['plugins'] ) ) {
+			return;
+		}
+		if ( ! in_array( $this->plugin_basename, $hook_extra['plugins'], true ) ) {
+			return;
+		}
+
+		$state = get_transient( $this->activation_state_key );
+		delete_transient( $this->activation_state_key );
+
+		if ( ! is_array( $state ) || empty( $state['active'] ) ) {
+			return;
+		}
+
+		$plugin_full_path = WP_PLUGIN_DIR . '/' . $this->plugin_basename;
+		if ( ! file_exists( $plugin_full_path ) ) {
+			if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
+				\HkdevShopElements\hkdev_elements_log_message(
+					'GitHub updater: plugin file missing after update, auto-reactivation skipped.'
+				);
+			}
+			return;
+		}
+
+		$this->ensure_plugin_functions_loaded();
+		if ( ! function_exists( 'activate_plugin' ) ) {
+			return;
+		}
+
+		$network_wide = ! empty( $state['network'] ) && is_multisite();
+		$result       = activate_plugin( $this->plugin_basename, '', $network_wide, false );
+
+		if ( is_wp_error( $result ) && function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
+			\HkdevShopElements\hkdev_elements_log_message(
+				sprintf(
+					'GitHub updater: auto-reactivation failed after update (%s)',
+					$result->get_error_message()
+				)
+			);
+		}
 	}
 
 	/**
@@ -525,5 +616,45 @@ class GitHub_Updater {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Persist whether this plugin was active before update starts.
+	 *
+	 * @return void
+	 */
+	private function remember_activation_state() {
+		$this->ensure_plugin_functions_loaded();
+
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			return;
+		}
+
+		$active = is_plugin_active( $this->plugin_basename );
+		$network_active = is_multisite() && is_plugin_active_for_network( $this->plugin_basename );
+
+		set_transient(
+			$this->activation_state_key,
+			[
+				'active'  => $active || $network_active,
+				'network' => $network_active,
+				'time'    => time(),
+			],
+			HOUR_IN_SECONDS
+		);
+	}
+
+	/**
+	 * Load core plugin helper functions when not already loaded.
+	 *
+	 * @return void
+	 */
+	private function ensure_plugin_functions_loaded() {
+		if ( function_exists( 'activate_plugin' ) && function_exists( 'is_plugin_active' ) ) {
+			return;
+		}
+		if ( defined( 'ABSPATH' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
 	}
 }
