@@ -49,17 +49,14 @@
         let $dots = $();
 
         if ($dotsWrap.length && count > 1) {
-            var $pagerTrack = $('<div>', { class: 'hkdev-hero-pager-track' }).appendTo($dotsWrap);
-            for (let s = 0; s < count; s++) {
+            var slots = Math.min(5, count);
+            for (let s = 0; s < slots; s++) {
                 $('<button>', {
                     type: 'button',
-                    class: 'hkdev-hero-dot',
-                    'data-slide': s,
-                    'aria-label': 'Go to slide ' + (s + 1)
-                }).appendTo($pagerTrack);
+                    class: 'hkdev-hero-dot'
+                }).appendTo($dotsWrap);
             }
-            $dots = $pagerTrack.children('.hkdev-hero-dot');
-            $dotsWrap.toggleClass('is-sliding', count > 3);
+            $dots = $dotsWrap.children('.hkdev-hero-dot');
             $dotsWrap.on('click', '.hkdev-hero-dot', function () {
                 var i = parseInt($(this).attr('data-slide'), 10);
                 if (!isNaN(i)) {
@@ -86,15 +83,18 @@
                 }
             });
 
-            $dots.each(function (i) {
-                $(this).toggleClass('is-active', i === current);
-            });
-            if (count > 3 && $dots.parent().hasClass('hkdev-hero-pager-track')) {
-                $dots.parent().css(
-                    'transform',
-                    'translateX(calc(' + (-current) + ' * var(--hkdev-hero-pager-step)))'
-                );
+            var slots = Math.min(5, count);
+            var start = 0;
+            if (count > slots) {
+                start = Math.min(Math.max(0, current - 2), count - slots);
             }
+            $dots.each(function (slot) {
+                var i = start + slot;
+                $(this)
+                    .attr('data-slide', i)
+                    .attr('aria-label', 'Go to slide ' + (i + 1))
+                    .toggleClass('is-active', i === current);
+            });
 
             if (transition === 'slide' && $track.length) {
                 $track.css('transform', 'translateX(-' + (current * 100) + '%)');

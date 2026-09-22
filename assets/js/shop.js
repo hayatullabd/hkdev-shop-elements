@@ -137,25 +137,28 @@ jQuery(function($) {
         var idx = typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
         var total = $(sw.el).find('.swiper-slide:not(.swiper-slide-duplicate)').length;
         if (total < 2) {
-            $dots.empty().removeClass('is-sliding');
+            $dots.empty();
             return;
         }
-        var $track = $dots.children('.hkdev-pager-track');
-        if (!$track.length) {
-            $dots.html('<div class="hkdev-pager-track"></div>');
-            $track = $dots.children('.hkdev-pager-track');
+        var slots = Math.min(5, total);
+        var start = 0;
+        if (total > slots) {
+            start = Math.min(Math.max(0, idx - 2), total - slots);
         }
-        var $btns = $track.children('.swiper-pagination-bullet');
-        if ($btns.length !== total) {
+        var $btns = $dots.children('.swiper-pagination-bullet');
+        if ($btns.length !== slots) {
             var html = '';
-            for (var n = 0; n < total; n++) {
-                html += '<button type="button" class="swiper-pagination-bullet" data-hkdev-slide="' + n + '" aria-label="Go to slide ' + (n + 1) + '"></button>';
+            for (var n = 0; n < slots; n++) {
+                html += '<button type="button" class="swiper-pagination-bullet"></button>';
             }
-            $track.html(html);
-            $btns = $track.children('.swiper-pagination-bullet');
+            $dots.html(html);
+            $btns = $dots.children('.swiper-pagination-bullet');
         }
-        $btns.each(function (i) {
+        $btns.each(function (slot) {
+            var i = start + slot;
             var active = i === idx;
+            this.setAttribute('data-hkdev-slide', String(i));
+            this.setAttribute('aria-label', 'Go to slide ' + (i + 1));
             if (active) {
                 this.setAttribute('aria-current', 'true');
             } else {
@@ -163,11 +166,6 @@ jQuery(function($) {
             }
             this.classList.toggle('swiper-pagination-bullet-active', active);
         });
-        var sliding = total > 3;
-        $dots.toggleClass('is-sliding', sliding);
-        $track.css('transform', sliding
-            ? 'translateX(calc(' + (-idx) + ' * var(--hkdev-pager-step)))'
-            : 'none');
     }
 
     function initHkdevSwiper(wrapper) {
