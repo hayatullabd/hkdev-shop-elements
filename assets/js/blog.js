@@ -95,8 +95,8 @@
         });
     });
 
-    // Category tab arrow navigation — slides by one full tab, hides when the
-    // strip fits, and disables at either end (mirrors the shop grid tabs).
+    // Category tab navigation — one full tab per step. A tab that would be cut
+    // by the viewport is hidden (mirrors the shop grid tabs).
     (function () {
         $('.hkdev-blog-tabs').each(function () {
             var $wrap = $(this);
@@ -106,12 +106,106 @@
 
             var $prev = $wrap.find('.hkdev-blog-tabs-arrow.hkdev-blog-tabs-prev');
             var $next = $wrap.find('.hkdev-blog-tabs-arrow.hkdev-blog-tabs-next');
+            var stepping = false;
+            var down = false;
+            var startX = 0;
+            var startScroll = 0;
+            var moved = false;
+
+            function itemNodes() {
+                return el.querySelectorAll('.hkdev-blog-tab-item');
+            }
 
             function max() {
                 return Math.max(0, el.scrollWidth - el.clientWidth);
             }
 
-            function sync() {
+            function ensureSpacer() {
+                var spacer = el.querySelector('.hkdev-blog-tabs-end-spacer');
+                if (!spacer) {
+                    spacer = document.createElement('span');
+                    spacer.className = 'hkdev-blog-tabs-end-spacer';
+                    spacer.setAttribute('aria-hidden', 'true');
+                    el.appendChild(spacer);
+                }
+                spacer.style.flex = '0 0 0px';
+                spacer.style.width = '0px';
+                var list = itemNodes();
+                var last = list.length ? list[list.length - 1] : null;
+                if (!last || el.scrollWidth <= el.clientWidth + 1) {
+                    return;
+                }
+                var extra = Math.max(0, el.clientWidth - last.offsetWidth);
+                spacer.style.flex = '0 0 ' + extra + 'px';
+                spacer.style.width = extra + 'px';
+            }
+
+            function clipLeft() {
+                return el.getBoundingClientRect().left + el.clientLeft;
+            }
+
+            function alignLeft() {
+                var pad = parseFloat(window.getComputedStyle(el).paddingLeft) || 0;
+                return clipLeft() + pad;
+            }
+
+            function maskClipped() {
+                var left = clipLeft();
+                var right = left + el.clientWidth;
+                var list = itemNodes();
+                var i, r, full;
+                for (i = 0; i < list.length; i++) {
+                    r = list[i].getBoundingClientRect();
+                    full = r.width > 0 && r.left >= left - 2 && r.right <= right + 2;
+                    list[i].classList.toggle('is-clipped', !full);
+                }
+            }
+
+            function currentIndex() {
+                var list = itemNodes();
+                var viewLeft = alignLeft();
+                var best = 0;
+                var bestDist = Infinity;
+                var i, dist;
+                for (i = 0; i < list.length; i++) {
+                    dist = Math.abs(list[i].getBoundingClientRect().left - viewLeft);
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        best = i;
+                    }
+                }
+                return best;
+            }
+
+            function scrollToItem(item, behavior) {
+                if (!item) return;
+                var left = el.scrollLeft + (item.getBoundingClientRect().left - alignLeft());
+                left = Math.max(0, Math.min(max(), left));
+                if (typeof el.scrollTo === 'function') {
+                    el.scrollTo({ left: left, behavior: behavior || 'smooth' });
+                } else {
+                    el.scrollLeft = left;
+                }
+            }
+
+            function step(direction) {
+                var list = itemNodes();
+                if (!list.length) return;
+                var next = currentIndex() + direction;
+                if (next < 0 || next >= list.length) return;
+                stepping = true;
+                scrollToItem(list[next], 'smooth');
+                window.setTimeout(function () { stepping = false; }, 360);
+            }
+
+            function snapNearest(behavior) {
+                var list = itemNodes();
+                if (!list.length) return;
+                scrollToItem(list[currentIndex()], behavior || 'smooth');
+            }
+
+            function syncArrows() {
+                var list = itemNodes();
                 if (max() <= 1) {
                     $prev.addClass('is-hidden');
                     $next.addClass('is-hidden');
@@ -119,43 +213,16 @@
                 }
                 $prev.removeClass('is-hidden');
                 $next.removeClass('is-hidden');
-                $prev.toggleClass('is-disabled', el.scrollLeft <= 1);
-                $next.toggleClass('is-disabled', el.scrollLeft >= max() - 1);
+                var idx = currentIndex();
+                $prev.toggleClass('is-disabled', idx <= 0 && el.scrollLeft <= 1);
+                $next.toggleClass('is-disabled', idx >= list.length - 1 || el.scrollLeft >= max() - 1);
             }
 
-            function step(direction) {
-                var items = el.querySelectorAll('.hkdev-blog-tab-item');
-                if (!items.length) return;
-                var view = el.getBoundingClientRect();
-                var target = null;
-                var i;
-
-                if (direction > 0) {
-                    var current = -1;
-                    for (i = 0; i < items.length; i++) {
-                        if (items[i].getBoundingClientRect().left >= view.left - 1) {
-                            current = i;
-                            break;
-                        }
-                    }
-                    if (current >= 0 && current + 1 < items.length) {
-                        target = items[current + 1];
-                    }
-                } else {
-                    for (i = items.length - 1; i >= 0; i--) {
-                        if (items[i].getBoundingClientRect().left < view.left - 1) {
-                            target = items[i];
-                            break;
-                        }
-                    }
-                }
-
-                if (target && typeof target.scrollIntoView === 'function') {
-                    target.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' });
-                }
+            function sync() {
+                maskClipped();
+                syncArrows();
             }
 
-            // Mouse wheel scrolls the strip sideways; touch keeps native panning.
             function scrollable() {
                 return max() > 1;
             }
@@ -164,16 +231,10 @@
                 if (!scrollable()) return;
                 var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
                 if (!delta) return;
-                if ((delta < 0 && el.scrollLeft <= 0) || (delta > 0 && el.scrollLeft >= max() - 1)) return;
                 e.preventDefault();
-                el.scrollLeft += delta;
+                if (stepping) return;
+                step(delta > 0 ? 1 : -1);
             }, { passive: false });
-
-            // Grab-and-drag with the mouse (touch uses native scrolling).
-            var down = false;
-            var startX = 0;
-            var startScroll = 0;
-            var moved = false;
 
             el.addEventListener('pointerdown', function (e) {
                 if (e.pointerType !== 'mouse' || !scrollable()) return;
@@ -181,7 +242,6 @@
                 moved = false;
                 startX = e.clientX;
                 startScroll = el.scrollLeft;
-                el.style.scrollSnapType = 'none';
                 $scroll.addClass('is-dragging');
             });
 
@@ -195,11 +255,12 @@
             window.addEventListener('pointerup', function () {
                 if (!down) return;
                 down = false;
-                el.style.scrollSnapType = '';
                 $scroll.removeClass('is-dragging');
+                if (moved) {
+                    snapNearest('smooth');
+                }
             });
 
-            // A drag must not fire the tab's filter click.
             el.addEventListener('click', function (e) {
                 if (moved) {
                     e.preventDefault();
@@ -211,7 +272,13 @@
             $prev.on('click', function (e) { e.preventDefault(); step(-1); });
             $next.on('click', function (e) { e.preventDefault(); step(1); });
             $scroll.on('scroll', sync);
-            $(window).on('resize orientationchange load', sync);
+            $(window).on('resize orientationchange load', function () {
+                ensureSpacer();
+                snapNearest('auto');
+                sync();
+            });
+            ensureSpacer();
+            snapNearest('auto');
             sync();
         });
     })();
