@@ -133,6 +133,57 @@ jQuery(function($) {
         } catch (e) {}
     }
 
+    function hkdevReplayPagerExpand(node) {
+        if (!node || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+            return;
+        }
+        node.classList.remove('is-expanding');
+        void node.offsetWidth;
+        node.classList.add('is-expanding');
+    }
+
+    function hkdevPaintPager(sw, $dots, animate) {
+        var idx = typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
+        var total = $(sw.el).find('.swiper-slide:not(.swiper-slide-duplicate)').length;
+        if (total < 2) {
+            $dots.empty();
+            return;
+        }
+        var slots = Math.min(3, total);
+        var $btns = $dots.children('.swiper-pagination-bullet');
+        if ($btns.length !== slots) {
+            var html = '';
+            for (var n = 0; n < slots; n++) {
+                html += '<button type="button" class="swiper-pagination-bullet"></button>';
+            }
+            $dots.html(html);
+            $btns = $dots.children('.swiper-pagination-bullet');
+        }
+        var map = [];
+        if (total <= 3) {
+            for (var i = 0; i < total; i++) {
+                map.push(i);
+            }
+        } else {
+            map = [(idx - 1 + total) % total, idx, (idx + 1) % total];
+        }
+        $btns.each(function (slot) {
+            var i = map[slot];
+            var active = total <= 3 ? i === idx : slot === 1;
+            this.setAttribute('data-hkdev-slide', String(i));
+            this.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+            if (active) {
+                this.setAttribute('aria-current', 'true');
+            } else {
+                this.removeAttribute('aria-current');
+            }
+            this.classList.toggle('swiper-pagination-bullet-active', active);
+            if (animate && active) {
+                hkdevReplayPagerExpand(this);
+            }
+        });
+    }
+
     function initHkdevSwiper(wrapper) {
         // Accepts the wrapper element or its id. Resolving purely from an id
         // meant a wrapper without one looked up '#undefined', bailed, and left
@@ -185,9 +236,15 @@ jQuery(function($) {
             on: {
                 init: function () {
                     $container.removeClass('hkdev-loading-carousel');
+                    if (cfg.dots && $dots.length) {
+                        hkdevPaintPager(this, $dots, false);
+                    }
                 },
                 slideChange: function () {
                     hkdevWriteStoredSlide(slideKey, this.activeIndex);
+                    if (cfg.dots && $dots.length) {
+                        hkdevPaintPager(this, $dots, true);
+                    }
                 }
             }
         };
@@ -210,30 +267,6 @@ jQuery(function($) {
                     sw.slideTo(i);
                 }
             });
-            options.pagination = {
-                el: $dots[0],
-                type: 'custom',
-                renderCustom: function (swiper, current, total) {
-                    var idx = current - 1;
-                    function bullet(i, active) {
-                        return '<button type="button" class="swiper-pagination-bullet' +
-                            (active ? ' swiper-pagination-bullet-active' : '') +
-                            '" data-hkdev-slide="' + i +
-                            '" aria-label="Go to slide ' + (i + 1) + '"' +
-                            (active ? ' aria-current="true"' : '') + '></button>';
-                    }
-                    if (total <= 3) {
-                        var html = '';
-                        for (var n = 0; n < total; n++) {
-                            html += bullet(n, n === idx);
-                        }
-                        return html;
-                    }
-                    var prev = (idx - 1 + total) % total;
-                    var next = (idx + 1) % total;
-                    return bullet(prev, false) + bullet(idx, true) + bullet(next, false);
-                }
-            };
         }
 
         // The arrow selectors are built from the wrapper id, so only wire the

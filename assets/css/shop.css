@@ -669,23 +669,32 @@ button.hkdev-order-btn{
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
 }.hkdev-carousel-dots .swiper-pagination-bullet{
-    width: 7px !important;
+    width: 7px;
     height: 7px !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
     flex: 0 0 auto !important;
-    border-radius: 50% !important;
+    border-radius: 999px !important;
     background: var(--hkdev-brand-primary) !important;
     opacity: 0.35;
-    transform: scale(.82);
     cursor: pointer;
-    transition: opacity 0.25s ease, transform 0.25s ease;
+    transition: width 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.28s ease;
 }.hkdev-carousel-dots .swiper-pagination-bullet-active{
-    width: 7px !important;
+    width: 20px;
     background: var(--hkdev-brand-primary) !important;
     opacity: 1;
-    transform: scale(1.15);
+}.hkdev-carousel-dots .swiper-pagination-bullet-active.is-expanding{
+    animation: hkdev-pager-expand 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}@keyframes hkdev-pager-expand{
+    0%{ width: 7px; }
+    58%{ width: 24px; }
+    100%{ width: 20px; }
+}@media (prefers-reduced-motion: reduce){
+    .hkdev-carousel-dots .swiper-pagination-bullet{
+        transition: none !important;
+        animation: none !important;
+    }
 }.hkdev-nav-btn{
     position: absolute !important;
     top: 50% !important;

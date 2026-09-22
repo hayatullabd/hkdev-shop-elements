@@ -44,6 +44,7 @@
         let lastTime = 0;
         let hovered = false;
         let stoppedByInteraction = false;
+        let pagerReady = false;
 
         /* ---------------- Dots ---------------- */
         let $dots = $();
@@ -116,6 +117,15 @@
             if ($progress.length) {
                 $progress.css('width', '0%');
             }
+
+            if (pagerReady) {
+                $dots.filter('.is-active').each(function () {
+                    this.classList.remove('is-expanding');
+                    void this.offsetWidth;
+                    this.classList.add('is-expanding');
+                });
+            }
+            pagerReady = true;
         }
 
         function goTo(index) {
