@@ -513,7 +513,7 @@ class Header_Engine {
 			return;
 		}
 
-		echo $this->header_shortcode( [] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo $this->header_shortcode( [ '__sitewide' => 'yes' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
@@ -945,6 +945,12 @@ class Header_Engine {
 	 */
 	public function header_shortcode( $atts = [] ) {
 		if ( ! class_exists( '\WooCommerce' ) || is_admin() ) {
+			return '';
+		}
+
+		$sitewide_context = ( isset( $atts['__sitewide'] ) && 'yes' === (string) $atts['__sitewide'] );
+		if ( $this->is_active() && ! $sitewide_context && ! $this->is_elementor_edit() ) {
+			// Site-wide header is already rendered through wp_body_open.
 			return '';
 		}
 

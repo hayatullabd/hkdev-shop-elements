@@ -9,6 +9,9 @@
         if (!$root.length) {
             return;
         }
+        var ajaxUrl = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.ajax_url)
+            ? hkdev_elements_ajax.ajax_url
+            : '/wp-admin/admin-ajax.php';
 
         var $form = $root.find('#hkdev-tracking-form');
         var $message = $root.find('.hkdev-tracking-message');
@@ -34,7 +37,7 @@
             $btnText.hide();
 
             $.ajax({
-                url: hkdevElementsAjax.ajax_url,
+                url: ajaxUrl,
                 type: 'POST',
                 data: $form.serialize() + '&action=hkdev_elements_track_order',
                 dataType: 'json',
