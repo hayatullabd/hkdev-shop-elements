@@ -320,6 +320,8 @@
 
 /* ---------------- Dots ---------------- */
 .hkdev-hero-dots{
+    --hkdev-hero-pager-slot: calc(var(--hkdev-hero-dot-size, 8px) * 2.25);
+    --hkdev-hero-pager-step: calc(var(--hkdev-hero-pager-slot) + var(--hkdev-hero-dots-gap, 10px));
     position: absolute !important;
     bottom: var(--hkdev-hero-dots-bottom, 30px) !important;
     left: 50% !important;
@@ -328,8 +330,8 @@
     align-items: center !important;
     justify-content: center !important;
     flex-wrap: nowrap !important;
+    overflow: hidden !important;
     height: auto !important;
-    gap: var(--hkdev-hero-dots-gap, 10px) !important;
     padding: 8px 14px !important;
     border-radius: 999px !important;
     background: rgba(8, 12, 10, 0.38) !important;
@@ -339,27 +341,54 @@
     z-index: 30 !important;
 }
 
+.hkdev-hero-dots.is-sliding{
+    width: calc(var(--hkdev-hero-pager-slot) * 3 + var(--hkdev-hero-dots-gap, 10px) * 2) !important;
+}
+
+.hkdev-hero-pager-track{
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--hkdev-hero-dots-gap, 10px) !important;
+    transition: transform .32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+
+.hkdev-hero-dots.is-sliding .hkdev-hero-pager-track{
+    padding-inline: var(--hkdev-hero-pager-step);
+}
+
 .hkdev-hero-dot{
-    width: var(--hkdev-hero-dot-size, 8px);
+    width: var(--hkdev-hero-pager-slot);
     height: var(--hkdev-hero-dot-size, 8px) !important;
     padding: 0 !important;
     border: 0 !important;
-    border-radius: 999px !important;
-    flex: 0 0 auto !important;
-    background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.5)) !important;
+    flex: 0 0 var(--hkdev-hero-pager-slot) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
     cursor: pointer !important;
-    opacity: .5 !important;
-    transition: width .32s cubic-bezier(0.22, 1, 0.36, 1), background-color .25s ease, opacity .25s ease !important;
-}
-
-.hkdev-hero-dot:hover{
-    background-color: var(--hkdev-hero-dot-hover, rgba(255, 255, 255, 0.85)) !important;
-}
-
-.hkdev-hero-dot.is-active{
-    width: calc(var(--hkdev-hero-dot-size, 8px) * 2.25);
-    background-color: var(--hkdev-hero-dot-active, #ffffff) !important;
     opacity: 1 !important;
+}
+
+.hkdev-hero-dot::after{
+    content: "";
+    width: var(--hkdev-hero-dot-size, 8px);
+    height: var(--hkdev-hero-dot-size, 8px);
+    border-radius: 999px;
+    background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.5));
+    opacity: .5;
+    transition: width .32s cubic-bezier(0.22, 1, 0.36, 1), background-color .25s ease, opacity .25s ease;
+}
+
+.hkdev-hero-dot:hover::after{
+    background-color: var(--hkdev-hero-dot-hover, rgba(255, 255, 255, 0.85));
+}
+
+.hkdev-hero-dot.is-active::after{
+    width: var(--hkdev-hero-pager-slot);
+    background-color: var(--hkdev-hero-dot-active, #ffffff);
+    opacity: 1;
 }
 
 /* ---------------- Autoplay progress ---------------- */
@@ -397,6 +426,11 @@
     .hkdev-hero-dot{
         transition: none !important;
         animation: none !important;
+    }
+
+    .hkdev-hero-pager-track,
+    .hkdev-hero-dot::after{
+        transition: none !important;
     }
 }
 
