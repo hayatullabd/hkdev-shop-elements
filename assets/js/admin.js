@@ -229,6 +229,54 @@
     }
 
     /**
+     * Widget manager grid — card state + bulk enable/disable controls.
+     */
+    function initWidgetManager() {
+        var $wrap = $('.hkdev-widget-manager-wrap');
+        if (!$wrap.length) {
+            return;
+        }
+
+        function syncCard($card) {
+            var $input = $card.find('.hkdev-toggle input');
+            $card.toggleClass('is-enabled', $input.is(':checked'));
+            $card.toggleClass('is-disabled', !$input.is(':checked'));
+        }
+
+        $wrap.on('change', '.hkdev-widget-card .hkdev-toggle input', function () {
+            syncCard($(this).closest('.hkdev-widget-card'));
+        });
+
+        $wrap.on('click', '.hkdev-widget-card', function (e) {
+            if ($(e.target).closest('.hkdev-toggle').length) {
+                return;
+            }
+            var $input = $(this).find('.hkdev-toggle input');
+            $input.prop('checked', !$input.is(':checked')).trigger('change');
+        });
+
+        $wrap.on('click', '.hkdev-widget-enable-group', function (e) {
+            e.preventDefault();
+            $(this).closest('.hkdev-widget-group').find('.hkdev-toggle input').prop('checked', true).trigger('change');
+        });
+
+        $wrap.on('click', '.hkdev-widget-disable-group', function (e) {
+            e.preventDefault();
+            $(this).closest('.hkdev-widget-group').find('.hkdev-toggle input').prop('checked', false).trigger('change');
+        });
+
+        $wrap.on('click', '.hkdev-widget-enable-all', function (e) {
+            e.preventDefault();
+            $wrap.find('.hkdev-toggle input').prop('checked', true).trigger('change');
+        });
+
+        $wrap.on('click', '.hkdev-widget-disable-all', function (e) {
+            e.preventDefault();
+            $wrap.find('.hkdev-toggle input').prop('checked', false).trigger('change');
+        });
+    }
+
+    /**
      * Run every enhancement independently so a single failure can never stop
      * the others (in particular the tabs).
      */
@@ -239,7 +287,8 @@
             initSortable,
             initToggles,
             initFieldInputs,
-            initColorPickers
+            initColorPickers,
+            initWidgetManager
         ].forEach(function (setup) {
             try {
                 setup();
