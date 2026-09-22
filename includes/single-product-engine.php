@@ -577,6 +577,12 @@ class Single_Product_Engine {
 
 		$checkout_url = wc_get_checkout_url();
 
+		$is_variable            = $product->is_type( 'variable' );
+		$is_in_stock            = $product->is_in_stock();
+		$disable_purchase_btns  = ! $is_in_stock && ! $is_in_cart;
+		$purchase_disabled_attr = $disable_purchase_btns ? ' disabled' : '';
+		$purchase_disabled_cls  = $disable_purchase_btns ? ' is-out-of-stock' : '';
+
 		// ---- WhatsApp / Call order buttons ----
 		$phone         = trim( (string) $atts['phone'] );
 		$whatsapp      = trim( (string) $atts['whatsapp'] );
@@ -619,7 +625,9 @@ class Single_Product_Engine {
 
 		ob_start();
 		?>
-		<div id="product-<?php echo esc_attr( $product_id ); ?>" <?php wc_product_class( 'hkdev-sp-wrapper', $product ); ?>>
+		<div id="product-<?php echo esc_attr( $product_id ); ?>" <?php wc_product_class( 'hkdev-sp-wrapper', $product ); ?>
+			data-product-type="<?php echo esc_attr( $is_variable ? 'variable' : 'simple' ); ?>"
+			data-in-stock="<?php echo $is_in_stock ? 'yes' : 'no'; ?>">
 
 			<?php do_action( 'woocommerce_before_single_product' ); ?>
 
@@ -764,24 +772,24 @@ class Single_Product_Engine {
 
 					<!-- Quantity & Buttons -->
 					<div class="hkdev-sp-action-row">
-						<div class="hkdev-sp-qty-control">
-							<button type="button" class="hkdev-sp-qty-btn minus">&minus;</button>
-							<input type="number" id="hkdev-sp-qty-field" class="hkdev-sp-qty-input" value="1" min="1">
-							<button type="button" class="hkdev-sp-qty-btn plus">+</button>
+						<div class="hkdev-sp-qty-control<?php echo esc_attr( $purchase_disabled_cls ); ?>">
+							<button type="button" class="hkdev-sp-qty-btn minus"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>&minus;</button>
+							<input type="number" id="hkdev-sp-qty-field" class="hkdev-sp-qty-input" value="1" min="1"<?php echo $disable_purchase_btns ? ' disabled' : ''; ?>>
+							<button type="button" class="hkdev-sp-qty-btn plus"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>+</button>
 						</div>
 
 						<div class="hkdev-sp-purchase-buttons">
-							<button type="button" class="hkdev-sp-btn atc-btn" id="hkdev-sp-add-to-cart"
+							<button type="button" class="hkdev-sp-btn atc-btn<?php echo esc_attr( $purchase_disabled_cls ); ?>" id="hkdev-sp-add-to-cart"
 									data-product-id="<?php echo esc_attr( $product_id ); ?>"
-									data-variation-id="0">
+									data-variation-id="0"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<i class="fa-solid fa-cart-plus"></i> <?php esc_html_e( 'Add to Cart', 'hkdev-shop-elements' ); ?>
 							</button>
 
-							<button type="button" class="hkdev-sp-btn buy-now-btn <?php echo $is_in_cart ? 'checkout-active' : ''; ?>"
+							<button type="button" class="hkdev-sp-btn buy-now-btn <?php echo $is_in_cart ? 'checkout-active' : ''; ?><?php echo esc_attr( $purchase_disabled_cls ); ?>"
 									id="hkdev-sp-buy-now"
 									data-product-id="<?php echo esc_attr( $product_id ); ?>"
 									data-variation-id="0"
-									data-checkout-url="<?php echo esc_url( $checkout_url ); ?>">
+									data-checkout-url="<?php echo esc_url( $checkout_url ); ?>"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<i class="fa-solid fa-bolt"></i>
 								<span class="btn-text"><?php echo $is_in_cart ? esc_html__( 'Order Completed', 'hkdev-shop-elements' ) : esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></span>
 							</button>
@@ -903,6 +911,15 @@ class Single_Product_Engine {
 					$variation = $variation_product->get_variation_attributes();
 				}
 			}
+		}
+
+		$product_to_add = $variation_id ? wc_get_product( $variation_id ) : wc_get_product( $product_id );
+		if ( ! $product_to_add || ! $product_to_add->is_in_stock() ) {
+			wp_send_json_error(
+				[
+					'message' => esc_html__( 'This product is out of stock.', 'hkdev-shop-elements' ),
+				]
+			);
 		}
 
 		$passed_validation = apply_filters( 'woocommerce_add_to_cart_validation', true, $product_id, $quantity, $variation_id, $variation );

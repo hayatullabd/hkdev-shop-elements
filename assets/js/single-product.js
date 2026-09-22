@@ -9,6 +9,7 @@ jQuery(document).ready(function($) {
             'out_of_stock': 'Out Of Stock',
             'select_variation_alert': 'Please select the product options first.',
             'add_to_cart_fail': 'Could not add product to cart. Try again.',
+            'out_of_stock_alert': 'This product is out of stock.',
             'server_error': 'Server error occurred. Please try again.',
             'complete_order': 'Complete Order'
         };
@@ -69,7 +70,42 @@ jQuery(document).ready(function($) {
     });
 
     // 2. Variations Data
+    const $spWrapper = $('.hkdev-sp-wrapper').first();
+    const productType = $spWrapper.data('product-type') || 'simple';
     const variations = $('.hkdev-sp-variable-options').data('variations') || [];
+
+    function setPurchaseButtonsState(isEnabled) {
+        const $atc = $('#hkdev-sp-add-to-cart');
+        const $buy = $('#hkdev-sp-buy-now');
+        const $qty = $('#hkdev-sp-qty-field');
+        const $qtyBtns = $('.hkdev-sp-qty-btn');
+
+        if ($buy.hasClass('checkout-active')) {
+            $atc.prop('disabled', true).addClass('is-out-of-stock').css('opacity', '0.55');
+            $buy.prop('disabled', false).removeClass('is-out-of-stock').css('opacity', '1');
+            $qty.prop('disabled', true);
+            $qtyBtns.prop('disabled', true);
+            return;
+        }
+
+        if (isEnabled) {
+            $atc.prop('disabled', false).removeClass('is-out-of-stock').css('opacity', '1');
+            $buy.prop('disabled', false).removeClass('is-out-of-stock').css('opacity', '1');
+            $qty.prop('disabled', false);
+            $qtyBtns.prop('disabled', false);
+        } else {
+            $atc.prop('disabled', true).addClass('is-out-of-stock').css('opacity', '0.55');
+            $buy.prop('disabled', true).addClass('is-out-of-stock').css('opacity', '0.55');
+            $qty.prop('disabled', true);
+            $qtyBtns.prop('disabled', true);
+        }
+    }
+
+    if ('variable' === productType) {
+        setPurchaseButtonsState(false);
+    } else if ('no' === String($spWrapper.data('in-stock'))) {
+        setPurchaseButtonsState(false);
+    }
 
     // 3. Image + Video Gallery Logic
     function updateMainImage(index) {
@@ -221,7 +257,10 @@ jQuery(document).ready(function($) {
             }
         });
 
-        if (!allSelected) return;
+        if (!allSelected) {
+            setPurchaseButtonsState(false);
+            return;
+        }
 
         const match = variations.find(v => {
             return Object.keys(selectedAttrs).every(key => {
@@ -256,6 +295,9 @@ jQuery(document).ready(function($) {
             $('.stock-val').html(match.is_in_stock ? '<span class="in-stock-pill">' + hkdevJsT('in_stock') + '</span>' : '<span class="out-stock-pill">' + hkdevJsT('out_of_stock') + '</span>');
 
             $('#hkdev-sp-add-to-cart, #hkdev-sp-buy-now').attr('data-variation-id', match.variation_id).data('variation-id', match.variation_id);
+            setPurchaseButtonsState(!!match.is_in_stock);
+        } else {
+            setPurchaseButtonsState(false);
         }
     }
 
@@ -279,7 +321,10 @@ jQuery(document).ready(function($) {
             return;
         }
 
-        if($btn.prop('disabled')) return;
+        if ($btn.prop('disabled') || $btn.hasClass('is-out-of-stock')) {
+            return;
+        }
+
         $btn.prop('disabled', true).css('opacity', '0.7');
 
         $.ajax({
@@ -293,7 +338,6 @@ jQuery(document).ready(function($) {
                 quantity: qty
             },
             success: function(res) {
-                $btn.prop('disabled', false).css('opacity', '1');
                 if (res.success) {
                     $(document.body).trigger('added_to_cart', [res.data.fragments, res.data.cart_hash, $btn]);
                     if (isBuyNow) {
@@ -304,11 +348,27 @@ jQuery(document).ready(function($) {
                         }
                     }
                 } else {
-                    showToast(hkdevJsT('add_to_cart_fail'), 'error');
+                    const msg = (res.data && res.data.message) ? res.data.message : hkdevJsT('add_to_cart_fail');
+                    showToast(msg, 'error');
+                    setPurchaseButtonsState(false);
+                }
+
+                if ('variable' === productType) {
+                    updateVariation();
+                } else if ('no' === String($spWrapper.data('in-stock'))) {
+                    setPurchaseButtonsState(false);
+                } else {
+                    setPurchaseButtonsState(true);
                 }
             },
             error: function() {
-                $btn.prop('disabled', false).css('opacity', '1');
+                if ('variable' === productType) {
+                    updateVariation();
+                } else if ('no' === String($spWrapper.data('in-stock'))) {
+                    setPurchaseButtonsState(false);
+                } else {
+                    setPurchaseButtonsState(true);
+                }
                 showToast(hkdevJsT('server_error'), 'error');
             }
         });
