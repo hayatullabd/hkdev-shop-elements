@@ -136,44 +136,39 @@ jQuery(function($) {
     function hkdevPaintPager(sw, $dots) {
         var total = $(sw.el).find('.swiper-slide:not(.swiper-slide-duplicate)').length;
         if (total < 2) {
-            $dots.empty();
+            $dots.empty().removeClass('is-sliding');
             return;
         }
-        var perView = sw.params.slidesPerView;
-        if (perView === 'auto' || !perView) {
-            perView = 1;
+        var $track = $dots.children('.hkdev-pager-track');
+        if (!$track.length) {
+            $dots.html('<div class="hkdev-pager-track"></div>');
+            $track = $dots.children('.hkdev-pager-track');
         }
-        perView = Math.max(1, Number(perView) || 1);
-        // With 3–5 columns the last reachable slide is not the last item,
-        // so the pager must use that last snap or the pill never reaches the right.
-        var lastIdx = sw.params.loop
-            ? Math.max(0, total - 1)
-            : Math.max(0, total - Math.ceil(perView));
+        var $btns = $track.children('.swiper-pagination-bullet');
+        if ($btns.length !== total) {
+            var html = '';
+            for (var n = 0; n < total; n++) {
+                html += '<button type="button" class="swiper-pagination-bullet" data-hkdev-slide="' + n + '" aria-label="Go to slide ' + (n + 1) + '"></button>';
+            }
+            $track.html(html);
+            $btns = $track.children('.swiper-pagination-bullet');
+        }
         var idx = typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
         if (sw.isEnd && !sw.params.loop) {
-            idx = lastIdx;
+            idx = total - 1;
         }
-        idx = Math.max(0, Math.min(idx, lastIdx));
-        var steps = lastIdx + 1;
-        var slots = Math.min(5, steps);
+        idx = Math.max(0, Math.min(idx, total - 1));
+        var visible = Math.min(5, total);
         var start = 0;
-        if (steps > slots) {
-            start = Math.min(Math.max(0, idx - 2), steps - slots);
+        if (total > visible) {
+            start = Math.min(Math.max(0, idx - 2), total - visible);
         }
-        var $btns = $dots.children('.swiper-pagination-bullet');
-        if ($btns.length !== slots) {
-            var html = '';
-            for (var n = 0; n < slots; n++) {
-                html += '<button type="button" class="swiper-pagination-bullet"></button>';
-            }
-            $dots.html(html);
-            $btns = $dots.children('.swiper-pagination-bullet');
-        }
-        $btns.each(function (slot) {
-            var i = start + slot;
+        $dots.toggleClass('is-sliding', total > 5);
+        $track.css('transform', total > 5
+            ? 'translateX(calc(' + (-start) + ' * var(--hkdev-pager-step)))'
+            : 'none');
+        $btns.each(function (i) {
             var active = i === idx;
-            this.setAttribute('data-hkdev-slide', String(i));
-            this.setAttribute('aria-label', 'Go to slide ' + (i + 1));
             if (active) {
                 this.setAttribute('aria-current', 'true');
             } else {
