@@ -699,10 +699,11 @@ class GitHub_Updater {
 	}
 
 	/**
-	 * Whether the current upgrader run targets this plugin.
+	 * Whether the extracted archive should be renamed to the plugin slug.
 	 *
-	 * @param array       $hook_extra Parsed hook extra.
-	 * @param object|null $upgrader   Upgrader instance.
+	 * @param array       $hook_extra  Parsed hook extra.
+	 * @param object|null $upgrader    Upgrader instance.
+	 * @param string      $plugin_root Plugin root inside the archive.
 	 * @return bool
 	 */
 	private function should_fix_source_dir( $hook_extra, $upgrader, $plugin_root ) {
