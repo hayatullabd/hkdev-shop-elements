@@ -173,7 +173,7 @@
 ========================================================== */.hkdev-tabs-container{
     display: flex;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 8px !important;
     margin-bottom: 18px !important;
 }.hkdev-tabs-scroll{
     display: flex;
@@ -181,15 +181,26 @@
     min-width: 0 !important;
     gap: 8px !important;
     overflow-x: auto !important;
-    padding: 2px 2px 6px !important;
+    padding: 4px 2px !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
     cursor: grab !important;
     scroll-snap-type: x mandatory !important;
     scroll-padding: 0 !important;
+    scroll-behavior: auto !important;
 }.hkdev-tabs-scroll::-webkit-scrollbar{
     display: none !important;
+}.hkdev-tabs-scroll.has-fade-left{
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 100%);
+}.hkdev-tabs-scroll.has-fade-right{
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
+}.hkdev-tabs-scroll.has-fade-left.has-fade-right{
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
 }.hkdev-tabs-scroll.is-dragging{
     cursor: grabbing !important;
     user-select: none !important;
@@ -207,33 +218,36 @@
     scroll-snap-align: start !important;
     scroll-snap-stop: always !important;
     gap: 6px !important;
-    padding: 6px 14px !important;
+    padding: 7px 16px !important;
     font-family: var(--hkdev-font) !important;
     font-size: 13px !important;
     line-height: 1.3 !important;
     font-weight: 600 !important;
+    letter-spacing: .01em !important;
     color: var(--hkdev-text-color) !important;
     background: var(--hkdev-bg-soft) !important;
     border: 1px solid var(--hkdev-border-color) !important;
     border-radius: 999px !important;
     cursor: pointer !important;
-    transition: all var(--hkdev-transition);
     white-space: nowrap !important;
     max-width: none !important;
     overflow: visible !important;
     text-overflow: clip !important;
-}.hkdev-tab-item.is-clipped{
-    opacity: 0 !important;
-    pointer-events: none !important;
     box-shadow: none !important;
+    transition: color .22s ease, background-color .22s ease, border-color .22s ease, box-shadow .22s ease;
 }.hkdev-tab-item:hover{
     border-color: var(--hkdev-hover-border) !important;
     background: #e5f4e6 !important;
+}.hkdev-tab-item:focus{
+    outline: none !important;
+}.hkdev-tab-item:focus-visible{
+    outline: 2px solid var(--hkdev-brand-primary) !important;
+    outline-offset: 2px !important;
 }.hkdev-tab-item.active{
     background: var(--hkdev-brand-primary) !important;
     border-color: var(--hkdev-brand-primary) !important;
     color: #ffffff !important;
-    box-shadow: 0 6px 16px rgba(3, 165, 80, 0.24) !important;
+    box-shadow: 0 4px 14px rgba(3, 165, 80, 0.22) !important;
 }.hkdev-tab-count{
     min-width: 18px !important;
     height: 18px !important;
@@ -243,9 +257,11 @@
     justify-content: center !important;
     font-size: 11px !important;
     font-weight: 700 !important;
+    letter-spacing: 0 !important;
     color: var(--hkdev-brand-primary) !important;
     background: rgba(3, 165, 80, 0.12) !important;
     border-radius: 999px !important;
+    transition: color .22s ease, background-color .22s ease;
 }.hkdev-tab-item.active .hkdev-tab-count{
     color: #ffffff !important;
     background: rgba(255, 255, 255, 0.22) !important;
@@ -265,16 +281,38 @@
     cursor: pointer !important;
     padding: 0 !important;
     margin: 0 !important;
-    transition: all var(--hkdev-transition);
+    box-shadow: 0 1px 3px rgba(20, 26, 20, 0.06) !important;
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease;
 }.hkdev-tabs-arrow:hover{
     background: var(--hkdev-brand-primary) !important;
     border-color: var(--hkdev-brand-primary) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(3, 165, 80, 0.22) !important;
+    transform: translateY(-1px);
+}.hkdev-tabs-arrow:active{
+    transform: translateY(0) scale(.96);
+}.hkdev-tabs-arrow:focus{
+    outline: none !important;
+}.hkdev-tabs-arrow:focus-visible{
+    outline: 2px solid var(--hkdev-brand-primary) !important;
+    outline-offset: 2px !important;
 }.hkdev-tabs-arrow.is-hidden{
     display: none !important;
 }.hkdev-tabs-arrow.is-disabled{
     opacity: .35 !important;
     pointer-events: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+}@media (prefers-reduced-motion: reduce){
+    .hkdev-tab-item,
+    .hkdev-tab-count,
+    .hkdev-tabs-arrow{
+        transition: none !important;
+    }
+    .hkdev-tabs-arrow:hover,
+    .hkdev-tabs-arrow:active{
+        transform: none !important;
+    }
 }/* ==========================================================
    GRID CONTAINER + LOADER
 ========================================================== */.hkdev-grid-container{

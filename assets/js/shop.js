@@ -340,9 +340,8 @@ jQuery(function($) {
     // ==========================================================
     // CATEGORY TABS: arrow / wheel / drag navigation
     // ==========================================================
-    // Every stop lands on a full tab. A tab that would be cut by the viewport
-    // is hidden, so the strip never shows a half-tab. Wheel and arrows move
-    // exactly one tab at a time.
+    // Every stop lands on a full tab. Overflow edges fade instead of cutting
+    // a chip in half. Wheel and arrows ease one tab at a time.
     (function () {
         $('.hkdev-tabs-container').each(function () {
             var $wrap = $(this);
@@ -386,6 +385,13 @@ jQuery(function($) {
                 spacer.style.width = extra + 'px';
             }
 
+            var anim = 0;
+            var pointerId = null;
+
+            function reducedMotion() {
+                return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            }
+
             function clipLeft() {
                 return el.getBoundingClientRect().left + el.clientLeft;
             }
@@ -393,18 +399,6 @@ jQuery(function($) {
             function alignLeft() {
                 var pad = parseFloat(window.getComputedStyle(el).paddingLeft) || 0;
                 return clipLeft() + pad;
-            }
-
-            function maskClipped() {
-                var left = clipLeft();
-                var right = left + el.clientWidth;
-                var list = itemNodes();
-                var i, r, full;
-                for (i = 0; i < list.length; i++) {
-                    r = list[i].getBoundingClientRect();
-                    full = r.width > 0 && r.left >= left - 2 && r.right <= right + 2;
-                    list[i].classList.toggle('is-clipped', !full);
-                }
             }
 
             function currentIndex() {
@@ -423,15 +417,47 @@ jQuery(function($) {
                 return best;
             }
 
-            function scrollToItem(item, behavior) {
+            function easeOutCubic(t) {
+                return 1 - Math.pow(1 - t, 3);
+            }
+
+            function animateTo(left, instant) {
+                left = Math.max(0, Math.min(max(), left));
+                if (anim) {
+                    window.cancelAnimationFrame(anim);
+                    anim = 0;
+                }
+                var start = el.scrollLeft;
+                var dist = left - start;
+                if (instant || reducedMotion() || Math.abs(dist) < 1) {
+                    el.scrollLeft = left;
+                    stepping = false;
+                    sync();
+                    return;
+                }
+                var duration = Math.min(460, Math.max(280, Math.abs(dist) * 0.55 + 240));
+                var t0 = null;
+                stepping = true;
+                function frame(now) {
+                    if (t0 === null) t0 = now;
+                    var p = Math.min(1, (now - t0) / duration);
+                    el.scrollLeft = start + dist * easeOutCubic(p);
+                    if (p < 1) {
+                        anim = window.requestAnimationFrame(frame);
+                    } else {
+                        anim = 0;
+                        el.scrollLeft = left;
+                        stepping = false;
+                        sync();
+                    }
+                }
+                anim = window.requestAnimationFrame(frame);
+            }
+
+            function scrollToItem(item, instant) {
                 if (!item) return;
                 var left = el.scrollLeft + (item.getBoundingClientRect().left - alignLeft());
-                left = Math.max(0, Math.min(max(), left));
-                if (typeof el.scrollTo === 'function') {
-                    el.scrollTo({ left: left, behavior: behavior || 'smooth' });
-                } else {
-                    el.scrollLeft = left;
-                }
+                animateTo(left, instant);
             }
 
             function step(direction) {
@@ -439,15 +465,20 @@ jQuery(function($) {
                 if (!list.length) return;
                 var next = currentIndex() + direction;
                 if (next < 0 || next >= list.length) return;
-                stepping = true;
-                scrollToItem(list[next], 'smooth');
-                window.setTimeout(function () { stepping = false; }, 360);
+                scrollToItem(list[next]);
             }
 
-            function snapNearest(behavior) {
+            function snapNearest(instant) {
                 var list = itemNodes();
                 if (!list.length) return;
-                scrollToItem(list[currentIndex()], behavior || 'smooth');
+                scrollToItem(list[currentIndex()], instant);
+            }
+
+            function syncFades() {
+                var sl = el.scrollLeft;
+                var m = max();
+                $scroll.toggleClass('has-fade-left', sl > 4);
+                $scroll.toggleClass('has-fade-right', m > 1 && sl < m - 4);
             }
 
             function syncArrows() {
@@ -455,6 +486,7 @@ jQuery(function($) {
                 if (max() <= 1) {
                     $prev.addClass('is-hidden');
                     $next.addClass('is-hidden');
+                    $scroll.removeClass('has-fade-left has-fade-right');
                     return;
                 }
                 $prev.removeClass('is-hidden');
@@ -465,7 +497,7 @@ jQuery(function($) {
             }
 
             function sync() {
-                maskClipped();
+                syncFades();
                 syncArrows();
             }
 
@@ -488,24 +520,35 @@ jQuery(function($) {
                 moved = false;
                 startX = e.clientX;
                 startScroll = el.scrollLeft;
+                pointerId = e.pointerId;
+                if (el.setPointerCapture) {
+                    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+                }
                 $scroll.addClass('is-dragging');
             });
 
-            window.addEventListener('pointermove', function (e) {
+            el.addEventListener('pointermove', function (e) {
                 if (!down) return;
                 var diff = e.clientX - startX;
                 if (Math.abs(diff) > 3) moved = true;
                 el.scrollLeft = startScroll - diff;
             });
 
-            window.addEventListener('pointerup', function () {
+            function endDrag() {
                 if (!down) return;
                 down = false;
+                if (pointerId !== null && el.releasePointerCapture) {
+                    try { el.releasePointerCapture(pointerId); } catch (err) {}
+                }
+                pointerId = null;
                 $scroll.removeClass('is-dragging');
                 if (moved) {
-                    snapNearest('smooth');
+                    snapNearest();
                 }
-            });
+            }
+
+            el.addEventListener('pointerup', endDrag);
+            el.addEventListener('pointercancel', endDrag);
 
             el.addEventListener('click', function (e) {
                 if (moved) {
@@ -515,16 +558,23 @@ jQuery(function($) {
                 }
             }, true);
 
+            if (typeof el.addEventListener === 'function') {
+                el.addEventListener('scrollend', function () {
+                    if (down || stepping) return;
+                    snapNearest();
+                });
+            }
+
             $prev.on('click', function (e) { e.preventDefault(); step(-1); });
             $next.on('click', function (e) { e.preventDefault(); step(1); });
             $scroll.on('scroll', sync);
             $(window).on('resize orientationchange load', function () {
                 ensureSpacer();
-                snapNearest('auto');
+                snapNearest(true);
                 sync();
             });
             ensureSpacer();
-            snapNearest('auto');
+            snapNearest(true);
             sync();
         });
     })();
