@@ -133,16 +133,7 @@ jQuery(function($) {
         } catch (e) {}
     }
 
-    function hkdevReplayPagerExpand(node) {
-        if (!node || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-            return;
-        }
-        node.classList.remove('is-expanding');
-        void node.offsetWidth;
-        node.classList.add('is-expanding');
-    }
-
-    function hkdevPaintPager(sw, $dots, animate) {
+    function hkdevPaintPager(sw, $dots) {
         var idx = typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
         var total = $(sw.el).find('.swiper-slide:not(.swiper-slide-duplicate)').length;
         if (total < 2) {
@@ -150,6 +141,10 @@ jQuery(function($) {
             return;
         }
         var slots = Math.min(3, total);
+        var start = 0;
+        if (total > slots) {
+            start = Math.min(Math.max(0, idx - 1), total - slots);
+        }
         var $btns = $dots.children('.swiper-pagination-bullet');
         if ($btns.length !== slots) {
             var html = '';
@@ -159,17 +154,9 @@ jQuery(function($) {
             $dots.html(html);
             $btns = $dots.children('.swiper-pagination-bullet');
         }
-        var map = [];
-        if (total <= 3) {
-            for (var i = 0; i < total; i++) {
-                map.push(i);
-            }
-        } else {
-            map = [(idx - 1 + total) % total, idx, (idx + 1) % total];
-        }
         $btns.each(function (slot) {
-            var i = map[slot];
-            var active = total <= 3 ? i === idx : slot === 1;
+            var i = start + slot;
+            var active = i === idx;
             this.setAttribute('data-hkdev-slide', String(i));
             this.setAttribute('aria-label', 'Go to slide ' + (i + 1));
             if (active) {
@@ -178,9 +165,7 @@ jQuery(function($) {
                 this.removeAttribute('aria-current');
             }
             this.classList.toggle('swiper-pagination-bullet-active', active);
-            if (animate && active) {
-                hkdevReplayPagerExpand(this);
-            }
+            this.classList.remove('is-expanding');
         });
     }
 
@@ -237,13 +222,13 @@ jQuery(function($) {
                 init: function () {
                     $container.removeClass('hkdev-loading-carousel');
                     if (cfg.dots && $dots.length) {
-                        hkdevPaintPager(this, $dots, false);
+                        hkdevPaintPager(this, $dots);
                     }
                 },
                 slideChange: function () {
                     hkdevWriteStoredSlide(slideKey, this.activeIndex);
                     if (cfg.dots && $dots.length) {
-                        hkdevPaintPager(this, $dots, true);
+                        hkdevPaintPager(this, $dots);
                     }
                 }
             }

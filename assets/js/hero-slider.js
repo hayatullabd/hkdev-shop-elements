@@ -44,7 +44,6 @@
         let lastTime = 0;
         let hovered = false;
         let stoppedByInteraction = false;
-        let pagerReady = false;
 
         /* ---------------- Dots ---------------- */
         let $dots = $();
@@ -84,29 +83,19 @@
                 }
             });
 
-            if (count <= 3) {
-                $dots.each(function (index) {
-                    $(this)
-                        .attr('data-slide', index)
-                        .attr('aria-label', 'Go to slide ' + (index + 1))
-                        .toggleClass('is-active', index === current)
-                        .toggleClass('is-near', Math.abs(index - current) === 1)
-                        .removeClass('is-far is-off');
-                });
-            } else {
-                var prevSlide = (current - 1 + count) % count;
-                var nextSlide = (current + 1) % count;
-                var map = [prevSlide, current, nextSlide];
-                $dots.each(function (slot) {
-                    var i = map[slot];
-                    $(this)
-                        .attr('data-slide', i)
-                        .attr('aria-label', 'Go to slide ' + (i + 1))
-                        .toggleClass('is-active', slot === 1)
-                        .toggleClass('is-near', slot !== 1)
-                        .removeClass('is-far is-off');
-                });
+            var slots = Math.min(3, count);
+            var start = 0;
+            if (count > slots) {
+                start = Math.min(Math.max(0, current - 1), count - slots);
             }
+            $dots.each(function (slot) {
+                var i = start + slot;
+                $(this)
+                    .attr('data-slide', i)
+                    .attr('aria-label', 'Go to slide ' + (i + 1))
+                    .toggleClass('is-active', i === current)
+                    .removeClass('is-near is-far is-off is-expanding');
+            });
 
             if (transition === 'slide' && $track.length) {
                 $track.css('transform', 'translateX(-' + (current * 100) + '%)');
@@ -117,15 +106,6 @@
             if ($progress.length) {
                 $progress.css('width', '0%');
             }
-
-            if (pagerReady) {
-                $dots.filter('.is-active').each(function () {
-                    this.classList.remove('is-expanding');
-                    void this.offsetWidth;
-                    this.classList.add('is-expanding');
-                });
-            }
-            pagerReady = true;
         }
 
         function goTo(index) {
