@@ -197,7 +197,12 @@ jQuery(function($) {
         }
 
         if (cfg.dots && $dots.length) {
-            options.pagination = { el: $dots[0], clickable: true };
+            options.pagination = {
+                el: $dots[0],
+                clickable: true,
+                dynamicBullets: true,
+                dynamicMainBullets: 3
+            };
         }
 
         // The arrow selectors are built from the wrapper id, so only wire the

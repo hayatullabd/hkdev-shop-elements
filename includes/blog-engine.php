@@ -906,7 +906,7 @@ class Blog_Engine {
 			'next_text' => __( 'Next &rarr;', 'hkdev-shop-elements' ),
 			'type'      => 'list',
 			'end_size'  => 1,
-			'mid_size'  => 2,
+			'mid_size'  => 1,
 		] );
 	}
 

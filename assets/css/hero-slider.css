@@ -327,10 +327,10 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    flex-wrap: wrap !important;
-    /* Keeps a long row of dots inside the banner on narrow screens instead of
-       being clipped off both edges. */
+    flex-wrap: nowrap !important;
+    overflow: hidden !important;
     max-width: calc(100% - 32px) !important;
+    height: calc(var(--hkdev-hero-dot-size, 8px) * 2) !important;
     gap: var(--hkdev-hero-dots-gap, 12px) !important;
     z-index: 30 !important;
 }
@@ -341,9 +341,22 @@
     padding: 0 !important;
     border: 0 !important;
     border-radius: 50% !important;
+    flex: 0 0 auto !important;
     background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.45)) !important;
     cursor: pointer !important;
-    transition: background-color .3s ease, opacity .3s ease !important;
+    transform: scale(.7) !important;
+    opacity: .55 !important;
+    transition: background-color .3s ease, opacity .3s ease, transform .3s ease, width .3s ease, margin .3s ease !important;
+}
+
+.hkdev-hero-dot.is-far{
+    transform: scale(.55) !important;
+    opacity: .4 !important;
+}
+
+.hkdev-hero-dot.is-near{
+    transform: scale(.85) !important;
+    opacity: .75 !important;
 }
 
 .hkdev-hero-dot:hover{
@@ -352,6 +365,18 @@
 
 .hkdev-hero-dot.is-active{
     background-color: var(--hkdev-hero-dot-active, #ffffff) !important;
+    transform: scale(1) !important;
+    opacity: 1 !important;
+}
+
+.hkdev-hero-dot.is-off{
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: scale(0) !important;
 }
 
 /* ---------------- Autoplay progress ---------------- */

@@ -83,7 +83,15 @@
             });
 
             $dots.each(function (index) {
-                $(this).toggleClass('is-active', index === current);
+                const dist = Math.abs(index - current);
+                const $dot = $(this);
+                $dot.toggleClass('is-active', index === current);
+                $dot.toggleClass('is-near', dist === 1);
+                $dot.toggleClass('is-far', dist === 2);
+                // Keep a compact window (active ± 2) when there are many slides.
+                $dot.toggleClass('is-off', count > 5 && dist > 2);
+                $dot.attr('tabindex', dist > 2 && count > 5 ? '-1' : '0');
+                $dot.attr('aria-hidden', dist > 2 && count > 5 ? 'true' : 'false');
             });
 
             if (transition === 'slide' && $track.length) {
