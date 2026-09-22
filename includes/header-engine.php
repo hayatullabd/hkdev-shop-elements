@@ -131,6 +131,9 @@ class Header_Engine {
 			'st_font_size'     => 0,
 			'st_font_size_t'   => 0,
 			'st_font_size_m'   => 0,
+			'st_density_preset' => 'normal',
+			'st_style_preset'   => 'classic',
+			'st_mobile_preset'  => 'logo-first',
 			'st_container'     => 0,
 			'st_container_t'   => 0,
 			'st_container_m'   => 0,
@@ -151,6 +154,7 @@ class Header_Engine {
 			'st_topbar_fs'     => 0,
 			'st_topbar_fs_t'   => 0,
 			'st_topbar_fs_m'   => 0,
+			'st_topbar_preset' => 'inherit',
 			'st_topbar_icon'   => 0,
 			'st_topbar_icon_t' => 0,
 			'st_topbar_icon_m' => 0,
@@ -164,11 +168,13 @@ class Header_Engine {
 			'st_main_h'        => 0,
 			'st_main_h_t'      => 0,
 			'st_main_h_m'      => 0,
+			'st_main_preset'   => 'inherit',
 			'st_navbar_bg'     => '',
 			'st_navbar_color'  => '',
 			'st_navbar_h'      => 0,
 			'st_navbar_h_t'    => 0,
 			'st_navbar_h_m'    => 0,
+			'st_navbar_preset' => 'inherit',
 			'st_navbar_fs'     => 0,
 			'st_navbar_fs_t'   => 0,
 			'st_navbar_fs_m'   => 0,
@@ -204,6 +210,83 @@ class Header_Engine {
 		$font = static function ( $value ) {
 			return \HkdevShopElements\hkdev_elements_sanitize_font_stack( $value );
 		};
+		$density_name = static function ( $value ) {
+			return in_array( $value, [ 'normal', 'compact', 'ultra' ], true ) ? $value : 'normal';
+		};
+		$section_density_name = static function ( $value ) {
+			return in_array( $value, [ 'inherit', 'normal', 'compact', 'ultra' ], true ) ? $value : 'inherit';
+		};
+		$style_name = static function ( $value ) {
+			return in_array( $value, [ 'classic', 'modern-clean', 'minimal', 'bold-ecommerce' ], true ) ? $value : 'classic';
+		};
+		$mobile_name = static function ( $value ) {
+			return in_array( $value, [ 'logo-first', 'search-first', 'icons-only', 'minimal' ], true ) ? $value : 'logo-first';
+		};
+
+		$global_density = $density_name( isset( $atts['st_density_preset'] ) ? $atts['st_density_preset'] : 'normal' );
+		$topbar_choice  = $section_density_name( isset( $atts['st_topbar_preset'] ) ? $atts['st_topbar_preset'] : 'inherit' );
+		$main_choice    = $section_density_name( isset( $atts['st_main_preset'] ) ? $atts['st_main_preset'] : 'inherit' );
+		$navbar_choice  = $section_density_name( isset( $atts['st_navbar_preset'] ) ? $atts['st_navbar_preset'] : 'inherit' );
+		$topbar_preset  = ( 'inherit' === $topbar_choice ) ? $global_density : $topbar_choice;
+		$main_preset    = ( 'inherit' === $main_choice ) ? $global_density : $main_choice;
+		$navbar_preset  = ( 'inherit' === $navbar_choice ) ? $global_density : $navbar_choice;
+		$style_preset   = $style_name( isset( $atts['st_style_preset'] ) ? $atts['st_style_preset'] : 'classic' );
+		$mobile_preset  = $mobile_name( isset( $atts['st_mobile_preset'] ) ? $atts['st_mobile_preset'] : 'logo-first' );
+		$atts['st_mobile_preset'] = $mobile_preset;
+
+		$style_tokens = [
+			'classic' => [
+				'st_primary'   => '#03a550',
+				'st_secondary' => '#f06724',
+				'st_text'      => '#141a14',
+				'st_muted'     => '#5f6e66',
+				'st_soft'      => '#f1f8f3',
+				'st_border'    => 'rgba(0,0,0,0.08)',
+				'st_topbar_bg' => '#03a550',
+				'st_main_bg'   => '#ffffff',
+				'st_navbar_bg' => '#f06724',
+			],
+			'modern-clean' => [
+				'st_primary'   => '#0f766e',
+				'st_secondary' => '#0ea5e9',
+				'st_text'      => '#0f172a',
+				'st_muted'     => '#64748b',
+				'st_soft'      => '#f0f9ff',
+				'st_border'    => 'rgba(15,23,42,0.12)',
+				'st_topbar_bg' => '#0f766e',
+				'st_main_bg'   => '#ffffff',
+				'st_navbar_bg' => '#0ea5e9',
+			],
+			'minimal' => [
+				'st_primary'   => '#1f2937',
+				'st_secondary' => '#374151',
+				'st_text'      => '#111827',
+				'st_muted'     => '#6b7280',
+				'st_soft'      => '#f9fafb',
+				'st_border'    => 'rgba(17,24,39,0.10)',
+				'st_topbar_bg' => '#1f2937',
+				'st_main_bg'   => '#ffffff',
+				'st_navbar_bg' => '#374151',
+			],
+			'bold-ecommerce' => [
+				'st_primary'   => '#7c3aed',
+				'st_secondary' => '#f97316',
+				'st_text'      => '#1e1b4b',
+				'st_muted'     => '#6d628d',
+				'st_soft'      => '#f5f3ff',
+				'st_border'    => 'rgba(49,46,129,0.15)',
+				'st_topbar_bg' => '#7c3aed',
+				'st_main_bg'   => '#ffffff',
+				'st_navbar_bg' => '#f97316',
+			],
+		];
+		if ( isset( $style_tokens[ $style_preset ] ) ) {
+			foreach ( $style_tokens[ $style_preset ] as $style_key => $style_val ) {
+				if ( '' === (string) $atts[ $style_key ] ) {
+					$atts[ $style_key ] = $style_val;
+				}
+			}
+		}
 
 		// ---- Colour + font tokens (shared by every device) ------------------
 		$vars   = [];
@@ -248,6 +331,78 @@ class Header_Engine {
 				$base[] = $p[1] . '{' . $p[2] . ':' . $safe . ' !important}';
 			}
 		}
+
+		// ---- Density presets (Normal / Compact / Ultra) ---------------------
+		$presets = [
+			'normal' => [
+				'topbar_h'    => [ 42, 40, 38 ],
+				'topbar_fs'   => [ 13.5, 13, 12.5 ],
+				'topbar_icon' => [ 13, 12, 12 ],
+				'social_size' => [ 27, 25, 24 ],
+				'social_icon' => [ 12, 11, 11 ],
+				'main_h'      => [ 88, 0, 0 ],
+				'search_h'    => [ 52, 48, 46 ],
+				'logo_maxh'   => [ 62, 46, 40 ],
+				'navbar_h'    => [ 46, 0, 0 ],
+				'navbar_fs'   => [ 13, 12.5, 12 ],
+			],
+			'compact' => [
+				'topbar_h'    => [ 38, 36, 34 ],
+				'topbar_fs'   => [ 12.5, 12, 11.5 ],
+				'topbar_icon' => [ 12, 11, 11 ],
+				'social_size' => [ 24, 23, 22 ],
+				'social_icon' => [ 11, 10, 10 ],
+				'main_h'      => [ 80, 0, 0 ],
+				'search_h'    => [ 48, 45, 43 ],
+				'logo_maxh'   => [ 54, 42, 36 ],
+				'navbar_h'    => [ 42, 0, 0 ],
+				'navbar_fs'   => [ 12, 11.5, 11 ],
+			],
+			'ultra' => [
+				'topbar_h'    => [ 34, 32, 30 ],
+				'topbar_fs'   => [ 11.5, 11, 10.5 ],
+				'topbar_icon' => [ 11, 10, 10 ],
+				'social_size' => [ 22, 21, 20 ],
+				'social_icon' => [ 10, 9, 9 ],
+				'main_h'      => [ 72, 0, 0 ],
+				'search_h'    => [ 44, 42, 40 ],
+				'logo_maxh'   => [ 48, 38, 34 ],
+				'navbar_h'    => [ 38, 0, 0 ],
+				'navbar_fs'   => [ 11.5, 11, 10.5 ],
+			],
+		];
+		$topset = $presets[ $topbar_preset ];
+		$mset   = $presets[ $main_preset ];
+		$nset   = $presets[ $navbar_preset ];
+
+		$base[] = $sel . ' .hkdev-header-topbar .hkdev-header-container{min-height:' . $topset['topbar_h'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-topbar .hkdev-header-container{min-height:' . $topset['topbar_h'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-topbar .hkdev-header-container{min-height:' . $topset['topbar_h'][2] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-topbar{font-size:' . $topset['topbar_fs'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-topbar{font-size:' . $topset['topbar_fs'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-topbar{font-size:' . $topset['topbar_fs'][2] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-announcement i,' . $sel . ' .hkdev-header-toplink i{font-size:' . $topset['topbar_icon'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-announcement i,' . $sel . ' .hkdev-header-toplink i{font-size:' . $topset['topbar_icon'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-announcement i,' . $sel . ' .hkdev-header-toplink i{font-size:' . $topset['topbar_icon'][2] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-social{width:' . $topset['social_size'][0] . 'px !important;height:' . $topset['social_size'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-social{width:' . $topset['social_size'][1] . 'px !important;height:' . $topset['social_size'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-social{width:' . $topset['social_size'][2] . 'px !important;height:' . $topset['social_size'][2] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-social i{font-size:' . $topset['social_icon'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-social i{font-size:' . $topset['social_icon'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-social i{font-size:' . $topset['social_icon'][2] . 'px !important}';
+
+		$base[] = $sel . ' .hkdev-header-main .hkdev-header-container{min-height:' . $mset['main_h'][0] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-search-form{height:' . $mset['search_h'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-search-form{height:' . $mset['search_h'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-search-form{height:' . $mset['search_h'][2] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-logo img{max-height:' . $mset['logo_maxh'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-logo img{max-height:' . $mset['logo_maxh'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-logo img{max-height:' . $mset['logo_maxh'][2] . 'px !important}';
+
+		$base[] = $sel . ' .hkdev-header-navbar .hkdev-header-container{min-height:' . $nset['navbar_h'][0] . 'px !important}';
+		$base[] = $sel . ' .hkdev-header-menu>li>a{font-size:' . $nset['navbar_fs'][0] . 'px !important}';
+		$t[]    = $sel . ' .hkdev-header-menu>li>a{font-size:' . $nset['navbar_fs'][1] . 'px !important}';
+		$m[]    = $sel . ' .hkdev-header-menu>li>a{font-size:' . $nset['navbar_fs'][2] . 'px !important}';
 
 		// ---- Sizes (per device: desktop / tablet / mobile) ------------------
 		$sizes = [
@@ -859,7 +1014,7 @@ class Header_Engine {
 
 		ob_start();
 		?>
-		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> id="<?php echo esc_attr( $uid ); ?>">
+		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> data-mobile-preset="<?php echo esc_attr( $atts['st_mobile_preset'] ); ?>" id="<?php echo esc_attr( $uid ); ?>">
 
 			<?php echo $this->style_css( $uid, $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- colours/fonts sanitised in style_css() ?>
 

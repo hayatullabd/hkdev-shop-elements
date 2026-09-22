@@ -641,8 +641,8 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
 }
 
 .hkdev-header-navbar .hkdev-header-container {
-    min-height: 54px !important;
-    gap: 10px !important;
+    min-height: 46px !important;
+    gap: 8px !important;
     align-items: stretch !important;
 }
 
@@ -668,13 +668,13 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     min-width: 0 !important;
     display: flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 5px !important;
 }
 
 .hkdev-header-nav-arrow {
     flex: 0 0 auto !important;
-    width: 34px !important;
-    height: 34px !important;
+    width: 30px !important;
+    height: 30px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -682,7 +682,7 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     border-radius: 50% !important;
     background: rgba(255, 255, 255, 0.14) !important;
     color: #ffffff !important;
-    font-size: 14px !important;
+    font-size: 12px !important;
     line-height: 1 !important;
     cursor: pointer !important;
     transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease !important;
@@ -735,9 +735,9 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     display: inline-flex !important;
     align-items: center !important;
     gap: 7px !important;
-    padding: 8px 15px !important;
+    padding: 6px 12px !important;
     border-radius: var(--hd-pill) !important;
-    font-size: 14.5px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
     color: #ffffff !important;
     text-decoration: none !important;
@@ -762,7 +762,7 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     content: "\f107" !important;
     font-family: "Font Awesome 6 Free" !important;
     font-weight: 900 !important;
-    font-size: 11px !important;
+    font-size: 10px !important;
     line-height: 1 !important;
     opacity: 0.85 !important;
 }
@@ -1710,8 +1710,8 @@ body.hkdev-header-locked {
     }
 
     .hkdev-header-menu > li > a {
-        padding: 8px 12px !important;
-        font-size: 14px !important;
+        padding: 6px 10px !important;
+        font-size: 12.5px !important;
     }
 
     .hkdev-header-call .call-text small {
@@ -1845,6 +1845,68 @@ body.hkdev-header-locked {
         width: 42px !important;
         height: 42px !important;
         font-size: 16px !important;
+    }
+
+    /* Mobile preset: Search First */
+    .hkdev-header-wrap[data-mobile-preset="search-first"] .hkdev-header-search {
+        order: 1 !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="search-first"] .hkdev-header-logo {
+        order: 2 !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="search-first"] .hkdev-header-actions {
+        order: 3 !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="search-first"] .hkdev-header-hamburger {
+        order: 4 !important;
+    }
+
+    /* Mobile preset: Icons Only */
+    .hkdev-header-wrap[data-mobile-preset="icons-only"] .hkdev-header-logo-text {
+        display: none !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="icons-only"] .hkdev-header-search {
+        display: none !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="icons-only"] .hkdev-header-main .hkdev-header-container {
+        flex-wrap: nowrap !important;
+        min-height: 62px !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="icons-only"] .hkdev-header-logo {
+        flex: 1 1 auto !important;
+    }
+
+    /* Mobile preset: Minimal */
+    .hkdev-header-wrap[data-mobile-preset="minimal"] .hkdev-header-topbar {
+        display: none !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="minimal"] .hkdev-header-search {
+        display: none !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="minimal"] .hkdev-header-auth {
+        display: none !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="minimal"] .hkdev-header-main .hkdev-header-container {
+        flex-wrap: nowrap !important;
+        min-height: 58px !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+        gap: 8px !important;
+    }
+
+    .hkdev-header-wrap[data-mobile-preset="minimal"] .hkdev-header-logo {
+        flex: 1 1 auto !important;
     }
 }
 

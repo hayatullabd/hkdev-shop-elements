@@ -177,6 +177,9 @@ final class Header_Options {
 				'st_font_size'     => $num( 'hkdev_hd_st_font_size' ),
 				'st_font_size_t'   => $num( 'hkdev_hd_st_font_size_t' ),
 				'st_font_size_m'   => $num( 'hkdev_hd_st_font_size_m' ),
+				'st_density_preset' => $choice( 'hkdev_hd_st_density_preset', [ 'normal', 'compact', 'ultra' ], 'normal' ),
+				'st_style_preset'   => $choice( 'hkdev_hd_st_style_preset', [ 'classic', 'modern-clean', 'minimal', 'bold-ecommerce' ], 'classic' ),
+				'st_mobile_preset'  => $choice( 'hkdev_hd_st_mobile_preset', [ 'logo-first', 'search-first', 'icons-only', 'minimal' ], 'logo-first' ),
 				'st_container'     => $num( 'hkdev_hd_st_container' ),
 				'st_container_t'   => $num( 'hkdev_hd_st_container_t' ),
 				'st_container_m'   => $num( 'hkdev_hd_st_container_m' ),
@@ -197,6 +200,7 @@ final class Header_Options {
 				'st_topbar_fs'     => $num( 'hkdev_hd_st_topbar_fs' ),
 				'st_topbar_fs_t'   => $num( 'hkdev_hd_st_topbar_fs_t' ),
 				'st_topbar_fs_m'   => $num( 'hkdev_hd_st_topbar_fs_m' ),
+				'st_topbar_preset' => $choice( 'hkdev_hd_st_topbar_preset', [ 'inherit', 'normal', 'compact', 'ultra' ], 'inherit' ),
 				'st_topbar_icon'   => $num( 'hkdev_hd_st_topbar_icon' ),
 				'st_topbar_icon_t' => $num( 'hkdev_hd_st_topbar_icon_t' ),
 				'st_topbar_icon_m' => $num( 'hkdev_hd_st_topbar_icon_m' ),
@@ -210,11 +214,13 @@ final class Header_Options {
 				'st_main_h'        => $num( 'hkdev_hd_st_main_h' ),
 				'st_main_h_t'      => $num( 'hkdev_hd_st_main_h_t' ),
 				'st_main_h_m'      => $num( 'hkdev_hd_st_main_h_m' ),
+				'st_main_preset'   => $choice( 'hkdev_hd_st_main_preset', [ 'inherit', 'normal', 'compact', 'ultra' ], 'inherit' ),
 				'st_navbar_bg'     => $css_color( 'hkdev_hd_st_navbar_bg' ),
 				'st_navbar_color'  => $css_color( 'hkdev_hd_st_navbar_color' ),
 				'st_navbar_h'      => $num( 'hkdev_hd_st_navbar_h' ),
 				'st_navbar_h_t'    => $num( 'hkdev_hd_st_navbar_h_t' ),
 				'st_navbar_h_m'    => $num( 'hkdev_hd_st_navbar_h_m' ),
+				'st_navbar_preset' => $choice( 'hkdev_hd_st_navbar_preset', [ 'inherit', 'normal', 'compact', 'ultra' ], 'inherit' ),
 				'st_navbar_fs'     => $num( 'hkdev_hd_st_navbar_fs' ),
 				'st_navbar_fs_t'   => $num( 'hkdev_hd_st_navbar_fs_t' ),
 				'st_navbar_fs_m'   => $num( 'hkdev_hd_st_navbar_fs_m' ),
@@ -598,7 +604,38 @@ final class Header_Options {
 							</header>
 							<div class="hd-card-body">
 								<?php
+								$preset_options = [
+									'normal'  => __( 'Normal', 'hkdev-shop-elements' ),
+									'compact' => __( 'Compact', 'hkdev-shop-elements' ),
+									'ultra'   => __( 'Ultra Compact', 'hkdev-shop-elements' ),
+								];
+								$section_preset_options = [
+									'inherit' => __( 'Inherit Global', 'hkdev-shop-elements' ),
+									'normal'  => __( 'Normal', 'hkdev-shop-elements' ),
+									'compact' => __( 'Compact', 'hkdev-shop-elements' ),
+									'ultra'   => __( 'Ultra Compact', 'hkdev-shop-elements' ),
+								];
+								$style_preset_options = [
+									'classic'        => __( 'Classic', 'hkdev-shop-elements' ),
+									'modern-clean'   => __( 'Modern Clean', 'hkdev-shop-elements' ),
+									'minimal'        => __( 'Minimal', 'hkdev-shop-elements' ),
+									'bold-ecommerce' => __( 'Bold Ecommerce', 'hkdev-shop-elements' ),
+								];
+								$mobile_preset_options = [
+									'logo-first'   => __( 'Logo First', 'hkdev-shop-elements' ),
+									'search-first' => __( 'Search First', 'hkdev-shop-elements' ),
+									'icons-only'   => __( 'Icons Only', 'hkdev-shop-elements' ),
+									'minimal'      => __( 'Minimal', 'hkdev-shop-elements' ),
+								];
 								$app_groups = [
+									[
+										'title'  => __( 'Preset Controls', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'st_density_preset', 'type' => 'select', 'label' => __( 'Global Density', 'hkdev-shop-elements' ), 'help' => __( 'Set Normal / Compact / Ultra for the whole header.', 'hkdev-shop-elements' ), 'options' => $preset_options ],
+											[ 'key' => 'st_style_preset', 'type' => 'select', 'label' => __( 'Header Style Pack', 'hkdev-shop-elements' ), 'help' => __( 'Apply curated color/style combinations quickly.', 'hkdev-shop-elements' ), 'options' => $style_preset_options ],
+											[ 'key' => 'st_mobile_preset', 'type' => 'select', 'label' => __( 'Mobile Header Preset', 'hkdev-shop-elements' ), 'help' => __( 'Control mobile header layout behavior without custom CSS.', 'hkdev-shop-elements' ), 'options' => $mobile_preset_options ],
+										],
+									],
 									[
 										'title'  => __( 'Typography & Layout', 'hkdev-shop-elements' ),
 										'fields' => [
@@ -622,6 +659,7 @@ final class Header_Options {
 									[
 										'title'  => __( 'Top Bar (Upper)', 'hkdev-shop-elements' ),
 										'fields' => [
+											[ 'key' => 'st_topbar_preset', 'type' => 'select', 'label' => __( 'Density Preset', 'hkdev-shop-elements' ), 'help' => __( 'Use Global by default or override per section.', 'hkdev-shop-elements' ), 'options' => $section_preset_options ],
 											[ 'key' => 'st_topbar_bg', 'type' => 'color', 'label' => __( 'Background', 'hkdev-shop-elements' ), 'ph' => '#03a550', 'help' => '' ],
 											[ 'key' => 'st_topbar_color', 'type' => 'color', 'label' => __( 'Text Colour', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
 											[ 'key' => 'st_topbar_h', 'type' => 'number', 'label' => __( 'Height (px)', 'hkdev-shop-elements' ), 'ph' => '42', 'help' => '' ],
@@ -634,6 +672,7 @@ final class Header_Options {
 									[
 										'title'  => __( 'Main Bar (Middle)', 'hkdev-shop-elements' ),
 										'fields' => [
+											[ 'key' => 'st_main_preset', 'type' => 'select', 'label' => __( 'Density Preset', 'hkdev-shop-elements' ), 'help' => __( 'Use Global by default or override per section.', 'hkdev-shop-elements' ), 'options' => $section_preset_options ],
 											[ 'key' => 'st_main_bg', 'type' => 'color', 'label' => __( 'Background', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
 											[ 'key' => 'st_main_h', 'type' => 'number', 'label' => __( 'Height (px)', 'hkdev-shop-elements' ), 'ph' => '88', 'help' => '' ],
 										],
@@ -641,6 +680,7 @@ final class Header_Options {
 									[
 										'title'  => __( 'Nav Bar (Bottom)', 'hkdev-shop-elements' ),
 										'fields' => [
+											[ 'key' => 'st_navbar_preset', 'type' => 'select', 'label' => __( 'Density Preset', 'hkdev-shop-elements' ), 'help' => __( 'Use Global by default or override per section.', 'hkdev-shop-elements' ), 'options' => $section_preset_options ],
 											[ 'key' => 'st_navbar_bg', 'type' => 'color', 'label' => __( 'Background', 'hkdev-shop-elements' ), 'ph' => '#f06724', 'help' => '' ],
 											[ 'key' => 'st_navbar_color', 'type' => 'color', 'label' => __( 'Menu Text Colour', 'hkdev-shop-elements' ), 'ph' => '#ffffff', 'help' => '' ],
 											[ 'key' => 'st_navbar_h', 'type' => 'number', 'label' => __( 'Height (px)', 'hkdev-shop-elements' ), 'ph' => '54', 'help' => '' ],
@@ -675,7 +715,16 @@ final class Header_Options {
 													<?php endif; ?>
 												</div>
 												<div class="hd-field-input">
-													<?php if ( 'color' === $field['type'] ) : ?>
+													<?php if ( 'select' === $field['type'] ) : ?>
+														<select id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>">
+															<?php
+															$field_options = isset( $field['options'] ) && is_array( $field['options'] ) ? $field['options'] : $preset_options;
+															foreach ( $field_options as $opt_key => $opt_label ) :
+																?>
+																<option value="<?php echo esc_attr( $opt_key ); ?>" <?php selected( (string) $val, (string) $opt_key ); ?>><?php echo esc_html( $opt_label ); ?></option>
+															<?php endforeach; ?>
+														</select>
+													<?php elseif ( 'color' === $field['type'] ) : ?>
 														<div class="hd-color-wrap">
 															<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-color-text" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
 															<input type="color" class="hd-color-pick" value="<?php echo esc_attr( preg_match( '/^#[0-9a-f]{6}$/i', (string) $val ) ? $val : ( preg_match( '/^#[0-9a-f]{6}$/i', $field['ph'] ) ? $field['ph'] : '#000000' ) ); ?>" tabindex="-1" aria-hidden="true">
