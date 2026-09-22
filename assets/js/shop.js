@@ -266,11 +266,6 @@ jQuery(function($) {
         $wrapper.find('.hkdev-tab-item').removeClass('active'); 
         $btn.addClass('active');
 
-        // Bring the clicked tab to the left edge so it is fully visible and
-        // clearly the active one (start-aligned, matching the strip's snap).
-        if ($btn[0] && typeof $btn[0].scrollIntoView === 'function') {
-            $btn[0].scrollIntoView({ block: 'nearest', inline: 'start' });
-        }
         $loader.fadeIn(150).css('display', 'flex'); 
         
         $.ajax({
@@ -400,6 +395,59 @@ jQuery(function($) {
                     target.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' });
                 }
             }
+
+            // Mouse wheel scrolls the strip sideways; touch keeps native panning.
+            function scrollable() {
+                return max() > 1;
+            }
+
+            el.addEventListener('wheel', function (e) {
+                if (!scrollable()) return;
+                var delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+                if (!delta) return;
+                if ((delta < 0 && el.scrollLeft <= 0) || (delta > 0 && el.scrollLeft >= max() - 1)) return;
+                e.preventDefault();
+                el.scrollLeft += delta;
+            }, { passive: false });
+
+            // Grab-and-drag with the mouse (touch uses native scrolling).
+            var down = false;
+            var startX = 0;
+            var startScroll = 0;
+            var moved = false;
+
+            el.addEventListener('pointerdown', function (e) {
+                if (e.pointerType !== 'mouse' || !scrollable()) return;
+                down = true;
+                moved = false;
+                startX = e.clientX;
+                startScroll = el.scrollLeft;
+                el.style.scrollSnapType = 'none';
+                $scroll.addClass('is-dragging');
+            });
+
+            window.addEventListener('pointermove', function (e) {
+                if (!down) return;
+                var diff = e.clientX - startX;
+                if (Math.abs(diff) > 3) moved = true;
+                el.scrollLeft = startScroll - diff;
+            });
+
+            window.addEventListener('pointerup', function () {
+                if (!down) return;
+                down = false;
+                el.style.scrollSnapType = '';
+                $scroll.removeClass('is-dragging');
+            });
+
+            // A drag must not fire the tab's filter click.
+            el.addEventListener('click', function (e) {
+                if (moved) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    moved = false;
+                }
+            }, true);
 
             $prev.on('click', function (e) { e.preventDefault(); step(-1); });
             $next.on('click', function (e) { e.preventDefault(); step(1); });

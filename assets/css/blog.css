@@ -258,9 +258,14 @@
 	scrollbar-width: none !important;
 	-ms-overflow-style: none !important;
 	-webkit-overflow-scrolling: touch;
+	cursor: grab !important;
 }
 .hkdev-blog-tabs-scroll::-webkit-scrollbar {
 	display: none !important;
+}
+.hkdev-blog-tabs-scroll.is-dragging {
+	cursor: grabbing !important;
+	user-select: none !important;
 }
 .hkdev-blog-tab-item {
 	flex: 0 0 auto !important;

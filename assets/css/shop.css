@@ -185,11 +185,15 @@
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
     -webkit-overflow-scrolling: touch;
+    cursor: grab !important;
     scroll-snap-type: x mandatory !important;
     scroll-padding-left: 8px !important;
     scroll-padding-right: 8px !important;
 }.hkdev-tabs-scroll::-webkit-scrollbar{
     display: none !important;
+}.hkdev-tabs-scroll.is-dragging{
+    cursor: grabbing !important;
+    user-select: none !important;
 }.hkdev-tab-item{
     flex: 0 0 auto;
     display: inline-flex;
