@@ -126,7 +126,8 @@ class GitHub_Updater {
 		add_filter( 'pre_set_site_transient_update_plugins', [ $this, 'inject_update' ] );
 		add_filter( 'plugins_api', [ $this, 'plugin_information' ], 20, 3 );
 		add_filter( 'upgrader_source_selection', [ $this, 'fix_source_dir' ], 10, 4 );
-		add_filter( 'upgrader_pre_install', [ $this, 'remember_activation_before_install' ], 10, 2 );
+		add_filter( 'upgrader_pre_install', [ $this, 'remember_activation_before_install' ], 5, 2 );
+		add_filter( 'upgrader_post_install', [ $this, 'maybe_reactivate_after_install' ], 100, 2 );
 		add_action( 'upgrader_process_complete', [ $this, 'maybe_reactivate_after_update' ], 20, 2 );
 		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 4 );
 
@@ -273,33 +274,21 @@ class GitHub_Updater {
 	public function fix_source_dir( $source, $remote_source, $upgrader, $args = [] ) {
 		$hook_extra = $this->parse_hook_extra( $args );
 
-		if ( ! $this->is_this_plugin_update( $hook_extra, $upgrader ) ) {
-			return $source;
-		}
-
-		$this->remember_activation_state();
-
 		global $wp_filesystem;
 		if ( ! $wp_filesystem ) {
-			return new \WP_Error(
-				'hkdev_updater_no_fs',
-				esc_html__( 'Update failed: WordPress filesystem is unavailable.', 'hkdev-shop-elements' )
-			);
+			return $source;
 		}
 
 		$plugin_root = $this->find_plugin_root( $source );
 		if ( '' === $plugin_root ) {
-			if ( function_exists( '\HkdevShopElements\hkdev_elements_log_message' ) ) {
-				\HkdevShopElements\hkdev_elements_log_message(
-					'GitHub updater: extracted package does not look like plugin root; aborting update to avoid deactivation.'
-				);
-			}
-
-			return new \WP_Error(
-				'hkdev_invalid_update_package',
-				esc_html__( 'Update package is invalid: plugin root files were not found.', 'hkdev-shop-elements' )
-			);
+			return $source;
 		}
+
+		if ( ! $this->should_fix_source_dir( $hook_extra, $upgrader, $plugin_root ) ) {
+			return $source;
+		}
+
+		$this->remember_activation_state();
 
 		if ( basename( untrailingslashit( $plugin_root ) ) === $this->slug ) {
 			return trailingslashit( $plugin_root );
@@ -353,24 +342,87 @@ class GitHub_Updater {
 	}
 
 	/**
-	 * Reactivate the plugin after a successful self-update when it was active
-	 * before the update and the main plugin file still exists.
+	 * Reactivate immediately after a successful single-plugin install/update.
+	 *
+	 * WordPress deactivates plugins before upgrading but does not turn them
+	 * back on for manual updates. This runs right after files land on disk.
+	 *
+	 * @param bool|\WP_Error $response   Install response.
+	 * @param array          $hook_extra Upgrader hook args.
+	 * @return bool|\WP_Error
+	 */
+	public function maybe_reactivate_after_install( $response, $hook_extra ) {
+		if ( is_wp_error( $response ) || ! is_array( $hook_extra ) ) {
+			return $response;
+		}
+
+		if ( ! $this->hook_extra_targets_this_plugin( $hook_extra ) ) {
+			return $response;
+		}
+
+		$this->reactivate_if_needed();
+
+		return $response;
+	}
+
+	/**
+	 * Reactivate after the upgrader finishes (single or bulk plugin updates).
 	 *
 	 * @param \WP_Upgrader $upgrader Upgrader instance.
 	 * @param array        $hook_extra Upgrader hook args.
 	 * @return void
 	 */
 	public function maybe_reactivate_after_update( $upgrader, $hook_extra ) {
-		if ( empty( $hook_extra['action'] ) || 'update' !== $hook_extra['action'] ) {
+		if ( ! is_array( $hook_extra ) || ! $this->hook_extra_targets_this_plugin( $hook_extra ) ) {
 			return;
 		}
+
+		$this->reactivate_if_needed();
+	}
+
+	/**
+	 * Whether hook_extra refers to this plugin's update.
+	 *
+	 * Single updates pass hook_extra['plugin']. Bulk updates pass
+	 * hook_extra['plugins'] on the final summary action.
+	 *
+	 * @param array $hook_extra Upgrader hook args.
+	 * @return bool
+	 */
+	private function hook_extra_targets_this_plugin( $hook_extra ) {
 		if ( empty( $hook_extra['type'] ) || 'plugin' !== $hook_extra['type'] ) {
+			return false;
+		}
+
+		if ( empty( $hook_extra['action'] ) || 'update' !== $hook_extra['action'] ) {
+			return false;
+		}
+
+		if ( ! empty( $hook_extra['plugin'] ) && $hook_extra['plugin'] === $this->plugin_basename ) {
+			return true;
+		}
+
+		if ( ! empty( $hook_extra['plugins'] ) && is_array( $hook_extra['plugins'] ) ) {
+			return in_array( $this->plugin_basename, $hook_extra['plugins'], true );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Turn the plugin back on when it was active before the update.
+	 *
+	 * @return void
+	 */
+	private function reactivate_if_needed() {
+		$this->ensure_plugin_functions_loaded();
+
+		if ( ! function_exists( 'is_plugin_active' ) || ! function_exists( 'activate_plugin' ) ) {
 			return;
 		}
-		if ( empty( $hook_extra['plugins'] ) || ! is_array( $hook_extra['plugins'] ) ) {
-			return;
-		}
-		if ( ! in_array( $this->plugin_basename, $hook_extra['plugins'], true ) ) {
+
+		if ( is_plugin_active( $this->plugin_basename ) ) {
+			delete_transient( $this->activation_state_key );
 			return;
 		}
 
@@ -388,11 +440,6 @@ class GitHub_Updater {
 					'GitHub updater: plugin file missing after update, auto-reactivation skipped.'
 				);
 			}
-			return;
-		}
-
-		$this->ensure_plugin_functions_loaded();
-		if ( ! function_exists( 'activate_plugin' ) ) {
 			return;
 		}
 
@@ -658,8 +705,30 @@ class GitHub_Updater {
 	 * @param object|null $upgrader   Upgrader instance.
 	 * @return bool
 	 */
+	private function should_fix_source_dir( $hook_extra, $upgrader, $plugin_root ) {
+		if ( $this->is_this_plugin_update( $hook_extra, $upgrader ) ) {
+			return true;
+		}
+
+		// GitHub zipballs unpack to owner-repo-sha/ — rename whenever this
+		// archive is clearly HKDEV Shop Elements but hook_extra matching failed.
+		return basename( untrailingslashit( $plugin_root ) ) !== $this->slug
+			&& $this->looks_like_plugin( $plugin_root );
+	}
+
+	/**
+	 * Whether the current upgrader run targets this plugin.
+	 *
+	 * @param array       $hook_extra Parsed hook extra.
+	 * @param object|null $upgrader   Upgrader instance.
+	 * @return bool
+	 */
 	private function is_this_plugin_update( $hook_extra, $upgrader ) {
 		if ( ! empty( $hook_extra['plugin'] ) && $hook_extra['plugin'] === $this->plugin_basename ) {
+			return true;
+		}
+
+		if ( ! empty( $hook_extra['temp_backup']['slug'] ) && $hook_extra['temp_backup']['slug'] === $this->slug ) {
 			return true;
 		}
 
