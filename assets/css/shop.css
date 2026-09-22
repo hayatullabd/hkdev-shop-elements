@@ -177,46 +177,27 @@
     margin-bottom: 18px !important;
 }.hkdev-tabs-scroll{
     display: flex;
+    flex-wrap: nowrap !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
     gap: 8px !important;
     overflow-x: auto !important;
+    overflow-y: hidden !important;
     padding: 4px 2px !important;
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
+    overscroll-behavior-x: contain !important;
     cursor: grab !important;
-    scroll-snap-type: x mandatory !important;
-    scroll-padding: 0 !important;
-    scroll-behavior: auto !important;
 }.hkdev-tabs-scroll::-webkit-scrollbar{
     display: none !important;
-}.hkdev-tabs-scroll.has-fade-left{
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 100%);
-}.hkdev-tabs-scroll.has-fade-right{
-    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
-    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 28px), transparent 100%);
-}.hkdev-tabs-scroll.has-fade-left.has-fade-right{
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 28px, #000 calc(100% - 28px), transparent 100%);
 }.hkdev-tabs-scroll.is-dragging{
     cursor: grabbing !important;
     user-select: none !important;
-    scroll-snap-type: none !important;
-}.hkdev-tabs-end-spacer{
-    flex: 0 0 0;
-    width: 0;
-    height: 1px !important;
-    pointer-events: none !important;
-    scroll-snap-align: none !important;
 }.hkdev-tab-item{
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center !important;
-    scroll-snap-align: start !important;
-    scroll-snap-stop: always !important;
     gap: 6px !important;
     padding: 7px 16px !important;
     font-family: var(--hkdev-font) !important;
