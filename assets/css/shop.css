@@ -651,11 +651,6 @@ button.hkdev-order-btn{
     pointer-events: none !important;
     height: auto !important;
 }.hkdev-carousel-dots{
-    --hkdev-pager-mark: 7px;
-    --hkdev-pager-active: 11px;
-    --hkdev-pager-gap: 8px;
-    --hkdev-pager-slot: var(--hkdev-pager-active);
-    --hkdev-pager-step: calc(var(--hkdev-pager-slot) + var(--hkdev-pager-gap));
     position: relative !important;
     left: auto !important;
     right: auto !important;
@@ -666,49 +661,38 @@ button.hkdev-order-btn{
     justify-content: center !important;
     align-items: center !important;
     flex-wrap: nowrap !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     padding: 8px 14px !important;
     border-radius: 999px !important;
     background: rgba(255, 255, 255, 0.92) !important;
     box-shadow: 0 4px 18px rgba(20, 26, 20, 0.10), inset 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
-}.hkdev-carousel-dots.is-sliding{
-    width: calc(var(--hkdev-pager-slot) * 6 + var(--hkdev-pager-gap) * 5) !important;
-}.hkdev-pager-track{
-    display: flex !important;
-    align-items: center !important;
-    gap: var(--hkdev-pager-gap) !important;
-    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform;
+}.hkdev-carousel-dots.swiper-pagination-bullets-dynamic{
+    overflow: hidden !important;
 }.hkdev-carousel-dots .swiper-pagination-bullet{
-    width: var(--hkdev-pager-slot);
-    height: var(--hkdev-pager-slot) !important;
+    width: 7px !important;
+    height: 7px !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
-    flex: 0 0 var(--hkdev-pager-slot) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
-    opacity: 1;
+    flex: 0 0 auto !important;
+    border-radius: 50% !important;
+    background: var(--hkdev-brand-primary) !important;
+    opacity: .3;
+    transform: scale(.72);
     cursor: pointer;
-}.hkdev-carousel-dots .swiper-pagination-bullet::after{
-    content: "";
-    width: var(--hkdev-pager-mark);
-    height: var(--hkdev-pager-mark);
-    border-radius: 999px;
-    background: var(--hkdev-brand-primary);
-    opacity: 0.32;
-    transition: width 0.28s ease, height 0.28s ease, opacity 0.28s ease;
-}.hkdev-carousel-dots .swiper-pagination-bullet-active::after{
-    width: var(--hkdev-pager-active);
-    height: var(--hkdev-pager-active);
+    transition: transform .24s ease, opacity .24s ease;
+}.hkdev-carousel-dots .swiper-pagination-bullet-active-main,
+.hkdev-carousel-dots .swiper-pagination-bullet-active{
     opacity: 1;
+    transform: scale(1);
+}.hkdev-carousel-dots .swiper-pagination-bullet-active-prev,
+.hkdev-carousel-dots .swiper-pagination-bullet-active-next{
+    opacity: .62;
+    transform: scale(.88);
 }@media (prefers-reduced-motion: reduce){
-    .hkdev-pager-track,
-    .hkdev-carousel-dots .swiper-pagination-bullet::after{
+    .hkdev-carousel-dots .swiper-pagination-bullet{
         transition: none !important;
     }
 }.hkdev-nav-btn{

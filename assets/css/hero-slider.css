@@ -320,8 +320,6 @@
 
 /* ---------------- Dots ---------------- */
 .hkdev-hero-dots{
-    --hkdev-hero-pager-slot: calc(var(--hkdev-hero-dot-size, 8px) * 1.4);
-    --hkdev-hero-pager-step: calc(var(--hkdev-hero-pager-slot) + var(--hkdev-hero-dots-gap, 10px));
     position: absolute !important;
     bottom: var(--hkdev-hero-dots-bottom, 30px) !important;
     left: 50% !important;
@@ -330,7 +328,7 @@
     align-items: center !important;
     justify-content: center !important;
     flex-wrap: nowrap !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     height: auto !important;
     padding: 8px 14px !important;
     border-radius: 999px !important;
@@ -341,51 +339,42 @@
     z-index: 30 !important;
 }
 
-.hkdev-hero-dots.is-sliding{
-    width: calc(var(--hkdev-hero-pager-slot) * 6 + var(--hkdev-hero-dots-gap, 10px) * 5 + 28px) !important;
-}
-
-.hkdev-hero-pager-track{
-    display: flex !important;
-    align-items: center !important;
-    gap: var(--hkdev-hero-dots-gap, 10px) !important;
-    transition: transform .32s cubic-bezier(0.22, 1, 0.36, 1);
-    will-change: transform;
-}
-
 .hkdev-hero-dot{
-    width: var(--hkdev-hero-pager-slot);
-    height: var(--hkdev-hero-pager-slot) !important;
+    width: var(--hkdev-hero-dot-size, 8px) !important;
+    height: var(--hkdev-hero-dot-size, 8px) !important;
     padding: 0 !important;
     border: 0 !important;
-    flex: 0 0 var(--hkdev-hero-pager-slot) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background: transparent !important;
+    border-radius: 50% !important;
+    flex: 0 0 auto !important;
+    background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.5)) !important;
     cursor: pointer !important;
+    transform: scale(.72) !important;
+    opacity: .42 !important;
+    transition: transform .24s ease, opacity .24s ease, background-color .24s ease !important;
+}
+
+.hkdev-hero-dot.is-far{
+    transform: scale(.66) !important;
+    opacity: .32 !important;
+}
+
+.hkdev-hero-dot.is-near{
+    transform: scale(.86) !important;
+    opacity: .66 !important;
+}
+
+.hkdev-hero-dot.is-active{
+    background-color: var(--hkdev-hero-dot-active, #ffffff) !important;
+    transform: scale(1) !important;
     opacity: 1 !important;
 }
 
-.hkdev-hero-dot::after{
-    content: "";
-    width: var(--hkdev-hero-dot-size, 8px);
-    height: var(--hkdev-hero-dot-size, 8px);
-    border-radius: 999px;
-    background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.5));
-    opacity: .5;
-    transition: width .28s ease, height .28s ease, background-color .25s ease, opacity .25s ease;
+.hkdev-hero-dot.is-off{
+    display: none !important;
 }
 
-.hkdev-hero-dot:hover::after{
-    background-color: var(--hkdev-hero-dot-hover, rgba(255, 255, 255, 0.85));
-}
-
-.hkdev-hero-dot.is-active::after{
-    width: var(--hkdev-hero-pager-slot);
-    height: var(--hkdev-hero-pager-slot);
-    background-color: var(--hkdev-hero-dot-active, #ffffff);
-    opacity: 1;
+.hkdev-hero-dot:hover{
+    background-color: var(--hkdev-hero-dot-hover, rgba(255, 255, 255, 0.85)) !important;
 }
 
 /* ---------------- Autoplay progress ---------------- */
@@ -425,8 +414,7 @@
         animation: none !important;
     }
 
-    .hkdev-hero-pager-track,
-    .hkdev-hero-dot::after{
+    .hkdev-hero-dot{
         transition: none !important;
     }
 }

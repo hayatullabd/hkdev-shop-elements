@@ -49,17 +49,15 @@
         let $dots = $();
 
         if ($dotsWrap.length && count > 1) {
-            var $pagerTrack = $('<div>', { class: 'hkdev-hero-pager-track' }).appendTo($dotsWrap);
             for (let s = 0; s < count; s++) {
                 $('<button>', {
                     type: 'button',
                     class: 'hkdev-hero-dot',
                     'data-slide': s,
                     'aria-label': 'Go to slide ' + (s + 1)
-                }).appendTo($pagerTrack);
+                }).appendTo($dotsWrap);
             }
-            $dots = $pagerTrack.children('.hkdev-hero-dot');
-            $dotsWrap.toggleClass('is-sliding', count > 6);
+            $dots = $dotsWrap.children('.hkdev-hero-dot');
             $dotsWrap.on('click', '.hkdev-hero-dot', function () {
                 var i = parseInt($(this).attr('data-slide'), 10);
                 if (!isNaN(i)) {
@@ -87,18 +85,12 @@
             });
 
             $dots.each(function (i) {
-                $(this).toggleClass('is-active', i === current);
-            });
-            if (count > 6) {
-                var visible = 6;
-                var start = Math.floor(current / visible) * visible;
-                if (start > count - visible) {
-                    start = count - visible;
-                }
-                $dots.parent().css(
-                    'transform',
-                    'translateX(calc(' + (-start) + ' * var(--hkdev-hero-pager-step)))'
-                );
+                var dist = Math.abs(i - current);
+                $(this)
+                    .toggleClass('is-active', i === current)
+                    .toggleClass('is-near', dist === 1)
+                    .toggleClass('is-far', dist === 2)
+                    .toggleClass('is-off', count > 7 && dist > 3);
             }
 
             if (transition === 'slide' && $track.length) {
