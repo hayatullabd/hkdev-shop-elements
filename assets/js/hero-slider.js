@@ -48,21 +48,22 @@
         /* ---------------- Dots ---------------- */
         let $dots = $();
 
-        if ($dotsWrap.length) {
-            for (let i = 0; i < count; i++) {
+        if ($dotsWrap.length && count > 1) {
+            var slots = Math.min(3, count);
+            for (let s = 0; s < slots; s++) {
                 $('<button>', {
                     type: 'button',
-                    class: 'hkdev-hero-dot',
-                    'aria-label': 'Go to slide ' + (i + 1)
-                })
-                    .on('click', function () {
-                        goTo(i);
-                        userAction();
-                    })
-                    .appendTo($dotsWrap);
+                    class: 'hkdev-hero-dot'
+                }).appendTo($dotsWrap);
             }
-
             $dots = $dotsWrap.children('.hkdev-hero-dot');
+            $dotsWrap.on('click', '.hkdev-hero-dot', function () {
+                var i = parseInt($(this).attr('data-slide'), 10);
+                if (!isNaN(i)) {
+                    goTo(i);
+                    userAction();
+                }
+            });
         }
 
         /* ---------------- Rendering ---------------- */
@@ -82,26 +83,29 @@
                 }
             });
 
-            $dots.each(function (index) {
-                const $dot = $(this);
-                const dist = Math.abs(index - current);
-                $dot.toggleClass('is-active', index === current);
-                $dot.toggleClass('is-near', dist === 1);
-                $dot.toggleClass('is-far', dist === 2);
-
-                // 20+ slides: a 5-dot window, centred on the banner. Active
-                // sits in the middle of that window whenever it can.
-                var windowStart = 0;
-                var windowEnd = count - 1;
-                if (count > 5) {
-                    windowStart = Math.min(Math.max(0, current - 2), count - 5);
-                    windowEnd = windowStart + 4;
-                }
-                var off = index < windowStart || index > windowEnd;
-                $dot.toggleClass('is-off', off);
-                $dot.attr('tabindex', off ? '-1' : '0');
-                $dot.attr('aria-hidden', off ? 'true' : 'false');
-            });
+            if (count <= 3) {
+                $dots.each(function (index) {
+                    $(this)
+                        .attr('data-slide', index)
+                        .attr('aria-label', 'Go to slide ' + (index + 1))
+                        .toggleClass('is-active', index === current)
+                        .toggleClass('is-near', Math.abs(index - current) === 1)
+                        .removeClass('is-far is-off');
+                });
+            } else {
+                var prevSlide = (current - 1 + count) % count;
+                var nextSlide = (current + 1) % count;
+                var map = [prevSlide, current, nextSlide];
+                $dots.each(function (slot) {
+                    var i = map[slot];
+                    $(this)
+                        .attr('data-slide', i)
+                        .attr('aria-label', 'Go to slide ' + (i + 1))
+                        .toggleClass('is-active', slot === 1)
+                        .toggleClass('is-near', slot !== 1)
+                        .removeClass('is-far is-off');
+                });
+            }
 
             if (transition === 'slide' && $track.length) {
                 $track.css('transform', 'translateX(-' + (current * 100) + '%)');

@@ -197,11 +197,42 @@ jQuery(function($) {
         }
 
         if (cfg.dots && $dots.length) {
+            $dots.off('click.hkdevPager').on('click.hkdevPager', '[data-hkdev-slide]', function (e) {
+                e.preventDefault();
+                var i = parseInt(this.getAttribute('data-hkdev-slide'), 10);
+                var sw = el.swiper;
+                if (!sw || isNaN(i)) {
+                    return;
+                }
+                if (cfg.loop && typeof sw.slideToLoop === 'function') {
+                    sw.slideToLoop(i);
+                } else {
+                    sw.slideTo(i);
+                }
+            });
             options.pagination = {
                 el: $dots[0],
-                clickable: true,
-                dynamicBullets: true,
-                dynamicMainBullets: 5
+                type: 'custom',
+                renderCustom: function (swiper, current, total) {
+                    var idx = current - 1;
+                    function bullet(i, active) {
+                        return '<button type="button" class="swiper-pagination-bullet' +
+                            (active ? ' swiper-pagination-bullet-active' : '') +
+                            '" data-hkdev-slide="' + i +
+                            '" aria-label="Go to slide ' + (i + 1) + '"' +
+                            (active ? ' aria-current="true"' : '') + '></button>';
+                    }
+                    if (total <= 3) {
+                        var html = '';
+                        for (var n = 0; n < total; n++) {
+                            html += bullet(n, n === idx);
+                        }
+                        return html;
+                    }
+                    var prev = (idx - 1 + total) % total;
+                    var next = (idx + 1) % total;
+                    return bullet(prev, false) + bullet(idx, true) + bullet(next, false);
+                }
             };
         }
 
