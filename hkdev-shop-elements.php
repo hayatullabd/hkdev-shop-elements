@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.86
+ * Version:           0.5.87
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.86' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.87' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -225,6 +225,10 @@ function hkdev_elements_boot() {
 	// Admin settings for the contact form + the submissions inbox submenu.
 	require_once HKDEV_ELEMENTS_PATH . 'includes/contact-form-options.php';
 	Includes\Contact_Form_Options::instance()->init();
+
+	// Admin widget enable / disable grid.
+	require_once HKDEV_ELEMENTS_PATH . 'includes/widget-options.php';
+	Includes\Widget_Options::instance()->init();
 
 	// Widget manager hooks elementor/* actions. When Elementor is not active
 	// those actions never fire, so calling init() unconditionally is safe.

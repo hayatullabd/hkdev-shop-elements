@@ -118,6 +118,25 @@
 .hkdev-admin-wrap .button-primary:hover{filter:brightness(1.06)}
 .hkdev-admin-wrap .notice{margin:12px 0;border-radius:8px}
 
+/* ---------- Widget manager grid ---------- */
+.hkdev-widget-manager-wrap .hkdev-widget-summary{display:inline-flex;align-items:center;padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:12.5px;font-weight:600}
+.hkdev-widget-group-actions{display:flex;gap:8px;margin-left:auto}
+.hkdev-widget-group-actions .button{height:auto;line-height:1.4;padding:6px 12px;font-size:12px}
+.hkdev-widget-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.hkdev-widget-card{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #e2e6ea;border-radius:10px;background:#fbfcfc;cursor:pointer;transition:border-color .15s,box-shadow .15s,background .15s;min-height:100%}
+.hkdev-widget-card:hover{border-color:#b7e4c8;background:#fff;box-shadow:0 4px 14px rgba(3,165,80,.08)}
+.hkdev-widget-card.is-enabled{border-color:#b7e4c8;background:#f4fbf6}
+.hkdev-widget-card.is-disabled{opacity:.82}
+.hkdev-widget-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hkdev-widget-card-icon{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#03a550,#028a40);color:#fff;font-size:16px;line-height:1}
+.hkdev-widget-card-title{font-size:13.5px;font-weight:700;color:#1d2327;line-height:1.35}
+.hkdev-widget-card-desc{font-size:12px;color:#667085;line-height:1.45}
+.hkdev-widget-card-slug{font-size:10.5px;color:#98a2b3;background:#f0f2f5;padding:2px 6px;border-radius:4px;align-self:flex-start}
+.hkdev-widget-note{margin:0 0 14px;color:#667085;font-size:12.5px;line-height:1.5}
+.hkdev-widget-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end}
+.hkdev-widget-toolbar .button{height:auto;line-height:1.4;padding:8px 14px}
+.hkdev-widget-toolbar .submit{margin-left:auto;padding:0}
+
 /* ---------- Responsive ---------- */
 @media screen and (max-width:1100px){
   .hkdev-admin-header{padding:16px}

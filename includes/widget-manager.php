@@ -94,6 +94,232 @@ final class Widget_Manager {
 	}
 
 	/**
+	 * Shared trait files always loaded before widgets.
+	 *
+	 * @return string[]
+	 */
+	public static function get_shared_includes() {
+		return [
+			'heading-controls-trait.php',
+			'product-controls-trait.php',
+			'style-controls-trait.php',
+		];
+	}
+
+	/**
+	 * Canonical registry of every HKDEV Elementor widget.
+	 *
+	 * @return array<string,array{label:string,icon:string,widgets:array<string,array{title:string,description:string,icon:string,file:string,class:string,policy_base?:bool}>}>
+	 */
+	public static function get_widget_registry() {
+		return [
+			'commerce' => [
+				'label' => esc_html__( 'Commerce', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-cart',
+				'widgets' => [
+					'hkdev_shop_grid' => [
+						'title'       => esc_html__( 'Shop Grid / Carousel', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Product grid, carousel, filters and buy now.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-products',
+						'file'        => 'shop-widget.php',
+						'class'       => Widgets\Shop_Widget::class,
+					],
+					'hkdev_single_product' => [
+						'title'       => esc_html__( 'Single Product', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Full product page layout with gallery and buy buttons.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-single-product',
+						'file'        => 'single-product-widget.php',
+						'class'       => Widgets\Single_Product_Widget::class,
+					],
+					'hkdev_related_products' => [
+						'title'       => esc_html__( 'Related Products', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Related / upsell product carousel.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-product-related',
+						'file'        => 'related-widget.php',
+						'class'       => Widgets\Related_Widget::class,
+					],
+					'hkdev_category_carousel' => [
+						'title'       => esc_html__( 'Category Grid / Carousel', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'WooCommerce category carousel or grid.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-gallery-grid',
+						'file'        => 'category-carousel-widget.php',
+						'class'       => Widgets\Category_Carousel_Widget::class,
+					],
+					'hkdev_catalog' => [
+						'title'       => esc_html__( 'Catalog (Search + Filter)', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'AJAX catalog with search, sort and filters.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-filter',
+						'file'        => 'catalog-widget.php',
+						'class'       => Widgets\Catalog_Widget::class,
+					],
+					'hkdev_cart' => [
+						'title'       => esc_html__( 'Cart', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Custom AJAX shopping cart page.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-cart',
+						'file'        => 'cart-widget.php',
+						'class'       => Widgets\Cart_Widget::class,
+					],
+					'hkdev_checkout' => [
+						'title'       => esc_html__( 'Checkout', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Custom one-page checkout form.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-checkout',
+						'file'        => 'checkout-widget.php',
+						'class'       => Widgets\Checkout_Widget::class,
+					],
+				],
+			],
+			'content' => [
+				'label' => esc_html__( 'Content & Conversion', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-layout',
+				'widgets' => [
+					'hkdev_section_heading' => [
+						'title'       => esc_html__( 'Section Heading', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Styled section title with subtitle.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-heading',
+						'file'        => 'section-heading-widget.php',
+						'class'       => Widgets\Section_Heading_Widget::class,
+					],
+					'hkdev_hero_slider' => [
+						'title'       => esc_html__( 'Hero Slider', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Promotional hero banner slider.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-slider-push',
+						'file'        => 'hero-slider-widget.php',
+						'class'       => Widgets\Hero_Slider_Widget::class,
+					],
+					'hkdev_customer_reviews' => [
+						'title'       => esc_html__( 'Customer Reviews', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Customer review carousel / grid.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-testimonial',
+						'file'        => 'reviews-widget.php',
+						'class'       => Widgets\Reviews_Widget::class,
+					],
+					'hkdev_video_embed' => [
+						'title'       => esc_html__( 'Video Embed', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'YouTube / Vimeo / direct video embed.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-youtube',
+						'file'        => 'video-widget.php',
+						'class'       => Widgets\Video_Widget::class,
+					],
+					'hkdev_faq' => [
+						'title'       => esc_html__( 'FAQ', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Accordion FAQ block for any page.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-help-o',
+						'file'        => 'faq-widget.php',
+						'class'       => Widgets\FAQ_Widget::class,
+					],
+					'hkdev_blog' => [
+						'title'       => esc_html__( 'Blog', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Blog grid / carousel with filters.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-post-list',
+						'file'        => 'blog-widget.php',
+						'class'       => Widgets\Blog_Widget::class,
+					],
+				],
+			],
+			'site_builder' => [
+				'label' => esc_html__( 'Site Builder', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-admin-home',
+				'widgets' => [
+					'hkdev_header' => [
+						'title'       => esc_html__( 'Header', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Full WooCommerce header with search and cart.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-header',
+						'file'        => 'header-widget.php',
+						'class'       => Widgets\Header_Widget::class,
+					],
+					'hkdev_footer' => [
+						'title'       => esc_html__( 'Footer', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Site footer with newsletter and links.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-footer',
+						'file'        => 'footer-widget.php',
+						'class'       => Widgets\Footer_Widget::class,
+					],
+					'hkdev_contact_form' => [
+						'title'       => esc_html__( 'Contact Form', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Contact form with info sidebar.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-form-horizontal',
+						'file'        => 'contact-form-widget.php',
+						'class'       => Widgets\Contact_Form_Widget::class,
+					],
+				],
+			],
+			'utility' => [
+				'label' => esc_html__( 'Utility', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-admin-tools',
+				'widgets' => [
+					'hkdev_account' => [
+						'title'       => esc_html__( 'My Account', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Customer account dashboard.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-person',
+						'file'        => 'account-widget.php',
+						'class'       => Widgets\Account_Widget::class,
+					],
+					'hkdev_tracking' => [
+						'title'       => esc_html__( 'Order Tracking', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Track order by ID and phone.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-search',
+						'file'        => 'tracking-widget.php',
+						'class'       => Widgets\Tracking_Widget::class,
+					],
+					'hkdev_404_page' => [
+						'title'       => esc_html__( '404 Page', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Custom 404 page block.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-warning',
+						'file'        => '404-widget.php',
+						'class'       => Widgets\Page404_Widget::class,
+					],
+				],
+			],
+			'policy' => [
+				'label' => esc_html__( 'Policy & Company Pages', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-media-text',
+				'widgets' => [
+					'hkdev_privacy_policy_link' => [
+						'title'       => esc_html__( 'Privacy Policy', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Ready-made privacy policy page block.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-document-file',
+						'file'        => 'privacy-policy-widget.php',
+						'class'       => Widgets\Privacy_Policy_Widget::class,
+						'policy_base' => true,
+					],
+					'hkdev_terms_conditions_link' => [
+						'title'       => esc_html__( 'Terms & Conditions', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Ready-made terms page block.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-document-file',
+						'file'        => 'terms-conditions-widget.php',
+						'class'       => Widgets\Terms_Conditions_Widget::class,
+						'policy_base' => true,
+					],
+					'hkdev_careers_link' => [
+						'title'       => esc_html__( 'Careers', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Ready-made careers page block.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-document-file',
+						'file'        => 'careers-widget.php',
+						'class'       => Widgets\Careers_Widget::class,
+						'policy_base' => true,
+					],
+					'hkdev_company_information_link' => [
+						'title'       => esc_html__( 'Company Information', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Ready-made company info page block.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-document-file',
+						'file'        => 'company-information-widget.php',
+						'class'       => Widgets\Company_Information_Widget::class,
+						'policy_base' => true,
+					],
+					'hkdev_about_us_link' => [
+						'title'       => esc_html__( 'About Us', 'hkdev-shop-elements' ),
+						'description' => esc_html__( 'Ready-made about us page block.', 'hkdev-shop-elements' ),
+						'icon'        => 'eicon-document-file',
+						'file'        => 'about-us-widget.php',
+						'class'       => Widgets\About_Us_Widget::class,
+						'policy_base' => true,
+					],
+				],
+			],
+		];
+	}
+
+	/**
 	 * Register all plugin widgets.
 	 *
 	 * Widget class files are required here, not at plugins_loaded: they extend
@@ -110,86 +336,34 @@ final class Widget_Manager {
 			return;
 		}
 
-		$includes = [
-			// Shared control helpers / base widgets.
-			'heading-controls-trait.php',
-			'product-controls-trait.php',
-			'style-controls-trait.php',
-			'policy-link-base-widget.php',
+		$options  = Widget_Options::instance();
+		$registry = self::get_widget_registry();
+		$widgets  = [];
 
-			// Commerce widgets.
-			'shop-widget.php',
-			'single-product-widget.php',
-			'related-widget.php',
-			'category-carousel-widget.php',
-			'catalog-widget.php',
-			'cart-widget.php',
-			'checkout-widget.php',
-
-			// Content widgets.
-			'section-heading-widget.php',
-			'hero-slider-widget.php',
-			'reviews-widget.php',
-			'video-widget.php',
-			'faq-widget.php',
-			'blog-widget.php',
-
-			// Site builder widgets.
-			'header-widget.php',
-			'footer-widget.php',
-			'contact-form-widget.php',
-
-			// Utility widgets.
-			'account-widget.php',
-			'tracking-widget.php',
-			'404-widget.php',
-
-			// Policy / company page-ready widgets.
-			'privacy-policy-widget.php',
-			'terms-conditions-widget.php',
-			'careers-widget.php',
-			'company-information-widget.php',
-			'about-us-widget.php',
-		];
-		foreach ( $includes as $include_file ) {
+		foreach ( self::get_shared_includes() as $include_file ) {
 			require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/' . $include_file;
 		}
 
-		$widgets = [
-			// Commerce.
-			Widgets\Shop_Widget::class,
-			Widgets\Single_Product_Widget::class,
-			Widgets\Related_Widget::class,
-			Widgets\Category_Carousel_Widget::class,
-			Widgets\Catalog_Widget::class,
-			Widgets\Cart_Widget::class,
-			Widgets\Checkout_Widget::class,
+		$needs_policy_base = false;
 
-			// Content / conversion.
-			Widgets\Section_Heading_Widget::class,
-			Widgets\Hero_Slider_Widget::class,
-			Widgets\Reviews_Widget::class,
-			Widgets\Video_Widget::class,
-			Widgets\FAQ_Widget::class,
-			Widgets\Blog_Widget::class,
+		foreach ( $registry as $group ) {
+			foreach ( $group['widgets'] as $slug => $meta ) {
+				if ( ! $options->is_widget_enabled( $slug ) ) {
+					continue;
+				}
 
-			// Site-wide blocks.
-			Widgets\Header_Widget::class,
-			Widgets\Footer_Widget::class,
-			Widgets\Contact_Form_Widget::class,
+				if ( ! empty( $meta['policy_base'] ) ) {
+					$needs_policy_base = true;
+				}
 
-			// Utility.
-			Widgets\Account_Widget::class,
-			Widgets\Tracking_Widget::class,
-			Widgets\Page404_Widget::class,
+				require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/' . $meta['file'];
+				$widgets[] = $meta['class'];
+			}
+		}
 
-			// Policy / company (page-ready).
-			Widgets\Privacy_Policy_Widget::class,
-			Widgets\Terms_Conditions_Widget::class,
-			Widgets\Careers_Widget::class,
-			Widgets\Company_Information_Widget::class,
-			Widgets\About_Us_Widget::class,
-		];
+		if ( $needs_policy_base ) {
+			require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/policy-link-base-widget.php';
+		}
 
 		foreach ( $widgets as $widget_class ) {
 			if ( ! class_exists( $widget_class ) ) {
