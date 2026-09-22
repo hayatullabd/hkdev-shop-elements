@@ -268,6 +268,7 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     background: var(--hd-soft) !important;
     border: 1.5px solid rgba(3, 165, 80, 0.16) !important;
     border-radius: var(--hd-pill) !important;
+    --hd-search-btn-gap: 4px !important;
     transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
 }
 
@@ -298,9 +299,11 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
 
 .hkdev-header-search-btn {
     flex-shrink: 0 !important;
-    width: 44px !important;
-    height: 44px !important;
-    margin-right: 4px !important;
+    height: calc(100% - (var(--hd-search-btn-gap) * 2)) !important;
+    width: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    margin-right: var(--hd-search-btn-gap) !important;
+    align-self: center !important;
     border: none !important;
     border-radius: 50% !important;
     background: var(--hd-primary) !important;
@@ -737,8 +740,9 @@ body.admin-bar .hkdev-header-wrap.hkdev-header-sticky {
     gap: 7px !important;
     padding: 6px 12px !important;
     border-radius: var(--hd-pill) !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    line-height: 1.15 !important;
     color: #ffffff !important;
     text-decoration: none !important;
     white-space: nowrap !important;
@@ -1711,7 +1715,7 @@ body.hkdev-header-locked {
 
     .hkdev-header-menu > li > a {
         padding: 6px 10px !important;
-        font-size: 12.5px !important;
+        font-size: 13px !important;
     }
 
     .hkdev-header-call .call-text small {
@@ -1795,16 +1799,12 @@ body.hkdev-header-locked {
 
     .hkdev-header-search-form {
         height: 48px !important;
+        --hd-search-btn-gap: 4px !important;
     }
 
     .hkdev-header-search-input {
         font-size: 14.5px !important;
         padding-left: 18px !important;
-    }
-
-    .hkdev-header-search-btn {
-        width: 40px !important;
-        height: 40px !important;
     }
 
     /* the row already carries padding-bottom – keep the panel close to the field */
@@ -1990,11 +1990,7 @@ body.hkdev-header-locked {
 
     .hkdev-header-search-form {
         height: 46px !important;
-    }
-
-    .hkdev-header-search-btn {
-        width: 38px !important;
-        height: 38px !important;
+        --hd-search-btn-gap: 4px !important;
     }
 
     .hkdev-header-search-input {

@@ -344,7 +344,7 @@ class Header_Engine {
 				'search_h'    => [ 52, 48, 46 ],
 				'logo_maxh'   => [ 62, 46, 40 ],
 				'navbar_h'    => [ 46, 0, 0 ],
-				'navbar_fs'   => [ 13, 12.5, 12 ],
+				'navbar_fs'   => [ 13.5, 13, 12.5 ],
 			],
 			'compact' => [
 				'topbar_h'    => [ 38, 36, 34 ],
@@ -356,7 +356,7 @@ class Header_Engine {
 				'search_h'    => [ 48, 45, 43 ],
 				'logo_maxh'   => [ 54, 42, 36 ],
 				'navbar_h'    => [ 42, 0, 0 ],
-				'navbar_fs'   => [ 12, 11.5, 11 ],
+				'navbar_fs'   => [ 13, 12.5, 12 ],
 			],
 			'ultra' => [
 				'topbar_h'    => [ 34, 32, 30 ],
@@ -368,7 +368,7 @@ class Header_Engine {
 				'search_h'    => [ 44, 42, 40 ],
 				'logo_maxh'   => [ 48, 38, 34 ],
 				'navbar_h'    => [ 38, 0, 0 ],
-				'navbar_fs'   => [ 11.5, 11, 10.5 ],
+				'navbar_fs'   => [ 12.5, 12, 11.5 ],
 			],
 		];
 		$topset = $presets[ $topbar_preset ];
