@@ -90,7 +90,7 @@
                     .toggleClass('is-active', i === current)
                     .toggleClass('is-near', dist === 1)
                     .toggleClass('is-far', dist === 2)
-                    .toggleClass('is-off', count > 7 && dist > 3);
+                    .toggleClass('is-off', count > 5 && dist > 2);
             }
 
             if (transition === 'slide' && $track.length) {
