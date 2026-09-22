@@ -158,13 +158,16 @@ jQuery(function($) {
             idx = total - 1;
         }
         idx = Math.max(0, Math.min(idx, total - 1));
-        var visible = Math.min(5, total);
+        var visible = Math.min(6, total);
         var start = 0;
         if (total > visible) {
-            start = Math.min(Math.max(0, idx - 2), total - visible);
+            start = Math.floor(idx / visible) * visible;
+            if (start > total - visible) {
+                start = total - visible;
+            }
         }
-        $dots.toggleClass('is-sliding', total > 5);
-        $track.css('transform', total > 5
+        $dots.toggleClass('is-sliding', total > 6);
+        $track.css('transform', total > 6
             ? 'translateX(calc(' + (-start) + ' * var(--hkdev-pager-step)))'
             : 'none');
         $btns.each(function (i) {

@@ -652,9 +652,9 @@ button.hkdev-order-btn{
     height: auto !important;
 }.hkdev-carousel-dots{
     --hkdev-pager-mark: 7px;
-    --hkdev-pager-pill: 18px;
+    --hkdev-pager-active: 11px;
     --hkdev-pager-gap: 8px;
-    --hkdev-pager-slot: var(--hkdev-pager-pill);
+    --hkdev-pager-slot: var(--hkdev-pager-active);
     --hkdev-pager-step: calc(var(--hkdev-pager-slot) + var(--hkdev-pager-gap));
     position: relative !important;
     left: auto !important;
@@ -667,23 +667,23 @@ button.hkdev-order-btn{
     align-items: center !important;
     flex-wrap: nowrap !important;
     overflow: hidden !important;
-    padding: 6px 12px !important;
+    padding: 8px 14px !important;
     border-radius: 999px !important;
-    background: rgba(255, 255, 255, 0.88) !important;
-    box-shadow: 0 4px 18px rgba(20, 26, 20, 0.10), inset 0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: 0 4px 18px rgba(20, 26, 20, 0.10), inset 0 0 0 1px rgba(0, 0, 0, 0.05) !important;
     backdrop-filter: blur(12px) !important;
     -webkit-backdrop-filter: blur(12px) !important;
 }.hkdev-carousel-dots.is-sliding{
-    width: calc(var(--hkdev-pager-slot) * 5 + var(--hkdev-pager-gap) * 4) !important;
+    width: calc(var(--hkdev-pager-slot) * 6 + var(--hkdev-pager-gap) * 5) !important;
 }.hkdev-pager-track{
     display: flex !important;
     align-items: center !important;
     gap: var(--hkdev-pager-gap) !important;
-    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
     will-change: transform;
 }.hkdev-carousel-dots .swiper-pagination-bullet{
     width: var(--hkdev-pager-slot);
-    height: var(--hkdev-pager-mark) !important;
+    height: var(--hkdev-pager-slot) !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
@@ -701,9 +701,10 @@ button.hkdev-order-btn{
     border-radius: 999px;
     background: var(--hkdev-brand-primary);
     opacity: 0.32;
-    transition: width 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+    transition: width 0.28s ease, height 0.28s ease, opacity 0.28s ease;
 }.hkdev-carousel-dots .swiper-pagination-bullet-active::after{
-    width: var(--hkdev-pager-pill);
+    width: var(--hkdev-pager-active);
+    height: var(--hkdev-pager-active);
     opacity: 1;
 }@media (prefers-reduced-motion: reduce){
     .hkdev-pager-track,

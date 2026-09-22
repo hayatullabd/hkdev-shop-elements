@@ -59,7 +59,7 @@
                 }).appendTo($pagerTrack);
             }
             $dots = $pagerTrack.children('.hkdev-hero-dot');
-            $dotsWrap.toggleClass('is-sliding', count > 5);
+            $dotsWrap.toggleClass('is-sliding', count > 6);
             $dotsWrap.on('click', '.hkdev-hero-dot', function () {
                 var i = parseInt($(this).attr('data-slide'), 10);
                 if (!isNaN(i)) {
@@ -89,8 +89,12 @@
             $dots.each(function (i) {
                 $(this).toggleClass('is-active', i === current);
             });
-            if (count > 5) {
-                var start = Math.min(Math.max(0, current - 2), count - 5);
+            if (count > 6) {
+                var visible = 6;
+                var start = Math.floor(current / visible) * visible;
+                if (start > count - visible) {
+                    start = count - visible;
+                }
                 $dots.parent().css(
                     'transform',
                     'translateX(calc(' + (-start) + ' * var(--hkdev-hero-pager-step)))'
