@@ -49,13 +49,9 @@
         let $dots = $();
 
         if ($dotsWrap.length && count > 1) {
-            for (let s = 0; s < count; s++) {
-                $('<button>', {
-                    type: 'button',
-                    class: 'hkdev-hero-dot',
-                    'data-slide': s,
-                    'aria-label': 'Go to slide ' + (s + 1)
-                }).appendTo($dotsWrap);
+            var slots = Math.min(3, count);
+            for (let s = 0; s < slots; s++) {
+                $('<button>', { type: 'button', class: 'hkdev-hero-dot' }).appendTo($dotsWrap);
             }
             $dots = $dotsWrap.children('.hkdev-hero-dot');
             $dotsWrap.on('click', '.hkdev-hero-dot', function () {
@@ -85,13 +81,33 @@
             });
 
             $dots.each(function (i) {
-                var dist = Math.abs(i - current);
+                var target = i;
+                var activeSlot = i;
+
+                if (count > 3) {
+                    if (loop) {
+                        var map = [(current - 1 + count) % count, current, (current + 1) % count];
+                        target = map[i];
+                        activeSlot = 1;
+                    } else if (current <= 0) {
+                        target = i;
+                        activeSlot = 0;
+                    } else if (current >= count - 1) {
+                        target = count - 3 + i;
+                        activeSlot = 2;
+                    } else {
+                        target = current - 1 + i;
+                        activeSlot = 1;
+                    }
+                }
+
+                var activeDot = i === activeSlot;
                 $(this)
-                    .toggleClass('is-active', i === current)
-                    .toggleClass('is-near', dist === 1)
-                    .toggleClass('is-far', dist === 2)
-                    .toggleClass('is-off', count > 5 && dist > 2);
-            }
+                    .attr('data-slide', target)
+                    .attr('aria-label', 'Go to slide ' + (target + 1))
+                    .toggleClass('is-active', activeDot)
+                    .toggleClass('is-side', !activeDot);
+            });
 
             if (transition === 'slide' && $track.length) {
                 $track.css('transform', 'translateX(-' + (current * 100) + '%)');

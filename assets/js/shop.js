@@ -133,6 +133,68 @@ jQuery(function($) {
         } catch (e) {}
     }
 
+    function hkdevPagerState(sw) {
+        var total = $(sw.el).find('.swiper-slide:not(.swiper-slide-duplicate)').length;
+        if (total < 2) return null;
+
+        var loop = !!sw.params.loop;
+        var idx = loop && typeof sw.realIndex === 'number' ? sw.realIndex : sw.activeIndex;
+        idx = Math.max(0, Math.min(idx, total - 1));
+
+        var dots = [];
+        var activeSlot = 0;
+
+        if (total <= 3) {
+            for (var i = 0; i < total; i++) dots.push(i);
+            activeSlot = dots.indexOf(idx);
+        } else if (loop) {
+            dots = [(idx - 1 + total) % total, idx, (idx + 1) % total];
+            activeSlot = 1;
+        } else if (idx <= 0) {
+            dots = [0, 1, 2];
+            activeSlot = 0;
+        } else if (idx >= total - 1 || sw.isEnd) {
+            dots = [total - 3, total - 2, total - 1];
+            activeSlot = 2;
+        } else {
+            dots = [idx - 1, idx, idx + 1];
+            activeSlot = 1;
+        }
+
+        return { dots: dots, activeSlot: activeSlot };
+    }
+
+    function hkdevRenderPager(sw, $dots) {
+        var state = hkdevPagerState(sw);
+        if (!state) {
+            $dots.empty();
+            return;
+        }
+
+        var $btns = $dots.children('.swiper-pagination-bullet');
+        if ($btns.length !== state.dots.length) {
+            var html = '';
+            for (var n = 0; n < state.dots.length; n++) {
+                html += '<button type="button" class="swiper-pagination-bullet"></button>';
+            }
+            $dots.html(html);
+            $btns = $dots.children('.swiper-pagination-bullet');
+        }
+
+        $btns.each(function (slot) {
+            var slideIdx = state.dots[slot];
+            var active = slot === state.activeSlot;
+            this.setAttribute('data-hkdev-slide', String(slideIdx));
+            this.setAttribute('aria-label', 'Go to slide ' + (slideIdx + 1));
+            if (active) {
+                this.setAttribute('aria-current', 'true');
+            } else {
+                this.removeAttribute('aria-current');
+            }
+            this.classList.toggle('swiper-pagination-bullet-active', active);
+        });
+    }
+
     function initHkdevSwiper(wrapper) {
         // Accepts the wrapper element or its id. Resolving purely from an id
         // meant a wrapper without one looked up '#undefined', bailed, and left
@@ -185,9 +247,15 @@ jQuery(function($) {
             on: {
                 init: function () {
                     $container.removeClass('hkdev-loading-carousel');
+                    if (cfg.dots && $dots.length) {
+                        hkdevRenderPager(this, $dots);
+                    }
                 },
                 slideChange: function () {
                     hkdevWriteStoredSlide(slideKey, this.activeIndex);
+                    if (cfg.dots && $dots.length) {
+                        hkdevRenderPager(this, $dots);
+                    }
                 }
             }
         };
@@ -197,12 +265,17 @@ jQuery(function($) {
         }
 
         if (cfg.dots && $dots.length) {
-            options.pagination = {
-                el: $dots[0],
-                clickable: true,
-                dynamicBullets: true,
-                dynamicMainBullets: 5
-            };
+            $dots.off('click.hkdevPager').on('click.hkdevPager', '[data-hkdev-slide]', function (e) {
+                e.preventDefault();
+                var i = parseInt(this.getAttribute('data-hkdev-slide'), 10);
+                var sw = el.swiper;
+                if (!sw || isNaN(i)) return;
+                if (cfg.loop && typeof sw.slideToLoop === 'function') {
+                    sw.slideToLoop(i);
+                } else {
+                    sw.slideTo(i);
+                }
+            });
         }
 
         // The arrow selectors are built from the wrapper id, so only wire the

@@ -348,29 +348,18 @@
     flex: 0 0 auto !important;
     background-color: var(--hkdev-hero-dot-bg, rgba(255, 255, 255, 0.5)) !important;
     cursor: pointer !important;
-    transform: scale(.72) !important;
-    opacity: .42 !important;
-    transition: transform .24s ease, opacity .24s ease, background-color .24s ease !important;
-}
-
-.hkdev-hero-dot.is-far{
-    transform: scale(.66) !important;
-    opacity: .32 !important;
-}
-
-.hkdev-hero-dot.is-near{
-    transform: scale(.86) !important;
-    opacity: .66 !important;
+    opacity: .55 !important;
+    transition: width .26s ease, opacity .22s ease, background-color .24s ease !important;
 }
 
 .hkdev-hero-dot.is-active{
+    width: calc(var(--hkdev-hero-dot-size, 8px) * 2.5) !important;
     background-color: var(--hkdev-hero-dot-active, #ffffff) !important;
-    transform: scale(1) !important;
     opacity: 1 !important;
 }
 
-.hkdev-hero-dot.is-off{
-    display: none !important;
+.hkdev-hero-dot.is-side{
+    opacity: .6 !important;
 }
 
 .hkdev-hero-dot:hover{
