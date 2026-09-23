@@ -1003,10 +1003,10 @@ class Reviews_Widget extends Widget_Base {
 			]
 		);
 		$this->hkdev_slider( 'rv_modal_proof_w', esc_html__( 'Review Modal Width', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-modal-proof-w', 480, 1600 );
-		$this->hkdev_slider( 'rv_close_btn_size', esc_html__( 'Close Button Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-modal-close-size', 40, 64 );
-		$this->hkdev_slider( 'rv_close_icon_size', esc_html__( 'Close Icon Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-modal-close-icon', 20, 36 );
-		$this->hkdev_slider( 'rv_slider_btn_size', esc_html__( 'Slider Arrow Button Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-slider-btn-size', 44, 72 );
-		$this->hkdev_slider( 'rv_slider_icon_size', esc_html__( 'Slider Arrow Icon Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-slider-icon', 22, 40 );
+		$this->hkdev_slider( 'rv_close_btn_size', esc_html__( 'Close Button Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-modal-close-size', 36, 52 );
+		$this->hkdev_slider( 'rv_close_icon_size', esc_html__( 'Close Icon Size (min)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-modal-close-icon', 24, 44 );
+		$this->hkdev_slider( 'rv_slider_btn_size', esc_html__( 'Slider Arrow Button Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-slider-btn-size', 40, 54 );
+		$this->hkdev_slider( 'rv_slider_icon_size', esc_html__( 'Slider Arrow Icon Size (min)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-slider-icon', 28, 48 );
 		$this->hkdev_color( 'rv_close_bg', esc_html__( 'Close Button Background', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close, {{WRAPPER}} .hkdev-rv-pmodal-close', 'background-color' );
 		$this->hkdev_color( 'rv_close_color', esc_html__( 'Close Button Icon', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close .hkdev-rv-btn-glyph, {{WRAPPER}} .hkdev-rv-pmodal-close .hkdev-rv-btn-glyph', 'color' );
 		$this->hkdev_color( 'rv_close_hover_bg', esc_html__( 'Close Button Hover', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close:hover, {{WRAPPER}} .hkdev-rv-pmodal-close:hover', 'background-color' );
