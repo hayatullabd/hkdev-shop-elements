@@ -707,9 +707,18 @@ class Single_Product_Engine {
 
 		ob_start();
 		?>
+		<?php
+		$default_variation_attrs = [];
+		if ( $is_variable && method_exists( $product, 'get_default_attributes' ) ) {
+			foreach ( $product->get_default_attributes() as $attr_key => $attr_val ) {
+				$default_variation_attrs[ 'attribute_' . sanitize_title( $attr_key ) ] = $attr_val;
+			}
+		}
+		?>
 		<div id="product-<?php echo esc_attr( $product_id ); ?>" <?php wc_product_class( 'hkdev-sp-wrapper', $product ); ?>
 			data-product-type="<?php echo esc_attr( $is_variable ? 'variable' : 'simple' ); ?>"
-			data-in-stock="<?php echo $is_in_stock ? 'yes' : 'no'; ?>">
+			data-in-stock="<?php echo $is_in_stock ? 'yes' : 'no'; ?>"
+			data-default-attributes="<?php echo esc_attr( wp_json_encode( $default_variation_attrs ) ); ?>">
 
 			<?php do_action( 'woocommerce_before_single_product' ); ?>
 

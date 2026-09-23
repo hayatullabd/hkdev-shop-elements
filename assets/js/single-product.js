@@ -56,7 +56,13 @@ jQuery(document).ready(function($) {
 
     // 1. Quantity Plus/Minus Buttons
     $(document).on('click', '.hkdev-sp-qty-btn', function() {
+        if ($(this).prop('disabled')) {
+            return;
+        }
         const $input = $('#hkdev-sp-qty-field');
+        if ($input.prop('disabled')) {
+            return;
+        }
         let val = parseInt($input.val()) || 1;
 
         if ($(this).hasClass('plus')) {
@@ -82,17 +88,27 @@ jQuery(document).ready(function($) {
         $notice.toggleClass('is-visible', !!visible);
     }
 
+    function variationIsInStock(variation) {
+        if (!variation) {
+            return false;
+        }
+        const flag = variation.is_in_stock;
+        return flag === true || flag === 1 || flag === '1' || flag === 'yes';
+    }
+
     function setPurchaseButtonsState(isEnabled) {
         const $atc = $('#hkdev-sp-add-to-cart');
         const $buy = $('#hkdev-sp-buy-now');
         const $qty = $('#hkdev-sp-qty-field');
         const $qtyBtns = $('.hkdev-sp-qty-btn');
+        const $qtyWrap = $('.hkdev-sp-qty-control');
 
         if ($buy.hasClass('checkout-active')) {
             $atc.prop('disabled', true).addClass('is-out-of-stock').css('opacity', '0.55');
             $buy.prop('disabled', false).removeClass('is-out-of-stock').css('opacity', '1');
             $qty.prop('disabled', true);
             $qtyBtns.prop('disabled', true);
+            $qtyWrap.addClass('is-out-of-stock');
             setStockNoticeVisible(false);
             return;
         }
@@ -102,18 +118,94 @@ jQuery(document).ready(function($) {
             $buy.prop('disabled', false).removeClass('is-out-of-stock').css('opacity', '1');
             $qty.prop('disabled', false);
             $qtyBtns.prop('disabled', false);
+            $qtyWrap.removeClass('is-out-of-stock');
         } else {
             $atc.prop('disabled', true).addClass('is-out-of-stock').css('opacity', '0.55');
             $buy.prop('disabled', true).addClass('is-out-of-stock').css('opacity', '0.55');
             $qty.prop('disabled', true);
             $qtyBtns.prop('disabled', true);
+            $qtyWrap.addClass('is-out-of-stock');
         }
     }
 
-    if ('variable' === productType) {
+    function applyVariationAttributes(attrs) {
+        if (!attrs || 'object' !== typeof attrs) {
+            return;
+        }
+        Object.keys(attrs).forEach(function(key) {
+            const val = attrs[key];
+            if (!val) {
+                return;
+            }
+            const $row = $('.hkdev-sp-variation-row[data-attribute="' + key + '"]');
+            if (!$row.length) {
+                return;
+            }
+            $row.find('.hkdev-sp-swatch-item').each(function() {
+                const $swatch = $(this);
+                if (String($swatch.attr('data-value')).toLowerCase() === String(val).toLowerCase()) {
+                    $row.find('.hkdev-sp-swatch-item').removeClass('selected');
+                    $swatch.addClass('selected');
+                    $row.find('.selected-val').text($swatch.attr('data-label') || $swatch.text() || val);
+                }
+            });
+        });
+    }
+
+    function autoSelectDefaultVariation() {
+        if (!variations.length || !$('.hkdev-sp-variation-row').length) {
+            return;
+        }
+
+        let defaults = $spWrapper.attr('data-default-attributes');
+        if (defaults) {
+            try {
+                defaults = JSON.parse(defaults);
+            } catch (err) {
+                defaults = null;
+            }
+        } else {
+            defaults = null;
+        }
+
+        let pick = null;
+        if (defaults && 'object' === typeof defaults) {
+            pick = variations.find(function(v) {
+                return Object.keys(defaults).every(function(key) {
+                    const attrKey = 0 === key.indexOf('attribute_') ? key : 'attribute_' + key;
+                    const selected = defaults[key];
+                    if (!selected) {
+                        return true;
+                    }
+                    const vVal = v.attributes[attrKey];
+                    if (!vVal) {
+                        return true;
+                    }
+                    return String(vVal).toLowerCase() === String(selected).toLowerCase();
+                });
+            });
+        }
+
+        if (!pick) {
+            pick = variations.find(variationIsInStock) || variations[0];
+        }
+
+        if (pick && pick.attributes) {
+            applyVariationAttributes(pick.attributes);
+            updateVariation();
+        }
+    }
+
+    const wrapperInStock = ($spWrapper.attr('data-in-stock') || 'yes').toLowerCase();
+
+    if ('variable' === productType && variations.length) {
+        autoSelectDefaultVariation();
+    } else if ('variable' === productType) {
         setPurchaseButtonsState(false);
-    } else if ('no' === String($spWrapper.data('in-stock'))) {
+    } else if ('no' === wrapperInStock) {
         setPurchaseButtonsState(false);
+    } else {
+        setPurchaseButtonsState(true);
     }
 
     // 3. Image + Video Gallery Logic
@@ -305,8 +397,9 @@ jQuery(document).ready(function($) {
             $('.stock-val').html(match.is_in_stock ? '<span class="in-stock-pill">' + hkdevJsT('in_stock') + '</span>' : '<span class="out-stock-pill">' + hkdevJsT('out_of_stock') + '</span>');
 
             $('#hkdev-sp-add-to-cart, #hkdev-sp-buy-now').attr('data-variation-id', match.variation_id).data('variation-id', match.variation_id);
-            setStockNoticeVisible(!match.is_in_stock);
-            setPurchaseButtonsState(!!match.is_in_stock);
+            const inStock = variationIsInStock(match);
+            setStockNoticeVisible(!inStock);
+            setPurchaseButtonsState(inStock);
         } else {
             setStockNoticeVisible(false);
             setPurchaseButtonsState(false);
