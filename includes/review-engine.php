@@ -22,9 +22,293 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Review_Engine {
 
 	/**
+	 * WP option key for plugin-wide review content (admin + shortcode + Elementor "global" mode).
+	 *
+	 * @var string
+	 */
+	const OPTION_NAME = 'hkdev_rv_settings';
+
+	/**
 	 * @var ?Review_Engine
 	 */
 	private static $instance = null;
+
+	/**
+	 * Register front-end shortcode.
+	 *
+	 * @return void
+	 */
+	public function register_shortcode() {
+		add_shortcode( 'hkdev_customer_reviews', [ $this, 'shortcode' ] );
+	}
+
+	/**
+	 * Shortcode output using global admin settings.
+	 *
+	 * @param array|string $atts Shortcode attributes (unused).
+	 * @return string
+	 */
+	public function shortcode( $atts ) {
+		unset( $atts );
+
+		wp_enqueue_style( 'hkdev-elements-reviews-style' );
+		wp_enqueue_script( 'hkdev-elements-reviews-js' );
+
+		return $this->render( $this->get_global_render_config() );
+	}
+
+	/**
+	 * Read stored admin settings merged with render defaults.
+	 *
+	 * @return array
+	 */
+	public function get_stored_settings() {
+		$stored = get_option( self::OPTION_NAME, [] );
+
+		if ( ! is_array( $stored ) ) {
+			$stored = [];
+		}
+
+		return wp_parse_args( $stored, $this->admin_settings_defaults() );
+	}
+
+	/**
+	 * Defaults for the admin settings form (content only).
+	 *
+	 * @return array
+	 */
+	public function admin_settings_defaults() {
+		$render = $this->defaults();
+
+		$render['show_header']          = 'yes';
+		$render['show_tabs']            = 'yes';
+		$render['show_video_name']      = 'yes';
+		$render['show_video_stars']     = 'yes';
+		$render['show_video_play']      = 'yes';
+		$render['show_video_overlay']   = 'yes';
+		$render['video_thumb_fallback'] = 'yes';
+		$render['show_card_name']       = 'yes';
+		$render['show_verified']        = 'yes';
+		$render['show_proof_stars']     = 'yes';
+		$render['show_modal_quote']     = 'yes';
+		$render['show_modal_badge']     = 'yes';
+		$render['show_product']         = 'yes';
+		$render['show_filter']          = 'yes';
+
+		return $render;
+	}
+
+	/**
+	 * Build render config from global plugin settings.
+	 *
+	 * @return array
+	 */
+	public function get_global_render_config() {
+		return $this->settings_to_render_config( $this->get_stored_settings() );
+	}
+
+	/**
+	 * Convert stored settings (admin or legacy) into Review_Engine render config.
+	 *
+	 * @param array $settings Stored or merged settings.
+	 * @return array
+	 */
+	public function settings_to_render_config( array $settings ) {
+		$yes = static function ( $key ) use ( $settings ) {
+			if ( is_bool( $settings[ $key ] ?? null ) ) {
+				return (bool) $settings[ $key ];
+			}
+
+			return isset( $settings[ $key ] ) && 'yes' === $settings[ $key ];
+		};
+
+		$videos = [];
+		if ( ! empty( $settings['videos'] ) && is_array( $settings['videos'] ) ) {
+			foreach ( $settings['videos'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+				$image = isset( $row['image'] ) ? (string) $row['image'] : '';
+				if ( '' === $image && ! empty( $row['thumbnail_id'] ) ) {
+					$image = wp_get_attachment_image_url( absint( $row['thumbnail_id'] ), 'medium_large' );
+					$image = $image ? $image : '';
+				}
+
+				$videos[] = [
+					'name'       => isset( $row['name'] ) ? (string) $row['name'] : '',
+					'image'      => $image,
+					'rating'     => isset( $row['rating'] ) ? (int) $row['rating'] : 5,
+					'video'      => isset( $row['video'] ) ? (string) $row['video'] : '',
+					'quote'      => isset( $row['quote'] ) ? (string) $row['quote'] : '',
+					'product_id' => isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0,
+				];
+			}
+		}
+
+		$proofs = [];
+		if ( ! empty( $settings['proofs'] ) && is_array( $settings['proofs'] ) ) {
+			foreach ( $settings['proofs'] as $row ) {
+				if ( ! is_array( $row ) ) {
+					continue;
+				}
+
+				$images = [];
+				if ( ! empty( $row['images'] ) && is_array( $row['images'] ) ) {
+					foreach ( $row['images'] as $url ) {
+						$url = esc_url_raw( (string) $url );
+						if ( '' !== $url ) {
+							$images[] = $url;
+						}
+					}
+				} elseif ( ! empty( $row['image_ids'] ) ) {
+					$ids = is_array( $row['image_ids'] ) ? $row['image_ids'] : explode( ',', (string) $row['image_ids'] );
+					foreach ( $ids as $id ) {
+						$id = absint( $id );
+						if ( $id ) {
+							$url = wp_get_attachment_image_url( $id, 'medium_large' );
+							if ( $url ) {
+								$images[] = $url;
+							}
+						}
+					}
+				}
+
+				$proofs[] = [
+					'name'       => isset( $row['name'] ) ? (string) $row['name'] : '',
+					'images'     => $images,
+					'rating'     => isset( $row['rating'] ) ? (int) $row['rating'] : 5,
+					'quote'      => isset( $row['quote'] ) ? (string) $row['quote'] : '',
+					'product_id' => isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0,
+				];
+			}
+		}
+
+		return [
+			'anchor'               => isset( $settings['anchor'] ) ? sanitize_title( (string) $settings['anchor'] ) : '',
+			'heading'              => isset( $settings['heading'] ) ? (string) $settings['heading'] : '',
+			'subheading'           => isset( $settings['subheading'] ) ? (string) $settings['subheading'] : '',
+			'video_icon'           => isset( $settings['video_icon'] ) ? (string) $settings['video_icon'] : 'video',
+			'written_icon'         => isset( $settings['written_icon'] ) ? (string) $settings['written_icon'] : 'list',
+			'show_header'          => $yes( 'show_header' ),
+			'show_heading'         => true,
+			'show_subheading'      => true,
+			'show_tabs'            => $yes( 'show_tabs' ),
+			'tab_video_label'      => isset( $settings['tab_video_label'] ) ? (string) $settings['tab_video_label'] : '',
+			'tab_written_label'    => isset( $settings['tab_written_label'] ) ? (string) $settings['tab_written_label'] : '',
+			'default_tab'          => isset( $settings['default_tab'] ) ? (string) $settings['default_tab'] : 'written',
+			'show_video_name'      => $yes( 'show_video_name' ),
+			'show_video_stars'     => $yes( 'show_video_stars' ),
+			'show_video_play'      => $yes( 'show_video_play' ),
+			'show_video_overlay'   => $yes( 'show_video_overlay' ),
+			'video_thumb_fallback' => $yes( 'video_thumb_fallback' ),
+			'show_card_name'       => $yes( 'show_card_name' ),
+			'show_verified'        => $yes( 'show_verified' ),
+			'show_proof_stars'     => $yes( 'show_proof_stars' ),
+			'show_modal_quote'     => $yes( 'show_modal_quote' ),
+			'show_modal_badge'     => $yes( 'show_modal_badge' ),
+			'show_product'         => $yes( 'show_product' ),
+			'video_empty'          => isset( $settings['video_empty'] ) ? (string) $settings['video_empty'] : '',
+			'written_empty'        => isset( $settings['written_empty'] ) ? (string) $settings['written_empty'] : '',
+			'show_filter'          => $yes( 'show_filter' ),
+			'filter_label'         => isset( $settings['filter_label'] ) ? (string) $settings['filter_label'] : '',
+			'filter_default'       => isset( $settings['filter_default'] ) ? (string) $settings['filter_default'] : 'recent',
+			'filter_highest'       => isset( $settings['filter_highest'] ) ? (string) $settings['filter_highest'] : '',
+			'filter_recent'        => isset( $settings['filter_recent'] ) ? (string) $settings['filter_recent'] : '',
+			'top_pick_label'       => isset( $settings['top_pick_label'] ) ? (string) $settings['top_pick_label'] : '',
+			'order_button_text'    => isset( $settings['order_button_text'] ) ? (string) $settings['order_button_text'] : '',
+			'view_button_text'     => isset( $settings['view_button_text'] ) ? (string) $settings['view_button_text'] : '',
+			'video_badge'          => isset( $settings['video_badge'] ) ? (string) $settings['video_badge'] : '',
+			'proof_badge'          => isset( $settings['proof_badge'] ) ? (string) $settings['proof_badge'] : '',
+			'videos'               => $videos,
+			'proofs'               => $proofs,
+		];
+	}
+
+	/**
+	 * Build render config from Elementor widget settings (custom / per-widget content).
+	 *
+	 * @param array $settings Elementor widget settings array.
+	 * @return array
+	 */
+	public function build_config_from_elementor( array $settings ) {
+		$yes_no = static function ( $key ) use ( $settings ) {
+			return ( isset( $settings[ $key ] ) && 'yes' === $settings[ $key ] );
+		};
+
+		$videos = [];
+		if ( ! empty( $settings['videos'] ) && is_array( $settings['videos'] ) ) {
+			foreach ( $settings['videos'] as $row ) {
+				$videos[] = [
+					'name'       => isset( $row['name'] ) ? $row['name'] : '',
+					'image'      => ! empty( $row['thumbnail']['url'] ) ? $row['thumbnail']['url'] : '',
+					'rating'     => isset( $row['rating'] ) ? (int) $row['rating'] : 5,
+					'video'      => isset( $row['video'] ) ? $row['video'] : '',
+					'quote'      => isset( $row['quote'] ) ? $row['quote'] : '',
+					'product_id' => isset( $row['product'] ) ? absint( $row['product'] ) : 0,
+				];
+			}
+		}
+
+		$proofs = [];
+		if ( ! empty( $settings['proofs'] ) && is_array( $settings['proofs'] ) ) {
+			foreach ( $settings['proofs'] as $row ) {
+				$images = [];
+				if ( ! empty( $row['images'] ) && is_array( $row['images'] ) ) {
+					foreach ( $row['images'] as $image ) {
+						if ( ! empty( $image['url'] ) ) {
+							$images[] = $image['url'];
+						}
+					}
+				}
+
+				$proofs[] = [
+					'name'       => isset( $row['name'] ) ? $row['name'] : '',
+					'images'     => $images,
+					'rating'     => isset( $row['rating'] ) ? (int) $row['rating'] : 5,
+					'quote'      => isset( $row['quote'] ) ? $row['quote'] : '',
+					'product_id' => isset( $row['product'] ) ? absint( $row['product'] ) : 0,
+				];
+			}
+		}
+
+		return [
+			'anchor'               => isset( $settings['anchor'] ) ? sanitize_title( $settings['anchor'] ) : '',
+			'heading'              => isset( $settings['heading'] ) ? $settings['heading'] : '',
+			'subheading'           => isset( $settings['subheading'] ) ? $settings['subheading'] : '',
+			'show_header'          => $yes_no( 'show_header' ),
+			'show_heading'         => true,
+			'show_subheading'      => true,
+			'show_tabs'            => $yes_no( 'show_tabs' ),
+			'tab_video_label'      => isset( $settings['tab_video_label'] ) ? $settings['tab_video_label'] : '',
+			'tab_written_label'    => isset( $settings['tab_written_label'] ) ? $settings['tab_written_label'] : '',
+			'default_tab'          => isset( $settings['default_tab'] ) ? $settings['default_tab'] : 'written',
+			'show_video_name'      => $yes_no( 'show_video_name' ),
+			'show_video_stars'     => $yes_no( 'show_video_stars' ),
+			'show_video_play'      => $yes_no( 'show_video_play' ),
+			'show_video_overlay'   => $yes_no( 'show_video_overlay' ),
+			'video_thumb_fallback' => $yes_no( 'video_thumb_fallback' ),
+			'show_card_name'       => $yes_no( 'show_card_name' ),
+			'show_verified'        => $yes_no( 'show_verified' ),
+			'show_proof_stars'     => $yes_no( 'show_proof_stars' ),
+			'show_modal_quote'     => $yes_no( 'show_modal_quote' ),
+			'show_modal_badge'     => $yes_no( 'show_modal_badge' ),
+			'show_product'         => $yes_no( 'show_product' ),
+			'video_empty'          => isset( $settings['video_empty'] ) ? $settings['video_empty'] : '',
+			'written_empty'        => isset( $settings['written_empty'] ) ? $settings['written_empty'] : '',
+			'show_filter'          => $yes_no( 'show_filter' ),
+			'filter_label'         => isset( $settings['filter_label'] ) ? $settings['filter_label'] : '',
+			'filter_default'       => isset( $settings['filter_default'] ) ? $settings['filter_default'] : 'recent',
+			'filter_highest'       => isset( $settings['filter_highest'] ) ? $settings['filter_highest'] : '',
+			'filter_recent'        => isset( $settings['filter_recent'] ) ? $settings['filter_recent'] : '',
+			'top_pick_label'       => isset( $settings['top_pick_label'] ) ? $settings['top_pick_label'] : '',
+			'order_button_text'    => isset( $settings['order_button_text'] ) ? $settings['order_button_text'] : '',
+			'view_button_text'     => isset( $settings['view_button_text'] ) ? $settings['view_button_text'] : '',
+			'video_badge'          => isset( $settings['video_badge'] ) ? $settings['video_badge'] : '',
+			'proof_badge'          => isset( $settings['proof_badge'] ) ? $settings['proof_badge'] : '',
+			'videos'               => $videos,
+			'proofs'               => $proofs,
+		];
+	}
 
 	/**
 	 * Singleton.

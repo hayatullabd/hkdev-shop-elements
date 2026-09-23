@@ -107,12 +107,58 @@ class Reviews_Widget extends Widget_Base {
 	 * @return void
 	 */
 	protected function register_content_controls() {
+		$this->register_source_section();
 		$this->register_header_section();
 		$this->register_tabs_section();
 		$this->register_videos_section();
 		$this->register_proofs_section();
 		$this->register_filter_section();
 		$this->register_labels_section();
+	}
+
+	/**
+	 * Data source — global plugin library vs per-widget content.
+	 *
+	 * @return void
+	 */
+	protected function register_source_section() {
+		$this->start_controls_section(
+			'rv_section_source',
+			[
+				'label' => esc_html__( 'Content Source', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$settings_url = admin_url( 'admin.php?page=hkdev-shop-elements-reviews' );
+
+		$this->add_control(
+			'content_source',
+			[
+				'label'   => esc_html__( 'Reviews Data', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'custom',
+				'options' => [
+					'global' => esc_html__( 'Use plugin settings (Customer Reviews menu)', 'hkdev-shop-elements' ),
+					'custom' => esc_html__( 'Custom (configure in this widget)', 'hkdev-shop-elements' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'global_notice',
+			[
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => sprintf(
+					/* translators: %s: admin settings URL */
+					esc_html__( 'Video reviews, social proofs and labels are loaded from %s. Style this widget in the Style tab.', 'hkdev-shop-elements' ),
+					'<a href="' . esc_url( $settings_url ) . '" target="_blank" rel="noopener">' . esc_html__( 'HKDEV Shop → Customer Reviews', 'hkdev-shop-elements' ) . '</a>'
+				),
+				'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+				'condition'       => [ 'content_source' => 'global' ],
+			]
+		);
+
+		$this->end_controls_section();
 	}
 
 	/**
@@ -124,7 +170,8 @@ class Reviews_Widget extends Widget_Base {
 		$this->start_controls_section(
 			'rv_section_header',
 			[
-				'label' => esc_html__( 'Header', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Header', 'hkdev-shop-elements' ),
+				'condition' => [ 'content_source' => 'custom' ],
 			]
 		);
 
@@ -184,7 +231,8 @@ class Reviews_Widget extends Widget_Base {
 		$this->start_controls_section(
 			'rv_section_tabs',
 			[
-				'label' => esc_html__( 'Tabs', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Tabs', 'hkdev-shop-elements' ),
+				'condition' => [ 'content_source' => 'custom' ],
 			]
 		);
 
@@ -247,7 +295,8 @@ class Reviews_Widget extends Widget_Base {
 		$this->start_controls_section(
 			'rv_section_videos',
 			[
-				'label' => esc_html__( 'Video Reviews', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Video Reviews', 'hkdev-shop-elements' ),
+				'condition' => [ 'content_source' => 'custom' ],
 			]
 		);
 
@@ -388,7 +437,8 @@ class Reviews_Widget extends Widget_Base {
 		$this->start_controls_section(
 			'rv_section_proofs',
 			[
-				'label' => esc_html__( 'Social Proofs', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Social Proofs', 'hkdev-shop-elements' ),
+				'condition' => [ 'content_source' => 'custom' ],
 			]
 		);
 
@@ -499,7 +549,8 @@ class Reviews_Widget extends Widget_Base {
 		$this->start_controls_section(
 			'rv_section_filter',
 			[
-				'label' => esc_html__( 'Filter', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Filter', 'hkdev-shop-elements' ),
+				'condition' => [ 'content_source' => 'custom' ],
 			]
 		);
 
@@ -571,7 +622,8 @@ class Reviews_Widget extends Widget_Base {
 		$this->start_controls_section(
 			'rv_section_labels',
 			[
-				'label' => esc_html__( 'Labels & Modal', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Labels & Modal', 'hkdev-shop-elements' ),
+				'condition' => [ 'content_source' => 'custom' ],
 			]
 		);
 
@@ -995,84 +1047,13 @@ class Reviews_Widget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		$source   = isset( $settings['content_source'] ) ? $settings['content_source'] : 'custom';
 
-		$yes_no = static function ( $key ) use ( $settings ) {
-			return ( isset( $settings[ $key ] ) && 'yes' === $settings[ $key ] );
-		};
-
-		$videos = [];
-		if ( ! empty( $settings['videos'] ) && is_array( $settings['videos'] ) ) {
-			foreach ( $settings['videos'] as $row ) {
-				$videos[] = [
-					'name'       => isset( $row['name'] ) ? $row['name'] : '',
-					'image'      => ! empty( $row['thumbnail']['url'] ) ? $row['thumbnail']['url'] : '',
-					'rating'     => isset( $row['rating'] ) ? (int) $row['rating'] : 5,
-					'video'      => isset( $row['video'] ) ? $row['video'] : '',
-					'quote'      => isset( $row['quote'] ) ? $row['quote'] : '',
-					'product_id' => isset( $row['product'] ) ? absint( $row['product'] ) : 0,
-				];
-			}
+		if ( 'global' === $source ) {
+			$config = Review_Engine::instance()->get_global_render_config();
+		} else {
+			$config = Review_Engine::instance()->build_config_from_elementor( $settings );
 		}
-
-		$proofs = [];
-		if ( ! empty( $settings['proofs'] ) && is_array( $settings['proofs'] ) ) {
-			foreach ( $settings['proofs'] as $row ) {
-				$images = [];
-				if ( ! empty( $row['images'] ) && is_array( $row['images'] ) ) {
-					foreach ( $row['images'] as $image ) {
-						if ( ! empty( $image['url'] ) ) {
-							$images[] = $image['url'];
-						}
-					}
-				}
-
-				$proofs[] = [
-					'name'       => isset( $row['name'] ) ? $row['name'] : '',
-					'images'     => $images,
-					'rating'     => isset( $row['rating'] ) ? (int) $row['rating'] : 5,
-					'quote'      => isset( $row['quote'] ) ? $row['quote'] : '',
-					'product_id' => isset( $row['product'] ) ? absint( $row['product'] ) : 0,
-				];
-			}
-		}
-
-		$config = [
-			'anchor'               => isset( $settings['anchor'] ) ? sanitize_title( $settings['anchor'] ) : '',
-			'heading'              => isset( $settings['heading'] ) ? $settings['heading'] : '',
-			'subheading'           => isset( $settings['subheading'] ) ? $settings['subheading'] : '',
-			'show_header'          => $yes_no( 'show_header' ),
-			'show_heading'         => true,
-			'show_subheading'      => true,
-			'show_tabs'            => $yes_no( 'show_tabs' ),
-			'tab_video_label'      => isset( $settings['tab_video_label'] ) ? $settings['tab_video_label'] : '',
-			'tab_written_label'    => isset( $settings['tab_written_label'] ) ? $settings['tab_written_label'] : '',
-			'default_tab'          => isset( $settings['default_tab'] ) ? $settings['default_tab'] : 'written',
-			'show_video_name'      => $yes_no( 'show_video_name' ),
-			'show_video_stars'     => $yes_no( 'show_video_stars' ),
-			'show_video_play'      => $yes_no( 'show_video_play' ),
-			'show_video_overlay'   => $yes_no( 'show_video_overlay' ),
-			'video_thumb_fallback' => $yes_no( 'video_thumb_fallback' ),
-			'show_card_name'       => $yes_no( 'show_card_name' ),
-			'show_verified'        => $yes_no( 'show_verified' ),
-			'show_proof_stars'     => $yes_no( 'show_proof_stars' ),
-			'show_modal_quote'     => $yes_no( 'show_modal_quote' ),
-			'show_modal_badge'     => $yes_no( 'show_modal_badge' ),
-			'show_product'         => $yes_no( 'show_product' ),
-			'video_empty'          => isset( $settings['video_empty'] ) ? $settings['video_empty'] : '',
-			'written_empty'        => isset( $settings['written_empty'] ) ? $settings['written_empty'] : '',
-			'show_filter'          => $yes_no( 'show_filter' ),
-			'filter_label'         => isset( $settings['filter_label'] ) ? $settings['filter_label'] : '',
-			'filter_default'       => isset( $settings['filter_default'] ) ? $settings['filter_default'] : 'recent',
-			'filter_highest'       => isset( $settings['filter_highest'] ) ? $settings['filter_highest'] : '',
-			'filter_recent'        => isset( $settings['filter_recent'] ) ? $settings['filter_recent'] : '',
-			'top_pick_label'       => isset( $settings['top_pick_label'] ) ? $settings['top_pick_label'] : '',
-			'order_button_text'    => isset( $settings['order_button_text'] ) ? $settings['order_button_text'] : '',
-			'view_button_text'     => isset( $settings['view_button_text'] ) ? $settings['view_button_text'] : '',
-			'video_badge'          => isset( $settings['video_badge'] ) ? $settings['video_badge'] : '',
-			'proof_badge'          => isset( $settings['proof_badge'] ) ? $settings['proof_badge'] : '',
-			'videos'               => $videos,
-			'proofs'               => $proofs,
-		];
 
 		echo Review_Engine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
