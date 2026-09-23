@@ -146,6 +146,26 @@
 .hkdev-widget-toolbar .button{height:auto;line-height:1.4;padding:8px 14px}
 .hkdev-widget-toolbar .submit{margin-left:auto;padding:0}
 
+/* ---------- Customer Reviews admin ---------- */
+.hkdev-rv-shortcode-hint{display:inline-block;padding:6px 10px;background:#f0f2f5;border-radius:6px;font-size:12px;color:#344054}
+.hkdev-rv-tabs-wrap > .hkdev-tab-content{display:none}
+#hkdev-tab-radio-rv-general:checked ~ #hkdev-tab-rv-general,
+#hkdev-tab-radio-rv-videos:checked ~ #hkdev-tab-rv-videos,
+#hkdev-tab-radio-rv-proofs:checked ~ #hkdev-tab-rv-proofs,
+#hkdev-tab-radio-rv-labels:checked ~ #hkdev-tab-rv-labels{display:block}
+#hkdev-tab-radio-rv-general:checked ~ .hkdev-tabs [for="hkdev-tab-radio-rv-general"],
+#hkdev-tab-radio-rv-videos:checked ~ .hkdev-tabs [for="hkdev-tab-radio-rv-videos"],
+#hkdev-tab-radio-rv-proofs:checked ~ .hkdev-tabs [for="hkdev-tab-radio-rv-proofs"],
+#hkdev-tab-radio-rv-labels:checked ~ .hkdev-tabs [for="hkdev-tab-radio-rv-labels"]{background:linear-gradient(135deg,#03a550,#028a40);border-color:#03a550;color:#fff;box-shadow:0 2px 8px rgba(3,165,80,.25)}
+.hkdev-rv-toggle-row{display:flex;flex-wrap:wrap;gap:14px 20px;margin-bottom:16px}
+.hkdev-checkbox{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:#344054}
+.hkdev-rv-repeater-item{border:1px solid #e2e6ea;border-radius:10px;padding:14px 16px;margin-bottom:12px;background:#fbfcfc}
+.hkdev-rv-repeater-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #eef1f4}
+.hkdev-rv-thumb-preview{display:none;max-width:120px;max-height:80px;margin-top:10px;border-radius:8px;border:1px solid #e2e6ea}
+.hkdev-rv-thumb-preview.is-visible{display:block}
+.hkdev-rv-gallery-previews{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.hkdev-rv-gallery-previews img{width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #e2e6ea}
+
 /* ---------- Responsive ---------- */
 @media screen and (max-width:1100px){
   .hkdev-admin-header{padding:16px}

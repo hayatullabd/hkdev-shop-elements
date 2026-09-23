@@ -71,6 +71,7 @@ final class Admin_Menu {
 			Header_Options::SETTINGS_SLUG,
 			Footer_Options::SETTINGS_SLUG,
 			Contact_Form_Options::SETTINGS_SLUG,
+			Review_Options::SETTINGS_SLUG,
 			Widget_Options::SETTINGS_SLUG,
 		];
 	}
@@ -105,6 +106,12 @@ final class Admin_Menu {
 				'icon'  => 'dashicons-email-alt',
 				'page'  => Contact_Form_Options::SETTINGS_SLUG,
 				'gate'  => [ 'hkdev_contact_form' ],
+			],
+			'reviews'  => [
+				'label' => esc_html__( 'Customer Reviews', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-star-filled',
+				'page'  => Review_Options::SETTINGS_SLUG,
+				'gate'  => [ 'hkdev_customer_reviews' ],
 			],
 			'widgets'  => [
 				'label' => esc_html__( 'Widget Manager', 'hkdev-shop-elements' ),
