@@ -40,7 +40,7 @@ final class Review_Options {
 	 */
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ], 20 );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ], 100 );
 		add_action( 'wp_ajax_hkdev_rv_search_products', [ $this, 'ajax_search_products' ] );
 	}
 
@@ -56,32 +56,83 @@ final class Review_Options {
 			wp_die( -1, 403 );
 		}
 
-		if ( ! function_exists( 'wc_get_products' ) ) {
+		if ( ! function_exists( 'wc_get_product' ) ) {
 			wp_send_json( [] );
 		}
 
-		$term = isset( $_GET['term'] ) ? wc_clean( wp_unslash( $_GET['term'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$term = isset( $_REQUEST['term'] ) ? wc_clean( wp_unslash( $_REQUEST['term'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		$args = [
-			'limit'   => 30,
-			'status'  => 'publish',
-			'orderby' => 'title',
-			'order'   => 'ASC',
-			'return'  => 'objects',
-		];
-
-		if ( '' !== $term ) {
-			$args['s'] = $term;
+		if ( '' === $term ) {
+			wp_send_json( [] );
 		}
 
-		$products = wc_get_products( $args );
-		$out      = [];
+		$limit = 30;
+		$ids   = [];
 
-		foreach ( $products as $product ) {
+		if ( class_exists( 'WC_Data_Store' ) ) {
+			$ids = WC_Data_Store::load( 'product' )->search_products( $term, '', true, false, $limit );
+		}
+
+		if ( empty( $ids ) ) {
+			$products = wc_get_products(
+				[
+					'limit'   => $limit,
+					'status'  => 'publish',
+					'orderby' => 'title',
+					'order'   => 'ASC',
+					's'       => $term,
+					'return'  => 'ids',
+				]
+			);
+			$ids = is_array( $products ) ? $products : [];
+		}
+
+		$out = [];
+
+		foreach ( $ids as $id ) {
+			$product = wc_get_product( $id );
+			if ( ! $product ) {
+				continue;
+			}
 			$out[ (string) $product->get_id() ] = wp_strip_all_tags( $product->get_formatted_name() );
 		}
 
 		wp_send_json( $out );
+	}
+
+	/**
+	 * Register + enqueue WooCommerce SelectWoo on this screen (WC does not always register it on custom admin pages).
+	 *
+	 * @return bool
+	 */
+	private function ensure_woocommerce_select_assets() {
+		if ( ! function_exists( 'WC' ) ) {
+			return false;
+		}
+
+		$wc      = WC();
+		$version = $wc->version;
+		$base    = $wc->plugin_url() . '/assets/';
+		$suffix  = ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ? '' : '.min';
+
+		if ( ! wp_style_is( 'select2', 'registered' ) ) {
+			wp_register_style( 'select2', $base . 'css/select2.css', [], $version );
+		}
+
+		if ( ! wp_script_is( 'selectWoo', 'registered' ) ) {
+			wp_register_script(
+				'selectWoo',
+				$base . 'js/selectWoo/selectWoo.full' . $suffix . '.js',
+				[ 'jquery' ],
+				'1.0.9-wc.' . $version,
+				true
+			);
+		}
+
+		wp_enqueue_style( 'select2' );
+		wp_enqueue_script( 'selectWoo' );
+
+		return true;
 	}
 
 	/**
@@ -104,15 +155,8 @@ final class Review_Options {
 
 		$script_deps = [ 'jquery' ];
 
-		if ( wp_script_is( 'selectWoo', 'registered' ) ) {
-			wp_enqueue_style( 'select2' );
-			wp_enqueue_script( 'selectWoo' );
+		if ( $this->ensure_woocommerce_select_assets() ) {
 			$script_deps[] = 'selectWoo';
-		}
-
-		if ( wp_script_is( 'wc-enhanced-select', 'registered' ) ) {
-			wp_enqueue_script( 'wc-enhanced-select' );
-			$script_deps[] = 'wc-enhanced-select';
 		}
 
 		wp_enqueue_script(
@@ -430,7 +474,7 @@ final class Review_Options {
 
 		$product = wc_get_product( $product_id );
 
-		return ( $product && $product->is_visible() ) ? wp_strip_all_tags( $product->get_formatted_name() ) : '';
+		return $product ? wp_strip_all_tags( $product->get_formatted_name() ) : '';
 	}
 
 	/**
@@ -444,13 +488,12 @@ final class Review_Options {
 		$product_id = absint( $product_id );
 		$label      = $this->product_select_label( $product_id );
 
-		if ( function_exists( 'wc_get_products' ) && wp_script_is( 'selectWoo', 'registered' ) ) {
+		if ( function_exists( 'wc_get_product' ) ) {
 			?>
 			<select
-				class="hkdev-rv-product-search wc-product-search"
+				class="hkdev-rv-product-search"
 				name="<?php echo esc_attr( $input_name ); ?>"
 				data-placeholder="<?php esc_attr_e( 'Search product…', 'hkdev-shop-elements' ); ?>"
-				data-action="woocommerce_json_search_products"
 				data-allow_clear="true"
 				data-minimum_input_length="1"
 			>

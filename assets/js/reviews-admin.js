@@ -54,7 +54,6 @@
 
         var $root = $scope && $scope.length ? $scope : $('.hkdev-reviews-admin');
         var cfg = window.hkdevRvAdmin || {};
-        var wcParams = window.wc_enhanced_select_params;
 
         $root.find('.hkdev-rv-product-search').filter(':not(.enhanced)').each(function () {
             var $el = $(this);
@@ -65,21 +64,16 @@
                 width: '100%',
                 minimumInputLength: parseInt($el.data('minimum_input_length'), 10) || cfg.minInput || 1,
                 ajax: {
-                    url: wcParams ? wcParams.ajax_url : (cfg.ajaxUrl || window.ajaxurl),
+                    url: cfg.ajaxUrl || window.ajaxurl,
+                    type: 'POST',
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
-                        var payload = { term: params.term };
-
-                        if (wcParams && wcParams.search_products_nonce) {
-                            payload.action = $el.data('action') || 'woocommerce_json_search_products';
-                            payload.security = wcParams.search_products_nonce;
-                        } else {
-                            payload.action = cfg.searchAction || 'hkdev_rv_search_products';
-                            payload.security = cfg.searchNonce || '';
-                        }
-
-                        return payload;
+                        return {
+                            term: params.term || '',
+                            action: cfg.searchAction || 'hkdev_rv_search_products',
+                            security: cfg.searchNonce || ''
+                        };
                     },
                     processResults: function (data) {
                         var terms = [];
@@ -260,11 +254,5 @@
         initRepeaters();
         initMedia();
         initProductSelect($('.hkdev-reviews-admin'));
-
-        if (typeof wc_enhanced_select_params !== 'undefined') {
-            $(document.body).on('wc-enhanced-select-init', function () {
-                initProductSelect($('.hkdev-reviews-admin'));
-            });
-        }
     });
 })(jQuery);
