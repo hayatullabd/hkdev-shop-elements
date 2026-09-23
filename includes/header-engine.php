@@ -2,8 +2,8 @@
 /**
  * HKDEV Header Engine (HKDEV Shop Elements plugin).
  *
- * Renders a brand-matched WooCommerce header (logo, menu, categories dropdown,
- * product search, cart with live count/subtotal, account, call/WhatsApp, top
+ * Renders a brand-matched WooCommerce header (logo, menu, product search, cart
+ * with live count/subtotal, account, call/WhatsApp, top
  * announcement bar) plus an off-canvas mobile panel. Self-contained – works
  * with ANY theme + Elementor + WooCommerce.
  *
@@ -120,9 +120,6 @@ class Header_Engine {
 			'mini_cart'        => 'yes',
 			'float_cart'       => 'yes',
 			'float_cart_empty' => 'no',
-			'show_categories'  => 'no',
-			'categories_label' => __( 'All Categories', 'hkdev-shop-elements' ),
-			'categories_limit' => 8,
 
 			// ---- Appearance (edited from the Header admin → Appearance) ----
 			// Empty/0 means "keep the plugin default". Size values are per device:
@@ -463,7 +460,11 @@ class Header_Engine {
 			$saved = [];
 		}
 
-		return array_merge( $this->config_defaults(), $saved );
+		$config = array_merge( $this->config_defaults(), $saved );
+
+		unset( $config['show_categories'], $config['categories_label'], $config['categories_limit'] );
+
+		return $config;
 	}
 
 	/**

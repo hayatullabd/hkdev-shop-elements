@@ -168,9 +168,6 @@ final class Header_Options {
 				'mini_cart'        => $yes_no( 'hkdev_hd_mini_cart' ),
 				'float_cart'       => $yes_no( 'hkdev_hd_float_cart' ),
 				'float_cart_empty' => $yes_no( 'hkdev_hd_float_cart_empty' ),
-				'show_categories'  => $yes_no( 'hkdev_hd_show_categories' ),
-				'categories_label' => $text( 'hkdev_hd_categories_label' ),
-				'categories_limit' => isset( $_POST['hkdev_hd_categories_limit'] ) ? absint( wp_unslash( $_POST['hkdev_hd_categories_limit'] ) ) : 8, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// ---- Appearance ----
 				'st_font'          => $font_stack( 'hkdev_hd_st_font' ),
@@ -232,14 +229,8 @@ final class Header_Options {
 				'st_logo_maxh_m'   => $num( 'hkdev_hd_st_logo_maxh_m' ),
 			];
 
-			if ( '' === $config['categories_label'] ) {
-				$config['categories_label'] = esc_html__( 'All Categories', 'hkdev-shop-elements' );
-			}
 			if ( $config['logo_width'] < 1 ) {
 				$config['logo_width'] = 150;
-			}
-			if ( $config['categories_limit'] < 1 ) {
-				$config['categories_limit'] = 8;
 			}
 
 			update_option( Header_Engine::CONFIG_OPTION, $config );
@@ -529,32 +520,6 @@ final class Header_Options {
 									</div>
 								</div>
 								<?php endif; ?>
-
-								<div class="hd-field">
-									<div class="hd-field-info">
-										<span class="hd-field-title"><?php esc_html_e( 'Categories Dropdown', 'hkdev-shop-elements' ); ?></span>
-										<p class="hd-field-help"><?php esc_html_e( 'Show the WooCommerce product categories dropdown.', 'hkdev-shop-elements' ); ?></p>
-									</div>
-									<div class="hd-field-input">
-										<label class="hd-switch">
-											<input type="checkbox" name="hkdev_hd_show_categories" value="yes" <?php checked( 'yes', $config['show_categories'] ); ?>>
-											<span class="hd-switch-track" aria-hidden="true"></span>
-										</label>
-									</div>
-								</div>
-
-								<div class="hd-field">
-									<div class="hd-field-info">
-										<span class="hd-field-title"><?php esc_html_e( 'Dropdown Label & Limit', 'hkdev-shop-elements' ); ?></span>
-										<p class="hd-field-help"><?php esc_html_e( 'Button label and how many categories to list.', 'hkdev-shop-elements' ); ?></p>
-									</div>
-									<div class="hd-field-input">
-										<div class="hd-input-group">
-											<input type="text" name="hkdev_hd_categories_label" value="<?php echo esc_attr( $config['categories_label'] ); ?>" placeholder="<?php esc_attr_e( 'All Categories', 'hkdev-shop-elements' ); ?>">
-											<input type="number" class="hd-compact" name="hkdev_hd_categories_limit" value="<?php echo esc_attr( $config['categories_limit'] ); ?>" min="1" max="30">
-										</div>
-									</div>
-								</div>
 
 							</div>
 						</section>
