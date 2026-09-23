@@ -252,6 +252,7 @@ final class Footer_Options {
 			'bottom'     => [ 'dashicons-money-alt', esc_html__( 'Payments & Copyright', 'hkdev-shop-elements' ) ],
 			'appearance' => [ 'dashicons-art', esc_html__( 'Appearance', 'hkdev-shop-elements' ) ],
 		];
+		$nav_items = Admin_Menu::instance()->filter_footer_builder_nav( $nav_items, $config );
 		?>
 		<div class="wrap hkdev-hd-wrap">
 
@@ -269,6 +270,7 @@ final class Footer_Options {
 					</div>
 				</div>
 			</div>
+			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG, 'builder' ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible hd-notice"><p><?php esc_html_e( 'Footer settings saved.', 'hkdev-shop-elements' ); ?></p></div>
@@ -476,6 +478,7 @@ final class Footer_Options {
 						</section>
 
 						<!-- ============ NEWSLETTER & SOCIAL ============ -->
+						<?php if ( isset( $nav_items['newsletter'] ) ) : ?>
 						<section class="hd-card" id="hd-sec-newsletter">
 							<header class="hd-card-head">
 								<span class="hd-card-icon"><span class="dashicons dashicons-email-alt"></span></span>
@@ -567,8 +570,10 @@ final class Footer_Options {
 
 							</div>
 						</section>
+						<?php endif; ?>
 
 						<!-- ============ PAYMENTS & COPYRIGHT ============ -->
+						<?php if ( isset( $nav_items['bottom'] ) ) : ?>
 						<section class="hd-card" id="hd-sec-bottom">
 							<header class="hd-card-head">
 								<span class="hd-card-icon"><span class="dashicons dashicons-money-alt"></span></span>
@@ -643,6 +648,7 @@ final class Footer_Options {
 
 							</div>
 						</section>
+						<?php endif; ?>
 
 						<!-- ============ APPEARANCE ============ -->
 						<section class="hd-card" id="hd-sec-appearance">

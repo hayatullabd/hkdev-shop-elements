@@ -335,6 +335,7 @@ final class Checkout_Options {
                     </a>
                 </div>
             </div>
+            <?php Admin_Menu::instance()->render_module_nav( self::MENU_SLUG ); ?>
 
             <form method="post" action="options.php" id="hkdev-checkout-fields-form">
                 <?php settings_fields( 'hkdev_elements_checkout_fields_group' ); ?>
