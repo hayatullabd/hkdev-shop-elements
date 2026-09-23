@@ -948,12 +948,22 @@ final class Review_Options {
 					<label><?php esc_html_e( 'Images', 'hkdev-shop-elements' ); ?></label>
 					<input type="hidden" class="hkdev-rv-gallery-ids" name="hkdev_rv_proofs[<?php echo esc_attr( (string) $index ); ?>][image_ids]" value="<?php echo esc_attr( implode( ',', $ids ) ); ?>">
 					<div class="hkdev-rv-media-toolbar">
-						<button type="button" class="button button-small hkdev-rv-pick-gallery"><?php esc_html_e( 'Images', 'hkdev-shop-elements' ); ?></button>
-						<button type="button" class="button button-small hkdev-rv-clear-gallery"><?php esc_html_e( 'Clear', 'hkdev-shop-elements' ); ?></button>
+						<button type="button" class="button button-small hkdev-rv-pick-gallery"><?php esc_html_e( 'Add / edit images', 'hkdev-shop-elements' ); ?></button>
+						<button type="button" class="button button-small hkdev-rv-clear-gallery"><?php esc_html_e( 'Clear all', 'hkdev-shop-elements' ); ?></button>
 					</div>
+					<p class="description"><?php esc_html_e( 'Pick several images at once (Ctrl/Cmd+click or shift+click in the media library). First image is the card cover; all images appear in the popup slider.', 'hkdev-shop-elements' ); ?></p>
 					<div class="hkdev-rv-gallery-previews">
-						<?php foreach ( $previews as $url ) : ?>
-							<img src="<?php echo esc_url( $url ); ?>" alt="">
+						<?php foreach ( $ids as $id ) : ?>
+							<?php
+							$thumb_url = wp_get_attachment_image_url( $id, 'thumbnail' );
+							if ( ! $thumb_url ) {
+								continue;
+							}
+							?>
+							<span class="hkdev-rv-gallery-thumb" data-id="<?php echo esc_attr( (string) $id ); ?>">
+								<img src="<?php echo esc_url( $thumb_url ); ?>" alt="">
+								<button type="button" class="hkdev-rv-gallery-remove" aria-label="<?php esc_attr_e( 'Remove image', 'hkdev-shop-elements' ); ?>">&times;</button>
+							</span>
 						<?php endforeach; ?>
 					</div>
 				</div>

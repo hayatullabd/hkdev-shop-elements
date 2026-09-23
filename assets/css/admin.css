@@ -208,7 +208,10 @@
 .hkdev-rv-thumb-preview{display:none;width:72px;height:48px;margin:0;object-fit:cover;border-radius:6px;border:1px solid #e4e7ec}
 .hkdev-rv-thumb-preview.is-visible{display:inline-block}
 .hkdev-rv-gallery-previews{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.hkdev-rv-gallery-previews img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e4e7ec}
+.hkdev-rv-gallery-thumb{position:relative;display:inline-block;line-height:0}
+.hkdev-rv-gallery-previews img{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e4e7ec;display:block}
+.hkdev-rv-gallery-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;padding:0;border:1px solid #e4e7ec;border-radius:50%;background:#fff;color:#667085;font-size:14px;line-height:1;cursor:pointer;box-shadow:0 1px 3px rgba(16,24,40,.12)}
+.hkdev-rv-gallery-remove:hover{border-color:#d92d20;color:#d92d20;background:#fff5f5}
 .hkdev-reviews-admin .hkdev-rv-add-row{margin-top:4px}
 .hkdev-rv-quote-input{min-height:120px;line-height:1.5;resize:vertical}
 

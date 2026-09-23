@@ -298,6 +298,43 @@
         });
     }
 
+    function parseGalleryIds(raw) {
+        if (!raw) {
+            return [];
+        }
+        return String(raw)
+            .split(',')
+            .map(function (part) {
+                return parseInt(part.trim(), 10);
+            })
+            .filter(function (id) {
+                return id > 0;
+            });
+    }
+
+    function appendGalleryThumb($prev, att) {
+        var id = att.id;
+        var src = att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url;
+        var $wrap = $('<span class="hkdev-rv-gallery-thumb"></span>').attr('data-id', id);
+        $wrap.append($('<img>', { src: src, alt: '' }));
+        $wrap.append(
+            $('<button type="button" class="hkdev-rv-gallery-remove" aria-label="Remove"></button>').text('\u00d7')
+        );
+        $prev.append($wrap);
+    }
+
+    function setGalleryIds($item, ids) {
+        var unique = [];
+        $.each(ids, function (_, id) {
+            id = parseInt(id, 10);
+            if (id > 0 && unique.indexOf(id) === -1) {
+                unique.push(id);
+            }
+        });
+        $item.find('.hkdev-rv-gallery-ids').val(unique.join(','));
+        syncProofHead($item);
+    }
+
     function initMedia() {
         if (typeof wp === 'undefined' || !wp.media) {
             return;
@@ -337,11 +374,23 @@
         $root.on('click', '.hkdev-rv-pick-gallery', function (e) {
             e.preventDefault();
             var $item = $(this).closest('.hkdev-rv-repeater-item');
+            var existingIds = parseGalleryIds($item.find('.hkdev-rv-gallery-ids').val());
+
             var frame = wp.media({
-                title: 'Select review images',
-                button: { text: 'Use images' },
-                multiple: true,
+                title: 'Review images (select multiple)',
+                button: { text: 'Use selected images' },
+                multiple: 'add',
                 library: { type: 'image' }
+            });
+
+            frame.on('open', function () {
+                var selection = frame.state().get('selection');
+                selection.reset();
+                existingIds.forEach(function (id) {
+                    var attachment = wp.media.attachment(id);
+                    attachment.fetch();
+                    selection.add(attachment);
+                });
             });
 
             frame.on('select', function () {
@@ -350,13 +399,25 @@
                 frame.state().get('selection').each(function (model) {
                     var att = model.toJSON();
                     ids.push(att.id);
-                    $prev.append($('<img>', { src: att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url, alt: '' }));
+                    appendGalleryThumb($prev, att);
                 });
-                $item.find('.hkdev-rv-gallery-ids').val(ids.join(','));
-                syncProofHead($item);
+                setGalleryIds($item, ids);
             });
 
             frame.open();
+        });
+
+        $root.on('click', '.hkdev-rv-gallery-remove', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var $thumb = $(this).closest('.hkdev-rv-gallery-thumb');
+            var removeId = parseInt($thumb.attr('data-id'), 10);
+            var $item = $(this).closest('.hkdev-rv-repeater-item');
+            var ids = parseGalleryIds($item.find('.hkdev-rv-gallery-ids').val()).filter(function (id) {
+                return id !== removeId;
+            });
+            $thumb.remove();
+            setGalleryIds($item, ids);
         });
 
         $root.on('click', '.hkdev-rv-clear-gallery', function (e) {
