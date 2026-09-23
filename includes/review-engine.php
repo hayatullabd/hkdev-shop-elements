@@ -632,7 +632,7 @@ class Review_Engine {
 			<div class="hkdev-rv-vmodal" hidden>
 				<div class="hkdev-rv-vmodal-content">
 					<button type="button" class="hkdev-rv-modal-close" aria-label="<?php esc_attr_e( 'Close video', 'hkdev-shop-elements' ); ?>">
-						<svg class="hkdev-rv-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+						<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-close" aria-hidden="true"></span>
 					</button>
 					<div class="hkdev-rv-vmodal-media"></div>
 					<div class="hkdev-rv-vmodal-details">
@@ -650,15 +650,15 @@ class Review_Engine {
 			<div class="hkdev-rv-pmodal" hidden>
 				<div class="hkdev-rv-pmodal-content">
 					<button type="button" class="hkdev-rv-pmodal-close" aria-label="<?php esc_attr_e( 'Close review', 'hkdev-shop-elements' ); ?>">
-						<svg class="hkdev-rv-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+						<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-close" aria-hidden="true"></span>
 					</button>
 					<div class="hkdev-rv-pmodal-left">
 						<img class="hkdev-rv-slider-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
 						<button type="button" class="hkdev-rv-slider-btn hkdev-rv-prev" aria-label="<?php esc_attr_e( 'Previous image', 'hkdev-shop-elements' ); ?>">
-							<svg class="hkdev-rv-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+							<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-chevron hkdev-rv-ui-icon-chevron-left" aria-hidden="true"></span>
 						</button>
 						<button type="button" class="hkdev-rv-slider-btn hkdev-rv-next" aria-label="<?php esc_attr_e( 'Next image', 'hkdev-shop-elements' ); ?>">
-							<svg class="hkdev-rv-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+							<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-chevron hkdev-rv-ui-icon-chevron-right" aria-hidden="true"></span>
 						</button>
 						<div class="hkdev-rv-slider-counter"></div>
 					</div>

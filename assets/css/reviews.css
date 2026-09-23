@@ -577,17 +577,66 @@ body.hkdev-rv-locked{
     appearance: none !important;
 }
 
-.hkdev-rv-modal-close .hkdev-rv-control-icon,
-.hkdev-rv-pmodal-close .hkdev-rv-control-icon{
-    width: var(--hkdev-rv-modal-close-icon, 24px) !important;
-    height: var(--hkdev-rv-modal-close-icon, 24px) !important;
-    min-width: var(--hkdev-rv-modal-close-icon, 24px) !important;
-    min-height: var(--hkdev-rv-modal-close-icon, 24px) !important;
-    max-width: none !important;
-    max-height: none !important;
+/* CSS-drawn modal icons (immune to theme SVG/font-size overrides). */
+.hkdev-rv-modal-close svg,
+.hkdev-rv-pmodal-close svg,
+.hkdev-rv-slider-btn svg{
+    display: none !important;
+}
+
+.hkdev-rv-ui-icon{
     display: block !important;
     flex-shrink: 0 !important;
     pointer-events: none !important;
+    box-sizing: border-box !important;
+}
+
+.hkdev-rv-ui-icon-close{
+    position: relative !important;
+    width: clamp(20px, var(--hkdev-rv-modal-close-icon, 26px), 36px) !important;
+    height: clamp(20px, var(--hkdev-rv-modal-close-icon, 26px), 36px) !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+}
+
+.hkdev-rv-ui-icon-close::before,
+.hkdev-rv-ui-icon-close::after{
+    content: "" !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100% !important;
+    height: 3px !important;
+    background: currentColor !important;
+    border-radius: 2px !important;
+}
+
+.hkdev-rv-ui-icon-close::before{
+    transform: translate(-50%, -50%) rotate(45deg) !important;
+}
+
+.hkdev-rv-ui-icon-close::after{
+    transform: translate(-50%, -50%) rotate(-45deg) !important;
+}
+
+.hkdev-rv-ui-icon-chevron{
+    width: clamp(12px, calc(var(--hkdev-rv-slider-icon, 28px) * 0.42), 18px) !important;
+    height: clamp(12px, calc(var(--hkdev-rv-slider-icon, 28px) * 0.42), 18px) !important;
+    min-width: 12px !important;
+    min-height: 12px !important;
+    border-style: solid !important;
+    border-color: currentColor !important;
+    border-width: 0 0 3px 3px !important;
+}
+
+.hkdev-rv-ui-icon-chevron-left{
+    transform: rotate(45deg) !important;
+    margin-left: 5px !important;
+}
+
+.hkdev-rv-ui-icon-chevron-right{
+    transform: rotate(-135deg) !important;
+    margin-right: 5px !important;
 }
 
 .hkdev-rv-modal-close:hover,
@@ -705,18 +754,6 @@ body.hkdev-rv-locked{
     appearance: none !important;
 }
 
-.hkdev-rv-slider-btn .hkdev-rv-control-icon{
-    width: var(--hkdev-rv-slider-icon, 28px) !important;
-    height: var(--hkdev-rv-slider-icon, 28px) !important;
-    min-width: var(--hkdev-rv-slider-icon, 28px) !important;
-    min-height: var(--hkdev-rv-slider-icon, 28px) !important;
-    max-width: none !important;
-    max-height: none !important;
-    display: block !important;
-    flex-shrink: 0 !important;
-    pointer-events: none !important;
-}
-
 .hkdev-rv-slider-btn:hover{
     background: var(--hkdev-rv-primary) !important;
     color: #ffffff !important;
@@ -743,6 +780,17 @@ body.hkdev-rv-locked{
 
     .hkdev-rv-prev{ left: 20px !important; }
     .hkdev-rv-next{ right: 20px !important; }
+
+    .hkdev-rv-ui-icon-close{
+        width: clamp(22px, var(--hkdev-rv-modal-close-icon, 28px), 38px) !important;
+        height: clamp(22px, var(--hkdev-rv-modal-close-icon, 28px), 38px) !important;
+    }
+
+    .hkdev-rv-ui-icon-chevron{
+        width: clamp(14px, calc(var(--hkdev-rv-slider-icon, 32px) * 0.45), 20px) !important;
+        height: clamp(14px, calc(var(--hkdev-rv-slider-icon, 32px) * 0.45), 20px) !important;
+        border-width: 0 0 3px 3px !important;
+    }
 }
 
 .hkdev-rv-slider-counter{
