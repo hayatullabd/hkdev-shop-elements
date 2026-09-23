@@ -685,11 +685,7 @@ final class Review_Options {
 					<span class="hkdev-rv-accordion-chevron dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span>
 					<span class="hkdev-rv-accordion-title"><?php echo esc_html( $title ); ?></span>
 					<span class="hkdev-rv-accordion-meta">
-						<?php if ( $image ) : ?>
-							<img class="hkdev-rv-accordion-thumb<?php echo $image ? ' is-visible' : ''; ?>" src="<?php echo esc_url( $image ); ?>" alt="">
-						<?php else : ?>
-							<img class="hkdev-rv-accordion-thumb" src="" alt="" hidden>
-						<?php endif; ?>
+						<img class="hkdev-rv-accordion-thumb<?php echo $image ? ' is-visible' : ''; ?>" src="<?php echo esc_url( $image ); ?>" alt=""<?php echo $image ? '' : ' hidden'; ?>>
 						<span class="hkdev-rv-meta-pill hkdev-rv-meta-rating"><?php echo esc_html( sprintf( '%d★', max( 1, min( 5, $rating ) ) ) ); ?></span>
 					</span>
 				</button>
@@ -714,7 +710,7 @@ final class Review_Options {
 				</div>
 				<div class="hkdev-field hkdev-field-wide">
 					<label><?php esc_html_e( 'Review text (modal)', 'hkdev-shop-elements' ); ?></label>
-					<textarea name="hkdev_rv_videos[<?php echo esc_attr( (string) $index ); ?>][quote]" rows="2"><?php echo esc_textarea( $quote ); ?></textarea>
+					<textarea class="hkdev-rv-quote-input" name="hkdev_rv_videos[<?php echo esc_attr( (string) $index ); ?>][quote]" rows="5"><?php echo esc_textarea( $quote ); ?></textarea>
 				</div>
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Top pick product', 'hkdev-shop-elements' ); ?></label>
@@ -835,7 +831,7 @@ final class Review_Options {
 				</div>
 				<div class="hkdev-field hkdev-field-wide">
 					<label><?php esc_html_e( 'Review text (modal)', 'hkdev-shop-elements' ); ?></label>
-					<textarea name="hkdev_rv_proofs[<?php echo esc_attr( (string) $index ); ?>][quote]" rows="2"><?php echo esc_textarea( $quote ); ?></textarea>
+					<textarea class="hkdev-rv-quote-input" name="hkdev_rv_proofs[<?php echo esc_attr( (string) $index ); ?>][quote]" rows="5"><?php echo esc_textarea( $quote ); ?></textarea>
 				</div>
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Featured product', 'hkdev-shop-elements' ); ?></label>
