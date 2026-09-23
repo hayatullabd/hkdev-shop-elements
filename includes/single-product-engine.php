@@ -828,8 +828,11 @@ class Single_Product_Engine {
 									<span class="attr-label"><?php echo esc_html( wc_attribute_label( $attribute_name ) ); ?>: <span class="selected-val"><?php esc_html_e( 'Select', 'hkdev-shop-elements' ); ?></span></span>
 									<div class="attr-swatches">
 										<?php foreach ( $options as $option ) : ?>
-											<div class="hkdev-sp-swatch-item" data-value="<?php echo esc_attr( $option ); ?>">
-												<?php echo esc_html( $option ); ?>
+											<?php
+											$option_label = $this->variation_option_label( $attribute_name, $option );
+											?>
+											<div class="hkdev-sp-swatch-item" data-value="<?php echo esc_attr( $option ); ?>" data-label="<?php echo esc_attr( $option_label ); ?>">
+												<?php echo esc_html( $option_label ); ?>
 											</div>
 										<?php endforeach; ?>
 									</div>
@@ -960,6 +963,29 @@ class Single_Product_Engine {
 		$product = $previous_product;
 
 		return ob_get_clean();
+	}
+
+	/**
+	 * Human-readable label for a variation option (taxonomy term name, not slug).
+	 *
+	 * @param string $attribute_name Attribute key from get_variation_attributes().
+	 * @param string $option         Stored option value (slug for global attributes).
+	 * @return string
+	 */
+	private function variation_option_label( $attribute_name, $option ) {
+		$option = (string) $option;
+		if ( '' === $option ) {
+			return '';
+		}
+
+		if ( taxonomy_exists( $attribute_name ) ) {
+			$term = get_term_by( 'slug', $option, $attribute_name );
+			if ( $term && ! is_wp_error( $term ) ) {
+				return $term->name;
+			}
+		}
+
+		return $option;
 	}
 
 	/**
