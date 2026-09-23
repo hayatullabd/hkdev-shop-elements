@@ -41,6 +41,47 @@ final class Review_Options {
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ], 20 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+		add_action( 'wp_ajax_hkdev_rv_search_products', [ $this, 'ajax_search_products' ] );
+	}
+
+	/**
+	 * AJAX product search for Top Pick / Featured product fields.
+	 *
+	 * @return void
+	 */
+	public function ajax_search_products() {
+		check_ajax_referer( 'hkdev_rv_admin', 'security' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( -1, 403 );
+		}
+
+		if ( ! function_exists( 'wc_get_products' ) ) {
+			wp_send_json( [] );
+		}
+
+		$term = isset( $_GET['term'] ) ? wc_clean( wp_unslash( $_GET['term'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$args = [
+			'limit'   => 30,
+			'status'  => 'publish',
+			'orderby' => 'title',
+			'order'   => 'ASC',
+			'return'  => 'objects',
+		];
+
+		if ( '' !== $term ) {
+			$args['s'] = $term;
+		}
+
+		$products = wc_get_products( $args );
+		$out      = [];
+
+		foreach ( $products as $product ) {
+			$out[ (string) $product->get_id() ] = wp_strip_all_tags( $product->get_formatted_name() );
+		}
+
+		wp_send_json( $out );
 	}
 
 	/**
@@ -61,12 +102,37 @@ final class Review_Options {
 
 		wp_enqueue_media();
 
+		$script_deps = [ 'jquery' ];
+
+		if ( wp_script_is( 'selectWoo', 'registered' ) ) {
+			wp_enqueue_style( 'select2' );
+			wp_enqueue_script( 'selectWoo' );
+			$script_deps[] = 'selectWoo';
+		}
+
+		if ( wp_script_is( 'wc-enhanced-select', 'registered' ) ) {
+			wp_enqueue_script( 'wc-enhanced-select' );
+			$script_deps[] = 'wc-enhanced-select';
+		}
+
 		wp_enqueue_script(
 			'hkdev-elements-reviews-admin',
 			HKDEV_ELEMENTS_ASSETS_URL . 'js/reviews-admin.js',
-			[ 'jquery' ],
+			$script_deps,
 			\HkdevShopElements\hkdev_elements_asset_ver( 'assets/js/reviews-admin.js' ),
 			true
+		);
+
+		wp_localize_script(
+			'hkdev-elements-reviews-admin',
+			'hkdevRvAdmin',
+			[
+				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
+				'searchNonce'  => wp_create_nonce( 'hkdev_rv_admin' ),
+				'searchAction' => 'hkdev_rv_search_products',
+				'placeholder'  => __( 'Search product…', 'hkdev-shop-elements' ),
+				'minInput'     => 1,
+			]
 		);
 
 		wp_enqueue_script(
@@ -208,8 +274,7 @@ final class Review_Options {
 			$saved_notice = true;
 		}
 
-		$s       = $this->stored();
-		$products = Review_Engine::product_options();
+		$s        = $this->stored();
 		$defaults = Review_Engine::instance()->admin_settings_defaults();
 
 		$val = static function ( $key ) use ( $s, $defaults ) {
@@ -266,10 +331,10 @@ final class Review_Options {
 						<?php $this->render_general_tab( $val, $checked ); ?>
 					</div>
 					<div class="hkdev-tab-content" id="hkdev-tab-rv-videos">
-						<?php $this->render_videos_tab( $videos, $products, $checked ); ?>
+						<?php $this->render_videos_tab( $videos, $checked ); ?>
 					</div>
 					<div class="hkdev-tab-content" id="hkdev-tab-rv-proofs">
-						<?php $this->render_proofs_tab( $proofs, $products, $checked ); ?>
+						<?php $this->render_proofs_tab( $proofs, $checked ); ?>
 					</div>
 					<div class="hkdev-tab-content" id="hkdev-tab-rv-labels">
 						<?php $this->render_labels_tab( $val, $checked ); ?>
@@ -352,12 +417,63 @@ final class Review_Options {
 	}
 
 	/**
+	 * Product label for the searchable select.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return string
+	 */
+	private function product_select_label( $product_id ) {
+		$product_id = absint( $product_id );
+		if ( ! $product_id || ! function_exists( 'wc_get_product' ) ) {
+			return '';
+		}
+
+		$product = wc_get_product( $product_id );
+
+		return ( $product && $product->is_visible() ) ? wp_strip_all_tags( $product->get_formatted_name() ) : '';
+	}
+
+	/**
+	 * Searchable WooCommerce product select.
+	 *
+	 * @param string $input_name Field name attribute.
+	 * @param int    $product_id Selected product ID.
+	 * @return void
+	 */
+	private function render_product_select( $input_name, $product_id ) {
+		$product_id = absint( $product_id );
+		$label      = $this->product_select_label( $product_id );
+
+		if ( function_exists( 'wc_get_products' ) && wp_script_is( 'selectWoo', 'registered' ) ) {
+			?>
+			<select
+				class="hkdev-rv-product-search wc-product-search"
+				name="<?php echo esc_attr( $input_name ); ?>"
+				data-placeholder="<?php esc_attr_e( 'Search product…', 'hkdev-shop-elements' ); ?>"
+				data-action="woocommerce_json_search_products"
+				data-allow_clear="true"
+				data-minimum_input_length="1"
+			>
+				<option value=""></option>
+				<?php if ( $product_id && '' !== $label ) : ?>
+					<option value="<?php echo esc_attr( (string) $product_id ); ?>" selected="selected"><?php echo esc_html( $label ); ?></option>
+				<?php endif; ?>
+			</select>
+			<?php
+			return;
+		}
+
+		?>
+		<input type="number" min="0" step="1" name="<?php echo esc_attr( $input_name ); ?>" value="<?php echo esc_attr( $product_id ? (string) $product_id : '' ); ?>" placeholder="<?php esc_attr_e( 'Product ID', 'hkdev-shop-elements' ); ?>">
+		<?php
+	}
+
+	/**
 	 * @param array    $videos   Stored video rows.
-	 * @param array    $products Product id => name.
 	 * @param callable $checked  Checkbox helper.
 	 * @return void
 	 */
-	private function render_videos_tab( array $videos, array $products, $checked ) {
+	private function render_videos_tab( array $videos, $checked ) {
 		?>
 		<div class="hkdev-admin-card">
 			<div class="hkdev-admin-card-header">
@@ -377,10 +493,10 @@ final class Review_Options {
 					<div class="hkdev-rv-repeater-list">
 						<?php
 						if ( empty( $videos ) ) {
-							$this->render_video_row( 0, [], $products );
+							$this->render_video_row( 0, [] );
 						} else {
 							foreach ( $videos as $i => $row ) {
-								$this->render_video_row( (int) $i, $row, $products );
+								$this->render_video_row( (int) $i, $row );
 							}
 						}
 						?>
@@ -393,12 +509,11 @@ final class Review_Options {
 	}
 
 	/**
-	 * @param int   $index    Row index.
-	 * @param array $row      Row data.
-	 * @param array $products Product options.
+	 * @param int   $index Row index.
+	 * @param array $row   Row data.
 	 * @return void
 	 */
-	private function render_video_row( $index, array $row, array $products ) {
+	private function render_video_row( $index, array $row ) {
 		$name         = $row['name'] ?? '';
 		$thumb_id     = isset( $row['thumbnail_id'] ) ? absint( $row['thumbnail_id'] ) : 0;
 		$image        = $row['image'] ?? '';
@@ -414,7 +529,10 @@ final class Review_Options {
 		<div class="hkdev-rv-repeater-item" data-index="<?php echo esc_attr( (string) $index ); ?>">
 			<div class="hkdev-rv-repeater-head">
 				<strong><?php echo esc_html( $name ? $name : __( 'Video review', 'hkdev-shop-elements' ) ); ?></strong>
-				<button type="button" class="button-link-delete hkdev-rv-remove-row"><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></button>
+				<button type="button" class="hkdev-rv-remove-row" aria-label="<?php esc_attr_e( 'Remove review', 'hkdev-shop-elements' ); ?>">
+					<span class="dashicons dashicons-trash" aria-hidden="true"></span>
+					<span><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></span>
+				</button>
 			</div>
 			<div class="hkdev-settings-grid">
 				<div class="hkdev-field">
@@ -435,12 +553,7 @@ final class Review_Options {
 				</div>
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Top pick product', 'hkdev-shop-elements' ); ?></label>
-					<select name="hkdev_rv_videos[<?php echo esc_attr( (string) $index ); ?>][product_id]">
-						<option value="0"><?php esc_html_e( '— None —', 'hkdev-shop-elements' ); ?></option>
-						<?php foreach ( $products as $pid => $pname ) : ?>
-							<option value="<?php echo esc_attr( (string) $pid ); ?>"<?php selected( $product_id, $pid ); ?>><?php echo esc_html( $pname ); ?></option>
-						<?php endforeach; ?>
-					</select>
+					<?php $this->render_product_select( 'hkdev_rv_videos[' . (int) $index . '][product_id]', $product_id ); ?>
 				</div>
 				<div class="hkdev-field hkdev-field-wide">
 					<label><?php esc_html_e( 'Thumbnail', 'hkdev-shop-elements' ); ?></label>
@@ -458,12 +571,11 @@ final class Review_Options {
 	}
 
 	/**
-	 * @param array    $proofs   Stored proof rows.
-	 * @param array    $products Product options.
-	 * @param callable $checked  Checkbox helper.
+	 * @param array    $proofs  Stored proof rows.
+	 * @param callable $checked Checkbox helper.
 	 * @return void
 	 */
-	private function render_proofs_tab( array $proofs, array $products, $checked ) {
+	private function render_proofs_tab( array $proofs, $checked ) {
 		?>
 		<div class="hkdev-admin-card">
 			<div class="hkdev-admin-card-header">
@@ -482,10 +594,10 @@ final class Review_Options {
 					<div class="hkdev-rv-repeater-list">
 						<?php
 						if ( empty( $proofs ) ) {
-							$this->render_proof_row( 0, [], $products );
+							$this->render_proof_row( 0, [] );
 						} else {
 							foreach ( $proofs as $i => $row ) {
-								$this->render_proof_row( (int) $i, $row, $products );
+								$this->render_proof_row( (int) $i, $row );
 							}
 						}
 						?>
@@ -498,12 +610,11 @@ final class Review_Options {
 	}
 
 	/**
-	 * @param int   $index    Row index.
-	 * @param array $row      Row data.
-	 * @param array $products Product options.
+	 * @param int   $index Row index.
+	 * @param array $row   Row data.
 	 * @return void
 	 */
-	private function render_proof_row( $index, array $row, array $products ) {
+	private function render_proof_row( $index, array $row ) {
 		$name       = $row['name'] ?? '';
 		$rating     = isset( $row['rating'] ) ? (int) $row['rating'] : 5;
 		$quote      = $row['quote'] ?? '';
@@ -524,7 +635,10 @@ final class Review_Options {
 		<div class="hkdev-rv-repeater-item" data-index="<?php echo esc_attr( (string) $index ); ?>">
 			<div class="hkdev-rv-repeater-head">
 				<strong><?php echo esc_html( $name ? $name : __( 'Social proof', 'hkdev-shop-elements' ) ); ?></strong>
-				<button type="button" class="button-link-delete hkdev-rv-remove-row"><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></button>
+				<button type="button" class="hkdev-rv-remove-row" aria-label="<?php esc_attr_e( 'Remove review', 'hkdev-shop-elements' ); ?>">
+					<span class="dashicons dashicons-trash" aria-hidden="true"></span>
+					<span><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></span>
+				</button>
 			</div>
 			<div class="hkdev-settings-grid">
 				<div class="hkdev-field">
@@ -541,12 +655,7 @@ final class Review_Options {
 				</div>
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Featured product', 'hkdev-shop-elements' ); ?></label>
-					<select name="hkdev_rv_proofs[<?php echo esc_attr( (string) $index ); ?>][product_id]">
-						<option value="0"><?php esc_html_e( '— None —', 'hkdev-shop-elements' ); ?></option>
-						<?php foreach ( $products as $pid => $pname ) : ?>
-							<option value="<?php echo esc_attr( (string) $pid ); ?>"<?php selected( $product_id, $pid ); ?>><?php echo esc_html( $pname ); ?></option>
-						<?php endforeach; ?>
-					</select>
+					<?php $this->render_product_select( 'hkdev_rv_proofs[' . (int) $index . '][product_id]', $product_id ); ?>
 				</div>
 				<div class="hkdev-field hkdev-field-wide">
 					<label><?php esc_html_e( 'Images', 'hkdev-shop-elements' ); ?></label>
@@ -620,16 +729,10 @@ final class Review_Options {
 						<input type="text" id="hkdev_rv_view_button_text" name="hkdev_rv_view_button_text" value="<?php echo esc_attr( $val( 'view_button_text' ) ); ?>">
 					</div>
 				</div>
-			</div>
-		</div>
-
-		<div class="hkdev-admin-card">
-			<div class="hkdev-admin-card-header">
-				<span class="hkdev-admin-card-icon dashicons dashicons-format-chat"></span>
-				<h2><?php esc_html_e( 'Modal badges & empty states', 'hkdev-shop-elements' ); ?></h2>
-			</div>
-			<div class="hkdev-admin-card-body">
-				<div class="hkdev-settings-grid">
+				</div>
+				<div class="hkdev-admin-subsection">
+					<h3 class="hkdev-admin-subtitle"><?php esc_html_e( 'Modal & empty states', 'hkdev-shop-elements' ); ?></h3>
+				<div class="hkdev-settings-grid hkdev-settings-grid-3">
 					<div class="hkdev-field">
 						<label class="hkdev-checkbox">
 							<input type="checkbox" name="hkdev_rv_show_modal_quote" value="1"<?php echo $checked( 'show_modal_quote' ); // phpcs:ignore ?>>
@@ -658,6 +761,7 @@ final class Review_Options {
 						<label for="hkdev_rv_written_empty"><?php esc_html_e( 'Review empty message', 'hkdev-shop-elements' ); ?></label>
 						<input type="text" id="hkdev_rv_written_empty" name="hkdev_rv_written_empty" value="<?php echo esc_attr( $val( 'written_empty' ) ); ?>">
 					</div>
+				</div>
 				</div>
 			</div>
 		</div>
