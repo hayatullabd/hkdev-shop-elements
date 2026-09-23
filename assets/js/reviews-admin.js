@@ -47,6 +47,35 @@
         $select.empty().append($('<option value=""></option>'));
     }
 
+    function normalizeProductResults(data) {
+        var terms = [];
+
+        if (!data || data === 0 || data === '0' || data === -1 || data === '-1') {
+            return { results: [] };
+        }
+
+        if (data.results && $.isArray(data.results)) {
+            return { results: data.results };
+        }
+
+        if ($.isArray(data)) {
+            $.each(data, function (i, row) {
+                if (row && row.id) {
+                    terms.push({ id: row.id, text: row.text });
+                }
+            });
+            return { results: terms };
+        }
+
+        if (typeof data === 'object') {
+            $.each(data, function (id, text) {
+                terms.push({ id: id, text: text });
+            });
+        }
+
+        return { results: terms };
+    }
+
     function initProductSelect($scope) {
         if (!$.fn.selectWoo) {
             return;
@@ -54,6 +83,7 @@
 
         var $root = $scope && $scope.length ? $scope : $('.hkdev-reviews-admin');
         var cfg = window.hkdevRvAdmin || {};
+        var ajaxUrl = cfg.ajaxUrl || window.ajaxurl || '';
 
         $root.find('.hkdev-rv-product-search').filter(':not(.enhanced)').each(function () {
             var $el = $(this);
@@ -64,31 +94,54 @@
                 width: '100%',
                 minimumInputLength: parseInt($el.data('minimum_input_length'), 10) || cfg.minInput || 1,
                 ajax: {
-                    url: cfg.ajaxUrl || window.ajaxurl,
-                    type: 'POST',
+                    url: ajaxUrl,
+                    type: 'GET',
                     dataType: 'json',
                     delay: 250,
                     data: function (params) {
+                        var term = params.term || '';
+
+                        if (cfg.wcSearchNonce) {
+                            return {
+                                term: term,
+                                action: cfg.wcSearchAction || 'woocommerce_json_search_products',
+                                security: cfg.wcSearchNonce
+                            };
+                        }
+
                         return {
-                            term: params.term || '',
+                            term: term,
                             action: cfg.searchAction || 'hkdev_rv_search_products',
                             security: cfg.searchNonce || ''
                         };
                     },
+                    transport: function (params, success, failure) {
+                        var request = $.ajax(params);
+
+                        request.then(function (data) {
+                            success(data);
+                        }, function (xhr) {
+                            if (cfg.searchNonce && cfg.wcSearchNonce) {
+                                var fallback = $.ajax({
+                                    url: ajaxUrl,
+                                    type: 'GET',
+                                    dataType: 'json',
+                                    data: {
+                                        term: params.data.term,
+                                        action: cfg.searchAction || 'hkdev_rv_search_products',
+                                        security: cfg.searchNonce
+                                    }
+                                });
+                                fallback.then(success, failure);
+                                return;
+                            }
+                            failure(xhr);
+                        });
+
+                        return request;
+                    },
                     processResults: function (data) {
-                        var terms = [];
-
-                        if (data && data.results) {
-                            return data;
-                        }
-
-                        if (data) {
-                            $.each(data, function (id, text) {
-                                terms.push({ id: id, text: text });
-                            });
-                        }
-
-                        return { results: terms };
+                        return normalizeProductResults(data);
                     },
                     cache: true
                 }

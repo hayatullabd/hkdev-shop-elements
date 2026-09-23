@@ -41,6 +41,13 @@ final class Review_Options {
 	public function init() {
 		add_action( 'admin_menu', [ $this, 'register_menu' ], 20 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ], 100 );
+		$this->register_ajax_handlers();
+	}
+
+	/**
+	 * @return void
+	 */
+	public function register_ajax_handlers() {
 		add_action( 'wp_ajax_hkdev_rv_search_products', [ $this, 'ajax_search_products' ] );
 	}
 
@@ -50,10 +57,12 @@ final class Review_Options {
 	 * @return void
 	 */
 	public function ajax_search_products() {
-		check_ajax_referer( 'hkdev_rv_admin', 'security' );
+		if ( ! check_ajax_referer( 'hkdev_rv_admin', 'security', false ) ) {
+			wp_send_json( [] );
+		}
 
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( -1, 403 );
+		if ( ! $this->current_user_can_manage_reviews() ) {
+			wp_send_json( [] );
 		}
 
 		if ( ! function_exists( 'wc_get_product' ) ) {
@@ -66,27 +75,34 @@ final class Review_Options {
 			wp_send_json( [] );
 		}
 
-		$limit = 30;
-		$ids   = [];
+		wp_send_json( $this->search_products_for_select( $term, 30 ) );
+	}
 
-		if ( class_exists( 'WC_Data_Store' ) ) {
-			$ids = WC_Data_Store::load( 'product' )->search_products( $term, '', true, false, $limit );
+	/**
+	 * @return bool
+	 */
+	private function current_user_can_manage_reviews() {
+		return current_user_can( 'manage_options' )
+			|| current_user_can( 'manage_woocommerce' )
+			|| current_user_can( 'edit_products' );
+	}
+
+	/**
+	 * Product search results formatted for SelectWoo (id => label).
+	 *
+	 * @param string $term  Search term.
+	 * @param int    $limit Max results.
+	 * @return array<string,string>
+	 */
+	private function search_products_for_select( $term, $limit = 30 ) {
+		$limit = max( 1, min( 50, (int) $limit ) );
+		$term  = trim( (string) $term );
+
+		if ( '' === $term ) {
+			return [];
 		}
 
-		if ( empty( $ids ) ) {
-			$products = wc_get_products(
-				[
-					'limit'   => $limit,
-					'status'  => 'publish',
-					'orderby' => 'title',
-					'order'   => 'ASC',
-					's'       => $term,
-					'return'  => 'ids',
-				]
-			);
-			$ids = is_array( $products ) ? $products : [];
-		}
-
+		$ids = $this->find_product_ids( $term, $limit );
 		$out = [];
 
 		foreach ( $ids as $id ) {
@@ -94,10 +110,84 @@ final class Review_Options {
 			if ( ! $product ) {
 				continue;
 			}
-			$out[ (string) $product->get_id() ] = wp_strip_all_tags( $product->get_formatted_name() );
+
+			if ( $product->is_type( 'variation' ) ) {
+				$parent = wc_get_product( $product->get_parent_id() );
+				if ( $parent ) {
+					$product = $parent;
+				}
+			}
+
+			if ( function_exists( 'wc_products_array_filter_readable' ) && ! wc_products_array_filter_readable( $product ) ) {
+				continue;
+			}
+
+			$out[ (string) $product->get_id() ] = rawurldecode( wp_strip_all_tags( $product->get_formatted_name() ) );
 		}
 
-		wp_send_json( $out );
+		return $out;
+	}
+
+	/**
+	 * @param string $term  Search term.
+	 * @param int    $limit Max IDs.
+	 * @return int[]
+	 */
+	private function find_product_ids( $term, $limit ) {
+		$ids = [];
+
+		if ( class_exists( 'WC_Data_Store' ) ) {
+			try {
+				$data_store = WC_Data_Store::load( 'product' );
+				$ids        = $data_store->search_products( $term, '', true, false, $limit );
+			} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
+				$ids = [];
+			}
+		}
+
+		$ids = array_map( 'absint', (array) $ids );
+
+		if ( count( $ids ) < $limit ) {
+			global $wpdb;
+
+			$like = '%' . $wpdb->esc_like( $term ) . '%';
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$sku_ids = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT pm.post_id FROM {$wpdb->postmeta} pm
+					INNER JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+					WHERE pm.meta_key = '_sku' AND pm.meta_value LIKE %s
+					AND p.post_type IN ('product','product_variation') AND p.post_status = 'publish'
+					LIMIT %d",
+					$like,
+					$limit
+				)
+			);
+
+			$ids = array_merge( $ids, array_map( 'absint', (array) $sku_ids ) );
+		}
+
+		if ( count( $ids ) < $limit ) {
+			$query = new \WP_Query(
+				[
+					'post_type'              => 'product',
+					'post_status'            => 'publish',
+					'posts_per_page'         => $limit,
+					's'                      => $term,
+					'fields'                 => 'ids',
+					'no_found_rows'          => true,
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
+					'orderby'                => 'relevance',
+				]
+			);
+
+			$ids = array_merge( $ids, array_map( 'absint', (array) $query->posts ) );
+		}
+
+		$ids = array_values( array_unique( array_filter( $ids ) ) );
+
+		return array_slice( $ids, 0, $limit );
 	}
 
 	/**
@@ -120,9 +210,24 @@ final class Review_Options {
 		}
 
 		if ( ! wp_script_is( 'selectWoo', 'registered' ) ) {
+			$script_candidates = [
+				$base . 'js/selectWoo/selectWoo.full' . $suffix . '.js',
+				$base . 'vendor/selectWoo/selectWoo.full' . $suffix . '.js',
+				$base . 'js/selectWoo/selectWoo.full.js',
+			];
+
+			$script_src = $script_candidates[0];
+			foreach ( $script_candidates as $candidate ) {
+				$path = str_replace( $wc->plugin_url(), $wc->plugin_path(), $candidate );
+				if ( file_exists( $path ) ) {
+					$script_src = $candidate;
+					break;
+				}
+			}
+
 			wp_register_script(
 				'selectWoo',
-				$base . 'js/selectWoo/selectWoo.full' . $suffix . '.js',
+				$script_src,
 				[ 'jquery' ],
 				'1.0.9-wc.' . $version,
 				true
@@ -171,11 +276,13 @@ final class Review_Options {
 			'hkdev-elements-reviews-admin',
 			'hkdevRvAdmin',
 			[
-				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'searchNonce'  => wp_create_nonce( 'hkdev_rv_admin' ),
-				'searchAction' => 'hkdev_rv_search_products',
-				'placeholder'  => __( 'Search product…', 'hkdev-shop-elements' ),
-				'minInput'     => 1,
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'searchNonce'   => wp_create_nonce( 'hkdev_rv_admin' ),
+				'searchAction'  => 'hkdev_rv_search_products',
+				'wcSearchNonce' => wp_create_nonce( 'search-products' ),
+				'wcSearchAction'=> 'woocommerce_json_search_products',
+				'placeholder'   => __( 'Search product…', 'hkdev-shop-elements' ),
+				'minInput'      => 1,
 			]
 		);
 
