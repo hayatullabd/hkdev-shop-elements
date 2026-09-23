@@ -387,6 +387,7 @@ jQuery(function($) {
                 on_sale: $wrapper.data('on_sale'),
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
+                product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
                 image_size: $wrapper.data('image_size'),
                 hover_img: $wrapper.attr('data-hover-img'),
                 style: $wrapper.data('style')
@@ -594,6 +595,7 @@ jQuery(function($) {
                 on_sale: $wrapper.data('on_sale'),
                 featured: $wrapper.data('featured'),
                 stock_status: $wrapper.data('stock_status'),
+                product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
                 image_size: $wrapper.data('image_size'),
                 hover_img: $wrapper.attr('data-hover-img'),
                 style: $wrapper.data('style')
