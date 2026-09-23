@@ -632,7 +632,7 @@ class Review_Engine {
 			<div class="hkdev-rv-vmodal" hidden>
 				<div class="hkdev-rv-vmodal-content">
 					<button type="button" class="hkdev-rv-modal-close" aria-label="<?php esc_attr_e( 'Close video', 'hkdev-shop-elements' ); ?>">
-						<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-close" aria-hidden="true"></span>
+						<span class="hkdev-rv-btn-glyph hkdev-rv-btn-glyph-close" aria-hidden="true">&#215;</span>
 					</button>
 					<div class="hkdev-rv-vmodal-media"></div>
 					<div class="hkdev-rv-vmodal-details">
@@ -650,15 +650,15 @@ class Review_Engine {
 			<div class="hkdev-rv-pmodal" hidden>
 				<div class="hkdev-rv-pmodal-content">
 					<button type="button" class="hkdev-rv-pmodal-close" aria-label="<?php esc_attr_e( 'Close review', 'hkdev-shop-elements' ); ?>">
-						<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-close" aria-hidden="true"></span>
+						<span class="hkdev-rv-btn-glyph hkdev-rv-btn-glyph-close" aria-hidden="true">&#215;</span>
 					</button>
 					<div class="hkdev-rv-pmodal-left">
 						<img class="hkdev-rv-slider-img" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
 						<button type="button" class="hkdev-rv-slider-btn hkdev-rv-prev" aria-label="<?php esc_attr_e( 'Previous image', 'hkdev-shop-elements' ); ?>">
-							<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-chevron hkdev-rv-ui-icon-chevron-left" aria-hidden="true"></span>
+							<span class="hkdev-rv-btn-glyph hkdev-rv-btn-glyph-prev" aria-hidden="true">&#8249;</span>
 						</button>
 						<button type="button" class="hkdev-rv-slider-btn hkdev-rv-next" aria-label="<?php esc_attr_e( 'Next image', 'hkdev-shop-elements' ); ?>">
-							<span class="hkdev-rv-ui-icon hkdev-rv-ui-icon-chevron hkdev-rv-ui-icon-chevron-right" aria-hidden="true"></span>
+							<span class="hkdev-rv-btn-glyph hkdev-rv-btn-glyph-next" aria-hidden="true">&#8250;</span>
 						</button>
 						<div class="hkdev-rv-slider-counter"></div>
 					</div>

@@ -1008,7 +1008,7 @@ class Reviews_Widget extends Widget_Base {
 		$this->hkdev_slider( 'rv_slider_btn_size', esc_html__( 'Slider Arrow Button Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-slider-btn-size', 44, 72 );
 		$this->hkdev_slider( 'rv_slider_icon_size', esc_html__( 'Slider Arrow Icon Size', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-slider-icon', 22, 40 );
 		$this->hkdev_color( 'rv_close_bg', esc_html__( 'Close Button Background', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close, {{WRAPPER}} .hkdev-rv-pmodal-close', 'background-color' );
-		$this->hkdev_color( 'rv_close_color', esc_html__( 'Close Button Icon', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close, {{WRAPPER}} .hkdev-rv-pmodal-close', 'color' );
+		$this->hkdev_color( 'rv_close_color', esc_html__( 'Close Button Icon', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close .hkdev-rv-btn-glyph, {{WRAPPER}} .hkdev-rv-pmodal-close .hkdev-rv-btn-glyph', 'color' );
 		$this->hkdev_color( 'rv_close_hover_bg', esc_html__( 'Close Button Hover', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-modal-close:hover, {{WRAPPER}} .hkdev-rv-pmodal-close:hover', 'background-color' );
 		$this->hkdev_typography( 'rv_mname', esc_html__( 'Modal Name', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-vmodal-name, {{WRAPPER}} .hkdev-rv-pmodal-name' );
 		$this->hkdev_color( 'rv_badge_bg', esc_html__( 'Modal Badge Background', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-vmodal-badge, {{WRAPPER}} .hkdev-rv-pmodal-badge', 'background-color' );
@@ -1016,7 +1016,7 @@ class Reviews_Widget extends Widget_Base {
 		$this->hkdev_typography( 'rv_quote', esc_html__( 'Modal Review Text', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-vmodal-quote, {{WRAPPER}} .hkdev-rv-pmodal-quote' );
 		$this->hkdev_color( 'rv_slider_bg', esc_html__( 'Slider Background', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-pmodal-left', 'background-color' );
 		$this->hkdev_color( 'rv_slider_btn_bg', esc_html__( 'Slider Arrow Background', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-slider-btn', 'background-color' );
-		$this->hkdev_color( 'rv_slider_btn_color', esc_html__( 'Slider Arrow Icon', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-slider-btn', 'color' );
+		$this->hkdev_color( 'rv_slider_btn_color', esc_html__( 'Slider Arrow Icon', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-slider-btn .hkdev-rv-btn-glyph', 'color' );
 		$this->hkdev_color( 'rv_counter_bg', esc_html__( 'Counter Background', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-slider-counter', 'background-color' );
 		$this->hkdev_color( 'rv_counter_color', esc_html__( 'Counter Text', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-rv-slider-counter', 'color' );
 

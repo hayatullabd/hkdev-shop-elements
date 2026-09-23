@@ -567,7 +567,7 @@ body.hkdev-rv-locked{
     border: 2px solid rgba(255, 255, 255, 0.95) !important;
     border-radius: 50% !important;
     background: rgba(255, 255, 255, 0.96) !important;
-    color: var(--hkdev-rv-text) !important;
+    color: #141a14 !important;
     cursor: pointer !important;
     line-height: 1 !important;
     font-size: 16px !important;
@@ -577,66 +577,59 @@ body.hkdev-rv-locked{
     appearance: none !important;
 }
 
-/* CSS-drawn modal icons (immune to theme SVG/font-size overrides). */
 .hkdev-rv-modal-close svg,
 .hkdev-rv-pmodal-close svg,
 .hkdev-rv-slider-btn svg{
     display: none !important;
 }
 
-.hkdev-rv-ui-icon{
+/* Text glyphs — themes often zero-out font-size on button descendants. */
+.hkdev-rv .hkdev-rv-modal-close .hkdev-rv-btn-glyph,
+.hkdev-rv .hkdev-rv-pmodal-close .hkdev-rv-btn-glyph,
+.hkdev-rv .hkdev-rv-slider-btn .hkdev-rv-btn-glyph{
     display: block !important;
-    flex-shrink: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    text-indent: 0 !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
     pointer-events: none !important;
-    box-sizing: border-box !important;
+    -webkit-font-smoothing: antialiased !important;
 }
 
-.hkdev-rv-ui-icon-close{
-    position: relative !important;
-    width: clamp(20px, var(--hkdev-rv-modal-close-icon, 26px), 36px) !important;
-    height: clamp(20px, var(--hkdev-rv-modal-close-icon, 26px), 36px) !important;
-    min-width: 20px !important;
-    min-height: 20px !important;
+.hkdev-rv .hkdev-rv-btn-glyph-close{
+    font-size: clamp(28px, var(--hkdev-rv-modal-close-icon, 32px), 40px) !important;
+    color: #141a14 !important;
+    margin-top: -3px !important;
 }
 
-.hkdev-rv-ui-icon-close::before,
-.hkdev-rv-ui-icon-close::after{
-    content: "" !important;
-    position: absolute !important;
-    top: 50% !important;
-    left: 50% !important;
-    width: 100% !important;
-    height: 3px !important;
-    background: currentColor !important;
-    border-radius: 2px !important;
+.hkdev-rv .hkdev-rv-btn-glyph-prev,
+.hkdev-rv .hkdev-rv-btn-glyph-next{
+    font-size: clamp(32px, var(--hkdev-rv-slider-icon, 38px), 48px) !important;
+    font-weight: 700 !important;
+    color: #141a14 !important;
 }
 
-.hkdev-rv-ui-icon-close::before{
-    transform: translate(-50%, -50%) rotate(45deg) !important;
+.hkdev-rv .hkdev-rv-btn-glyph-prev{
+    margin-right: -2px !important;
 }
 
-.hkdev-rv-ui-icon-close::after{
-    transform: translate(-50%, -50%) rotate(-45deg) !important;
-}
-
-.hkdev-rv-ui-icon-chevron{
-    width: clamp(12px, calc(var(--hkdev-rv-slider-icon, 28px) * 0.42), 18px) !important;
-    height: clamp(12px, calc(var(--hkdev-rv-slider-icon, 28px) * 0.42), 18px) !important;
-    min-width: 12px !important;
-    min-height: 12px !important;
-    border-style: solid !important;
-    border-color: currentColor !important;
-    border-width: 0 0 3px 3px !important;
-}
-
-.hkdev-rv-ui-icon-chevron-left{
-    transform: rotate(45deg) !important;
-    margin-left: 5px !important;
-}
-
-.hkdev-rv-ui-icon-chevron-right{
-    transform: rotate(-135deg) !important;
-    margin-right: 5px !important;
+.hkdev-rv .hkdev-rv-btn-glyph-next{
+    margin-left: -2px !important;
 }
 
 .hkdev-rv-modal-close:hover,
@@ -645,6 +638,11 @@ body.hkdev-rv-locked{
     color: #ffffff !important;
     transform: scale(1.04) !important;
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32) !important;
+}
+
+.hkdev-rv-modal-close:hover .hkdev-rv-btn-glyph,
+.hkdev-rv-pmodal-close:hover .hkdev-rv-btn-glyph{
+    color: #ffffff !important;
 }
 
 .hkdev-rv-vmodal-media{
@@ -744,7 +742,7 @@ body.hkdev-rv-locked{
     border: 2px solid rgba(255, 255, 255, 0.92) !important;
     border-radius: 50% !important;
     background: rgba(255, 255, 255, 0.94) !important;
-    color: var(--hkdev-rv-text) !important;
+    color: #141a14 !important;
     cursor: pointer !important;
     line-height: 1 !important;
     font-size: 16px !important;
@@ -759,6 +757,10 @@ body.hkdev-rv-locked{
     color: #ffffff !important;
     transform: translateY(-50%) scale(1.05) !important;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+.hkdev-rv-slider-btn:hover .hkdev-rv-btn-glyph{
+    color: #ffffff !important;
 }
 
 .hkdev-rv-prev{ left: 16px !important; }
@@ -781,15 +783,13 @@ body.hkdev-rv-locked{
     .hkdev-rv-prev{ left: 20px !important; }
     .hkdev-rv-next{ right: 20px !important; }
 
-    .hkdev-rv-ui-icon-close{
-        width: clamp(22px, var(--hkdev-rv-modal-close-icon, 28px), 38px) !important;
-        height: clamp(22px, var(--hkdev-rv-modal-close-icon, 28px), 38px) !important;
+    .hkdev-rv .hkdev-rv-btn-glyph-close{
+        font-size: clamp(30px, var(--hkdev-rv-modal-close-icon, 34px), 42px) !important;
     }
 
-    .hkdev-rv-ui-icon-chevron{
-        width: clamp(14px, calc(var(--hkdev-rv-slider-icon, 32px) * 0.45), 20px) !important;
-        height: clamp(14px, calc(var(--hkdev-rv-slider-icon, 32px) * 0.45), 20px) !important;
-        border-width: 0 0 3px 3px !important;
+    .hkdev-rv .hkdev-rv-btn-glyph-prev,
+    .hkdev-rv .hkdev-rv-btn-glyph-next{
+        font-size: clamp(36px, var(--hkdev-rv-slider-icon, 42px), 52px) !important;
     }
 }
 
