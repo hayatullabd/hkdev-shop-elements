@@ -79,11 +79,7 @@ jQuery(document).ready(function($) {
         if (!$notice.length) {
             return;
         }
-        if (visible) {
-            $notice.show();
-        } else {
-            $notice.hide();
-        }
+        $notice.toggleClass('is-visible', !!visible);
     }
 
     function setPurchaseButtonsState(isEnabled) {
