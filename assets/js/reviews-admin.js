@@ -376,6 +376,29 @@
         });
     }
 
+    function syncProductSelectValues($root) {
+        $root.find('.hkdev-rv-product-search').each(function () {
+            var $el = $(this);
+            var val = '';
+
+            if ($el.hasClass('enhanced') && $.fn.selectWoo) {
+                try {
+                    val = $el.selectWoo('val');
+                } catch (err) {
+                    val = $el.val();
+                }
+            } else {
+                val = $el.val();
+            }
+
+            if ($.isArray(val)) {
+                val = val.length ? val[0] : '';
+            }
+
+            $el.val(val || '');
+        });
+    }
+
     $(function () {
         var $root = $('.hkdev-reviews-admin');
         initReviewTabs();
@@ -386,6 +409,7 @@
 
         $('#hkdev-reviews-settings').on('submit', function () {
             syncExpectedRowCounts($root);
+            syncProductSelectValues($root);
         });
     });
 })(jQuery);

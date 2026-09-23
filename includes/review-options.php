@@ -942,6 +942,7 @@ final class Review_Options {
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Featured product', 'hkdev-shop-elements' ); ?></label>
 					<?php $this->render_product_select( 'hkdev_rv_proofs[' . (int) $index . '][product_id]', $product_id ); ?>
+					<p class="description"><?php esc_html_e( 'Shown in the review popup (click a social proof card). Enable “Show product promo in modals” under Labels & Modal.', 'hkdev-shop-elements' ); ?></p>
 				</div>
 				<div class="hkdev-field hkdev-field-wide">
 					<label><?php esc_html_e( 'Images', 'hkdev-shop-elements' ); ?></label>
