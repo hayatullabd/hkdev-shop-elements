@@ -639,19 +639,19 @@ final class Review_Options {
 					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_video_thumb_fallback" value="1"<?php echo $checked( 'video_thumb_fallback' ); // phpcs:ignore ?>><?php esc_html_e( 'YT thumb', 'hkdev-shop-elements' ); ?></label>
 				</div>
 
-				<div class="hkdev-rv-repeater" data-type="video">
-					<div class="hkdev-rv-repeater-list">
+				<div class="hkdev-rv-repeater" data-type="video" data-empty-label="<?php esc_attr_e( 'New video review', 'hkdev-shop-elements' ); ?>">
+					<div class="hkdev-rv-repeater-list hkdev-rv-accordion-list">
 						<?php
 						if ( empty( $videos ) ) {
-							$this->render_video_row( 0, [] );
+							$this->render_video_row( 0, [], true );
 						} else {
 							foreach ( $videos as $i => $row ) {
-								$this->render_video_row( (int) $i, $row );
+								$this->render_video_row( (int) $i, $row, 0 === (int) $i );
 							}
 						}
 						?>
 					</div>
-					<p><button type="button" class="button hkdev-rv-add-row" data-type="video"><?php esc_html_e( '+ Add video review', 'hkdev-shop-elements' ); ?></button></p>
+					<p class="hkdev-rv-list-actions"><button type="button" class="button hkdev-rv-add-row" data-type="video"><?php esc_html_e( '+ Add video review', 'hkdev-shop-elements' ); ?></button></p>
 				</div>
 			</div>
 		</div>
@@ -661,9 +661,10 @@ final class Review_Options {
 	/**
 	 * @param int   $index Row index.
 	 * @param array $row   Row data.
+	 * @param bool  $open  Whether the panel starts expanded.
 	 * @return void
 	 */
-	private function render_video_row( $index, array $row ) {
+	private function render_video_row( $index, array $row, $open = false ) {
 		$name         = $row['name'] ?? '';
 		$thumb_id     = isset( $row['thumbnail_id'] ) ? absint( $row['thumbnail_id'] ) : 0;
 		$image        = $row['image'] ?? '';
@@ -675,15 +676,29 @@ final class Review_Options {
 		$rating       = isset( $row['rating'] ) ? (int) $row['rating'] : 5;
 		$quote        = $row['quote'] ?? '';
 		$product_id   = isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0;
+		$title        = $name ? $name : __( 'New video review', 'hkdev-shop-elements' );
+		$open         = (bool) $open;
 		?>
-		<div class="hkdev-rv-repeater-item" data-index="<?php echo esc_attr( (string) $index ); ?>">
-			<div class="hkdev-rv-repeater-head">
-				<strong><?php echo esc_html( $name ? $name : __( 'Video review', 'hkdev-shop-elements' ) ); ?></strong>
+		<div class="hkdev-rv-repeater-item hkdev-rv-accordion-item<?php echo $open ? ' is-open' : ''; ?>" data-index="<?php echo esc_attr( (string) $index ); ?>">
+			<div class="hkdev-rv-accordion-header">
+				<button type="button" class="hkdev-rv-accordion-toggle" aria-expanded="<?php echo $open ? 'true' : 'false'; ?>">
+					<span class="hkdev-rv-accordion-chevron dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span>
+					<span class="hkdev-rv-accordion-title"><?php echo esc_html( $title ); ?></span>
+					<span class="hkdev-rv-accordion-meta">
+						<?php if ( $image ) : ?>
+							<img class="hkdev-rv-accordion-thumb<?php echo $image ? ' is-visible' : ''; ?>" src="<?php echo esc_url( $image ); ?>" alt="">
+						<?php else : ?>
+							<img class="hkdev-rv-accordion-thumb" src="" alt="" hidden>
+						<?php endif; ?>
+						<span class="hkdev-rv-meta-pill hkdev-rv-meta-rating"><?php echo esc_html( sprintf( '%d★', max( 1, min( 5, $rating ) ) ) ); ?></span>
+					</span>
+				</button>
 				<button type="button" class="hkdev-rv-remove-row" aria-label="<?php esc_attr_e( 'Remove review', 'hkdev-shop-elements' ); ?>">
 					<span class="dashicons dashicons-trash" aria-hidden="true"></span>
 					<span><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></span>
 				</button>
 			</div>
+			<div class="hkdev-rv-accordion-panel">
 			<div class="hkdev-settings-grid">
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Customer name', 'hkdev-shop-elements' ); ?></label>
@@ -716,6 +731,7 @@ final class Review_Options {
 					</div>
 				</div>
 			</div>
+			</div>
 		</div>
 		<?php
 	}
@@ -740,19 +756,19 @@ final class Review_Options {
 					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_filter" value="1"<?php echo $checked( 'show_filter' ); // phpcs:ignore ?>><?php esc_html_e( 'Sort filter', 'hkdev-shop-elements' ); ?></label>
 				</div>
 
-				<div class="hkdev-rv-repeater" data-type="proof">
-					<div class="hkdev-rv-repeater-list">
+				<div class="hkdev-rv-repeater" data-type="proof" data-empty-label="<?php esc_attr_e( 'New social proof', 'hkdev-shop-elements' ); ?>">
+					<div class="hkdev-rv-repeater-list hkdev-rv-accordion-list">
 						<?php
 						if ( empty( $proofs ) ) {
-							$this->render_proof_row( 0, [] );
+							$this->render_proof_row( 0, [], true );
 						} else {
 							foreach ( $proofs as $i => $row ) {
-								$this->render_proof_row( (int) $i, $row );
+								$this->render_proof_row( (int) $i, $row, 0 === (int) $i );
 							}
 						}
 						?>
 					</div>
-					<p><button type="button" class="button hkdev-rv-add-row" data-type="proof"><?php esc_html_e( '+ Add social proof', 'hkdev-shop-elements' ); ?></button></p>
+					<p class="hkdev-rv-list-actions"><button type="button" class="button hkdev-rv-add-row" data-type="proof"><?php esc_html_e( '+ Add social proof', 'hkdev-shop-elements' ); ?></button></p>
 				</div>
 			</div>
 		</div>
@@ -762,9 +778,10 @@ final class Review_Options {
 	/**
 	 * @param int   $index Row index.
 	 * @param array $row   Row data.
+	 * @param bool  $open  Whether the panel starts expanded.
 	 * @return void
 	 */
-	private function render_proof_row( $index, array $row ) {
+	private function render_proof_row( $index, array $row, $open = false ) {
 		$name       = $row['name'] ?? '';
 		$rating     = isset( $row['rating'] ) ? (int) $row['rating'] : 5;
 		$quote      = $row['quote'] ?? '';
@@ -781,15 +798,32 @@ final class Review_Options {
 				$previews[] = $url;
 			}
 		}
+		$cover    = ! empty( $previews ) ? $previews[0] : '';
+		$title    = $name ? $name : __( 'New social proof', 'hkdev-shop-elements' );
+		$img_cnt  = count( $previews );
+		$open     = (bool) $open;
 		?>
-		<div class="hkdev-rv-repeater-item" data-index="<?php echo esc_attr( (string) $index ); ?>">
-			<div class="hkdev-rv-repeater-head">
-				<strong><?php echo esc_html( $name ? $name : __( 'Social proof', 'hkdev-shop-elements' ) ); ?></strong>
+		<div class="hkdev-rv-repeater-item hkdev-rv-accordion-item<?php echo $open ? ' is-open' : ''; ?>" data-index="<?php echo esc_attr( (string) $index ); ?>">
+			<div class="hkdev-rv-accordion-header">
+				<button type="button" class="hkdev-rv-accordion-toggle" aria-expanded="<?php echo $open ? 'true' : 'false'; ?>">
+					<span class="hkdev-rv-accordion-chevron dashicons dashicons-arrow-right-alt2" aria-hidden="true"></span>
+					<span class="hkdev-rv-accordion-title"><?php echo esc_html( $title ); ?></span>
+					<span class="hkdev-rv-accordion-meta">
+						<?php if ( $cover ) : ?>
+							<img class="hkdev-rv-accordion-thumb is-visible" src="<?php echo esc_url( $cover ); ?>" alt="">
+						<?php else : ?>
+							<img class="hkdev-rv-accordion-thumb" src="" alt="" hidden>
+						<?php endif; ?>
+						<span class="hkdev-rv-meta-pill hkdev-rv-meta-rating"><?php echo esc_html( sprintf( '%d★', max( 1, min( 5, $rating ) ) ) ); ?></span>
+						<span class="hkdev-rv-meta-pill hkdev-rv-meta-images"><?php echo esc_html( sprintf( /* translators: %d: image count. */ _n( '%d img', '%d imgs', $img_cnt, 'hkdev-shop-elements' ), $img_cnt ) ); ?></span>
+					</span>
+				</button>
 				<button type="button" class="hkdev-rv-remove-row" aria-label="<?php esc_attr_e( 'Remove review', 'hkdev-shop-elements' ); ?>">
 					<span class="dashicons dashicons-trash" aria-hidden="true"></span>
 					<span><?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?></span>
 				</button>
 			</div>
+			<div class="hkdev-rv-accordion-panel">
 			<div class="hkdev-settings-grid">
 				<div class="hkdev-field">
 					<label><?php esc_html_e( 'Customer name', 'hkdev-shop-elements' ); ?></label>
@@ -820,6 +854,7 @@ final class Review_Options {
 						<?php endforeach; ?>
 					</div>
 				</div>
+			</div>
 			</div>
 		</div>
 		<?php

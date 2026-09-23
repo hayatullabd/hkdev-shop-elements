@@ -19,14 +19,59 @@
         });
     }
 
+    function emptyLabel($item) {
+        var $rep = $item.closest('.hkdev-rv-repeater');
+        return ($rep.data('empty-label') || 'New item').toString();
+    }
+
     function syncVideoHead($item) {
         var name = $.trim($item.find('.hkdev-rv-name-input').val());
-        $item.find('.hkdev-rv-repeater-head strong').text(name || 'Video review');
+        $item.find('.hkdev-rv-accordion-title').text(name || emptyLabel($item));
+        var rating = parseInt($item.find('input[name*="[rating]"]').val(), 10) || 5;
+        rating = Math.max(1, Math.min(5, rating));
+        $item.find('.hkdev-rv-meta-rating').text(rating + '★');
     }
 
     function syncProofHead($item) {
         var name = $.trim($item.find('.hkdev-rv-name-input').val());
-        $item.find('.hkdev-rv-repeater-head strong').text(name || 'Social proof');
+        $item.find('.hkdev-rv-accordion-title').text(name || emptyLabel($item));
+        var rating = parseInt($item.find('input[name*="[rating]"]').val(), 10) || 5;
+        rating = Math.max(1, Math.min(5, rating));
+        $item.find('.hkdev-rv-meta-rating').text(rating + '★');
+        var count = $item.find('.hkdev-rv-gallery-previews img').length;
+        $item.find('.hkdev-rv-meta-images').text(count === 1 ? '1 img' : count + ' imgs');
+        var $thumb = $item.find('.hkdev-rv-accordion-thumb').first();
+        var src = $item.find('.hkdev-rv-gallery-previews img').first().attr('src') || '';
+        if (src) {
+            $thumb.attr('src', src).prop('hidden', false).addClass('is-visible');
+        } else {
+            $thumb.attr('src', '').prop('hidden', true).removeClass('is-visible');
+        }
+    }
+
+    function syncVideoThumb($item, url) {
+        var $thumb = $item.find('.hkdev-rv-accordion-thumb').first();
+        if (url) {
+            $thumb.attr('src', url).prop('hidden', false).addClass('is-visible');
+        } else {
+            $thumb.attr('src', '').prop('hidden', true).removeClass('is-visible');
+        }
+    }
+
+    function openAccordionItem($item) {
+        $item.addClass('is-open');
+        $item.find('.hkdev-rv-accordion-toggle').attr('aria-expanded', 'true');
+    }
+
+    function initAccordion($root) {
+        $root.on('click', '.hkdev-rv-accordion-toggle', function (e) {
+            e.preventDefault();
+            var $item = $(this).closest('.hkdev-rv-accordion-item');
+            var willOpen = !$item.hasClass('is-open');
+
+            $item.toggleClass('is-open', willOpen);
+            $(this).attr('aria-expanded', willOpen ? 'true' : 'false');
+        });
     }
 
     function destroyProductSelect($select) {
@@ -193,22 +238,29 @@
             $clone.find('.hkdev-rv-thumb-id, .hkdev-rv-gallery-ids, .hkdev-rv-thumb-url').val('');
             $clone.find('.hkdev-rv-thumb-preview').removeClass('is-visible').attr('src', '');
             $clone.find('.hkdev-rv-gallery-previews').empty();
+            $clone.removeClass('is-open');
+            $clone.find('.hkdev-rv-accordion-toggle').attr('aria-expanded', 'false');
 
             $list.append($clone);
 
             if (type === 'video') {
                 reindexRepeater($list, 'hkdev_rv_videos');
                 syncVideoHead($clone);
+                syncVideoThumb($clone, '');
             } else {
                 reindexRepeater($list, 'hkdev_rv_proofs');
                 syncProofHead($clone);
             }
+
+            $list.find('.hkdev-rv-accordion-item').not($clone).removeClass('is-open').find('.hkdev-rv-accordion-toggle').attr('aria-expanded', 'false');
+            openAccordionItem($clone);
 
             initProductSelect($clone);
         });
 
         $root.on('click', '.hkdev-rv-remove-row', function (e) {
             e.preventDefault();
+            e.stopPropagation();
             var $item = $(this).closest('.hkdev-rv-repeater-item');
             var $list = $item.closest('.hkdev-rv-repeater-list');
             var prefix = $list.closest('.hkdev-rv-repeater').data('type') === 'video' ? 'hkdev_rv_videos' : 'hkdev_rv_proofs';
@@ -220,6 +272,8 @@
                 $item.find('.hkdev-rv-thumb-id, .hkdev-rv-gallery-ids, .hkdev-rv-thumb-url').val('');
                 $item.find('.hkdev-rv-thumb-preview').removeClass('is-visible').attr('src', '');
                 $item.find('.hkdev-rv-gallery-previews').empty();
+                syncVideoHead($item);
+                syncProofHead($item);
                 return;
             }
 
@@ -232,6 +286,14 @@
         });
 
         $root.on('input', '.hkdev-rv-repeater[data-type="proof"] .hkdev-rv-name-input', function () {
+            syncProofHead($(this).closest('.hkdev-rv-repeater-item'));
+        });
+
+        $root.on('input change', '.hkdev-rv-repeater[data-type="video"] input[name*="[rating]"]', function () {
+            syncVideoHead($(this).closest('.hkdev-rv-repeater-item'));
+        });
+
+        $root.on('input change', '.hkdev-rv-repeater[data-type="proof"] input[name*="[rating]"]', function () {
             syncProofHead($(this).closest('.hkdev-rv-repeater-item'));
         });
     }
@@ -258,6 +320,7 @@
                 $item.find('.hkdev-rv-thumb-id').val(attachment.id);
                 $item.find('.hkdev-rv-thumb-url').val(attachment.url);
                 $item.find('.hkdev-rv-thumb-preview').addClass('is-visible').attr('src', attachment.url);
+                syncVideoThumb($item, attachment.url);
             });
 
             frame.open();
@@ -268,6 +331,7 @@
             var $item = $(this).closest('.hkdev-rv-repeater-item');
             $item.find('.hkdev-rv-thumb-id, .hkdev-rv-thumb-url').val('');
             $item.find('.hkdev-rv-thumb-preview').removeClass('is-visible').attr('src', '');
+            syncVideoThumb($item, '');
         });
 
         $root.on('click', '.hkdev-rv-pick-gallery', function (e) {
@@ -289,6 +353,7 @@
                     $prev.append($('<img>', { src: att.sizes && att.sizes.thumbnail ? att.sizes.thumbnail.url : att.url, alt: '' }));
                 });
                 $item.find('.hkdev-rv-gallery-ids').val(ids.join(','));
+                syncProofHead($item);
             });
 
             frame.open();
@@ -299,13 +364,16 @@
             var $item = $(this).closest('.hkdev-rv-repeater-item');
             $item.find('.hkdev-rv-gallery-ids').val('');
             $item.find('.hkdev-rv-gallery-previews').empty();
+            syncProofHead($item);
         });
     }
 
     $(function () {
+        var $root = $('.hkdev-reviews-admin');
         initReviewTabs();
+        initAccordion($root);
         initRepeaters();
         initMedia();
-        initProductSelect($('.hkdev-reviews-admin'));
+        initProductSelect($root);
     });
 })(jQuery);
