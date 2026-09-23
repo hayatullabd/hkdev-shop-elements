@@ -191,7 +191,7 @@ final class Widget_Options {
 		$states   = $this->get_widget_states();
 		$counts   = $this->count_enabled_widgets();
 		?>
-		<div class="wrap hkdev-admin-wrap hkdev-widget-manager-wrap">
+		<div class="wrap hkdev-admin-wrap hkdev-admin-compact hkdev-widget-manager-wrap">
 			<div class="hkdev-admin-header">
 				<div class="hkdev-admin-branding">
 					<span class="dashicons dashicons-screenoptions hkdev-admin-logo" aria-hidden="true"></span>

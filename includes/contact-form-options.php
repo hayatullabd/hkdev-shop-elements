@@ -221,7 +221,7 @@ final class Contact_Form_Options {
 		};
 
 		?>
-		<div class="wrap hkdev-admin-wrap">
+		<div class="wrap hkdev-admin-wrap hkdev-admin-compact">
 
 			<!-- HEADER -->
 			<div class="hkdev-admin-header">
