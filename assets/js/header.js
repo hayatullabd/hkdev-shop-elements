@@ -1,8 +1,8 @@
 /**
  * HKDEV Header — header.js
  *
- * Off-canvas mobile menu, categories dropdown, mobile submenu accordion and
- * the sticky-header shadow. No dependencies beyond jQuery.
+ * Off-canvas mobile menu, mobile submenu accordion and the sticky-header shadow.
+ * No dependencies beyond jQuery.
  */
 (function ($) {
 	'use strict';

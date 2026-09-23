@@ -280,38 +280,6 @@ class Header_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'show_categories',
-			[
-				'label'        => esc_html__( 'Show Categories Dropdown', 'hkdev-shop-elements' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'return_value' => 'yes',
-				'default'      => 'no',
-			]
-		);
-
-		$this->add_control(
-			'categories_label',
-			[
-				'label'     => esc_html__( 'Categories Button Label', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::TEXT,
-				'default'   => esc_html__( 'All Categories', 'hkdev-shop-elements' ),
-				'condition' => [ 'show_categories' => 'yes' ],
-			]
-		);
-
-		$this->add_control(
-			'categories_limit',
-			[
-				'label'     => esc_html__( 'Number of Categories', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::NUMBER,
-				'default'   => 8,
-				'min'       => 1,
-				'max'       => 30,
-				'condition' => [ 'show_categories' => 'yes' ],
-			]
-		);
-
 		$this->end_controls_section();
 
 		$this->start_controls_section(
@@ -457,9 +425,6 @@ class Header_Widget extends Widget_Base {
 		$this->hkdev_dimensions( 'hd_navbar_padding', esc_html__( 'Navbar Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-navbar .hkdev-header-container', 'padding' );
 		$this->hkdev_typography( 'hd_nav_link', esc_html__( 'Menu Link', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-nav .hkdev-header-menu > li > a' );
 		$this->hkdev_color( 'hd_nav_link_hover', esc_html__( 'Menu Link Hover Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-nav .hkdev-header-menu > li > a:hover', 'color' );
-		$this->hkdev_color( 'hd_cats_bg', esc_html__( 'Categories Button Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cats-btn', 'background-color' );
-		$this->hkdev_color( 'hd_cats_color', esc_html__( 'Categories Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cats-btn', 'color' );
-		$this->hkdev_dimensions( 'hd_cats_radius', esc_html__( 'Categories Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-header-cats-btn', 'border-radius' );
 
 		$this->end_controls_section();
 	}
@@ -512,9 +477,6 @@ class Header_Widget extends Widget_Base {
 			'show_account'     => ( isset( $settings['show_account'] ) && 'yes' === $settings['show_account'] ) ? 'yes' : 'no',
 			'show_cart'        => ( isset( $settings['show_cart'] ) && 'yes' === $settings['show_cart'] ) ? 'yes' : 'no',
 			'mini_cart'        => ( isset( $settings['mini_cart'] ) && 'yes' === $settings['mini_cart'] ) ? 'yes' : 'no',
-			'show_categories'  => ( isset( $settings['show_categories'] ) && 'yes' === $settings['show_categories'] ) ? 'yes' : 'no',
-			'categories_label' => isset( $settings['categories_label'] ) ? $settings['categories_label'] : '',
-			'categories_limit' => isset( $settings['categories_limit'] ) ? absint( $settings['categories_limit'] ) : 8,
 		];
 
 		echo \HkdevShopElements\Includes\Header_Engine::instance()->header_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
