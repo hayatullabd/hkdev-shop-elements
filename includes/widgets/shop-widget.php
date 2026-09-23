@@ -114,27 +114,11 @@ class Shop_Widget extends Widget_Base {
 					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
 					'carousel' => esc_html__( 'Carousel / Slider', 'hkdev-shop-elements' ),
 				],
-				'description' => esc_html__( 'Grid uses columns below. Carousel opens the Carousel Settings section.', 'hkdev-shop-elements' ),
+				'description' => esc_html__( 'Set mobile, tablet and desktop card counts below. Carousel motion options are under Carousel Settings.', 'hkdev-shop-elements' ),
 			]
 		);
 
-		$this->add_control(
-			'columns',
-			[
-				'label'       => esc_html__( 'Columns', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => '4',
-				'options'     => [
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
-				],
-				'description' => esc_html__( 'How many product cards appear per row on desktop.', 'hkdev-shop-elements' ),
-				'condition'   => [ 'style' => 'grid' ],
-			]
-		);
+		$this->register_cards_per_view_controls( '4' );
 
 		$this->add_control(
 			'limit',
@@ -447,9 +431,13 @@ class Shop_Widget extends Widget_Base {
 			$custom_product_ids = array_values( array_filter( array_map( 'absint', $settings['custom_products'] ) ) );
 		}
 
+		$cols = $this->get_cards_per_view( $settings );
+
 		$atts = [
 			'limit'            => isset( $settings['limit'] ) ? absint( $settings['limit'] ) : 12,
-			'columns'          => isset( $settings['columns'] ) ? $settings['columns'] : '4',
+			'columns'          => (string) $cols['desktop'],
+			'columns_tablet'   => (string) $cols['tablet'],
+			'columns_mobile'   => (string) $cols['mobile'],
 			'image_size'       => isset( $settings['image_size'] ) ? sanitize_key( $settings['image_size'] ) : 'woocommerce_thumbnail',
 			'category'         => $csv( 'category' ),
 			'exclude'          => $csv( 'exclude' ),

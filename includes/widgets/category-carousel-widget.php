@@ -360,24 +360,7 @@ class Category_Carousel_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'columns',
-			[
-				'label'       => esc_html__( 'Columns / Slides per View', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => '6',
-				'options'     => [
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
-					'7' => '7',
-					'8' => '8',
-				],
-				'description' => esc_html__( 'Cards across on laptops and larger screens: grid columns, or slides visible in the carousel.', 'hkdev-shop-elements' ),
-			]
-		);
+		$this->register_cards_per_view_controls( '6', 8 );
 
 		$this->add_control(
 			'show_image',
@@ -976,10 +959,13 @@ class Category_Carousel_Widget extends Widget_Base {
 		$style       = ( isset( $settings['style'] ) && 'grid' === $settings['style'] ) ? 'grid' : 'carousel';
 		$is_carousel = ( 'carousel' === $style );
 		$carousel    = $this->get_carousel_config( $settings );
-		$columns     = isset( $settings['columns'] ) ? max( 1, absint( $settings['columns'] ) ) : 6;
+		$cols        = $this->get_cards_per_view( $settings );
+		$columns     = $cols['desktop'];
+		$grid_style  = \HkdevShopElements\Includes\Shop_Engine::instance()->grid_columns_style_attr( $cols['mobile'], $cols['tablet'], $cols['desktop'] );
 		$unique_id   = 'hkdev-cat-' . wp_rand( 1000, 9999 );
 		?>
 		<div class="hkdev-shop-wrapper hkdev-cat-carousel" id="<?php echo esc_attr( $unique_id ); ?>"
+			 style="<?php echo esc_attr( $grid_style ); ?>"
 			 data-columns="<?php echo esc_attr( $columns ); ?>"
 			 data-style="<?php echo esc_attr( $style ); ?>"
 			 data-carousel="<?php echo esc_attr( wp_json_encode( $carousel ) ); ?>"

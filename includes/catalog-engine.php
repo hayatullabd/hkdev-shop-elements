@@ -495,7 +495,9 @@ class Catalog_Engine {
 	public function shortcode( $atts ) {
 		$atts = shortcode_atts(
 			[
-				'columns'      => 4,
+				'columns'        => 4,
+				'columns_tablet' => 3,
+				'columns_mobile' => 2,
 				'per_page'     => 12,
 				'categories'   => '',
 				'show_search'  => 'yes',
@@ -533,7 +535,10 @@ class Catalog_Engine {
 			return '';
 		}
 
-		$columns      = isset( $atts['columns'] ) ? max( 1, min( 6, absint( $atts['columns'] ) ) ) : 4;
+		$columns        = isset( $atts['columns'] ) ? max( 1, min( 6, absint( $atts['columns'] ) ) ) : 4;
+		$columns_tablet = isset( $atts['columns_tablet'] ) ? max( 1, min( 6, absint( $atts['columns_tablet'] ) ) ) : 3;
+		$columns_mobile = isset( $atts['columns_mobile'] ) ? max( 1, min( 3, absint( $atts['columns_mobile'] ) ) ) : 2;
+		$grid_style     = Shop_Engine::instance()->grid_columns_style_attr( $columns_mobile, $columns_tablet, $columns );
 		$per_page     = isset( $atts['per_page'] ) ? max( 1, min( 60, absint( $atts['per_page'] ) ) ) : 12;
 		$show_search  = ( ! isset( $atts['show_search'] ) || 'yes' === $atts['show_search'] );
 		$show_sort    = ( ! isset( $atts['show_sort'] ) || 'yes' === $atts['show_sort'] );
@@ -571,7 +576,8 @@ class Catalog_Engine {
 
 		ob_start();
 		?>
-		<div class="hkdev-catalog" data-catalog="1"
+		<div class="hkdev-catalog hkdev-shop-wrapper" data-catalog="1"
+			style="<?php echo esc_attr( $grid_style ); ?>"
 			data-archive="<?php echo $is_archive ? '1' : '0'; ?>"
 			data-hover-img="<?php echo $show_hover ? 'yes' : 'no'; ?>"
 			data-columns="<?php echo esc_attr( $columns ); ?>"

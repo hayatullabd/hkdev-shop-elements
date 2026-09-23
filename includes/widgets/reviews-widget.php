@@ -780,8 +780,12 @@ class Reviews_Widget extends Widget_Base {
 			'6' => '6',
 		];
 
-		$this->hkdev_select( 'rv_video_cols', esc_html__( 'Video Columns', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-video-cols', $columns );
-		$this->hkdev_select( 'rv_proof_cols', esc_html__( 'Review Columns', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-proof-cols', $columns );
+		$this->hkdev_select( 'rv_video_cols_mobile', esc_html__( 'Video Columns (Mobile)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-video-cols-mobile', $columns );
+		$this->hkdev_select( 'rv_video_cols_tablet', esc_html__( 'Video Columns (Tablet)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-video-cols-tablet', $columns );
+		$this->hkdev_select( 'rv_video_cols', esc_html__( 'Video Columns (Desktop)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-video-cols', $columns );
+		$this->hkdev_select( 'rv_proof_cols_mobile', esc_html__( 'Review Columns (Mobile)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-proof-cols-mobile', $columns );
+		$this->hkdev_select( 'rv_proof_cols_tablet', esc_html__( 'Review Columns (Tablet)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-proof-cols-tablet', $columns );
+		$this->hkdev_select( 'rv_proof_cols', esc_html__( 'Review Columns (Desktop)', 'hkdev-shop-elements' ), $scope, '--hkdev-rv-proof-cols', $columns );
 
 		$ratio = [
 			''       => esc_html__( 'Default', 'hkdev-shop-elements' ),

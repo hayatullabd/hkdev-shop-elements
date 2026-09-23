@@ -153,21 +153,7 @@ class Related_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'columns',
-			[
-				'label'   => esc_html__( 'Columns', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '4',
-				'options' => [
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
-				],
-			]
-		);
+		$this->register_cards_per_view_controls( '4' );
 
 		$this->add_control(
 			'image_size',
@@ -234,9 +220,13 @@ class Related_Widget extends Widget_Base {
 
 		$limit = isset( $settings['limit'] ) ? max( 1, absint( $settings['limit'] ) ) : 4;
 
+		$cols = $this->get_cards_per_view( $settings );
+
 		$atts = [
 			'limit'            => $limit,
-			'columns'          => isset( $settings['columns'] ) ? $settings['columns'] : '4',
+			'columns'          => (string) $cols['desktop'],
+			'columns_tablet'   => (string) $cols['tablet'],
+			'columns_mobile'   => (string) $cols['mobile'],
 			'image_size'       => isset( $settings['image_size'] ) ? sanitize_key( $settings['image_size'] ) : 'woocommerce_thumbnail',
 			'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
 			'show_tabs'        => 'no',
