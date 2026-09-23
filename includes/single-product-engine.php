@@ -855,7 +855,7 @@ class Single_Product_Engine {
 						</div>
 					<?php endif; ?>
 
-					<div class="hkdev-sp-stock-notice" id="hkdev-sp-stock-notice" role="status" aria-live="polite"<?php echo $show_oos_notice_initial ? '' : ' style="display:none;"'; ?>>
+					<div class="hkdev-sp-stock-notice<?php echo $show_oos_notice_initial ? ' is-visible' : ''; ?>" id="hkdev-sp-stock-notice" role="status" aria-live="polite">
 						<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
 						<span class="hkdev-sp-stock-notice-text"><?php esc_html_e( 'This product is currently out of stock.', 'hkdev-shop-elements' ); ?></span>
 					</div>

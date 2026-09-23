@@ -458,7 +458,7 @@ a.added_to_cart.wc-forward {
    PURCHASE ZONE — OUT OF STOCK NOTICE
 ========================================================== */
 .hkdev-sp-stock-notice {
-    display: flex !important;
+    display: none !important;
     align-items: flex-start !important;
     gap: 10px !important;
     margin: 0 0 16px !important;
@@ -470,6 +470,10 @@ a.added_to_cart.wc-forward {
     font-size: 14px !important;
     font-weight: 700 !important;
     line-height: 1.45 !important;
+}
+
+.hkdev-sp-stock-notice.is-visible {
+    display: flex !important;
 }
 
 .hkdev-sp-stock-notice i {
