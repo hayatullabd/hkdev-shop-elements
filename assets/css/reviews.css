@@ -33,6 +33,10 @@
     --hkdev-rv-overlay: rgba(0, 0, 0, 0.66);
     --hkdev-rv-modal-video-w: 460px;
     --hkdev-rv-modal-proof-w: 960px;
+    --hkdev-rv-modal-close-size: 46px;
+    --hkdev-rv-modal-close-icon: 24px;
+    --hkdev-rv-slider-btn-size: 52px;
+    --hkdev-rv-slider-icon: 28px;
     font-family: var(--hkdev-font, 'Hind Siliguri', 'Poppins', sans-serif) !important;
     color: var(--hkdev-rv-text) !important;
     background: var(--hkdev-rv-section-bg) !important;
@@ -550,25 +554,48 @@ body.hkdev-rv-locked{
     position: absolute !important;
     top: 14px !important;
     right: 14px !important;
-    z-index: 3 !important;
-    width: 38px !important;
-    height: 38px !important;
+    z-index: 6 !important;
+    width: var(--hkdev-rv-modal-close-size, 46px) !important;
+    height: var(--hkdev-rv-modal-close-size, 46px) !important;
+    min-width: var(--hkdev-rv-modal-close-size, 46px) !important;
+    min-height: var(--hkdev-rv-modal-close-size, 46px) !important;
+    padding: 0 !important;
+    margin: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border: none !important;
+    border: 2px solid rgba(255, 255, 255, 0.95) !important;
     border-radius: 50% !important;
-    background: rgba(255, 255, 255, 0.92) !important;
+    background: rgba(255, 255, 255, 0.96) !important;
     color: var(--hkdev-rv-text) !important;
     cursor: pointer !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
-    transition: background-color .2s ease, color .2s ease !important;
+    line-height: 1 !important;
+    font-size: 16px !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28) !important;
+    transition: background-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+.hkdev-rv-modal-close .hkdev-rv-control-icon,
+.hkdev-rv-pmodal-close .hkdev-rv-control-icon{
+    width: var(--hkdev-rv-modal-close-icon, 24px) !important;
+    height: var(--hkdev-rv-modal-close-icon, 24px) !important;
+    min-width: var(--hkdev-rv-modal-close-icon, 24px) !important;
+    min-height: var(--hkdev-rv-modal-close-icon, 24px) !important;
+    max-width: none !important;
+    max-height: none !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+    pointer-events: none !important;
 }
 
 .hkdev-rv-modal-close:hover,
 .hkdev-rv-pmodal-close:hover{
     background: var(--hkdev-rv-primary) !important;
     color: #ffffff !important;
+    transform: scale(1.04) !important;
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.32) !important;
 }
 
 .hkdev-rv-vmodal-media{
@@ -654,27 +681,69 @@ body.hkdev-rv-locked{
 .hkdev-rv-slider-btn{
     position: absolute !important;
     top: 50% !important;
+    z-index: 5 !important;
     transform: translateY(-50%) !important;
-    width: 42px !important;
-    height: 42px !important;
+    width: var(--hkdev-rv-slider-btn-size, 52px) !important;
+    height: var(--hkdev-rv-slider-btn-size, 52px) !important;
+    min-width: var(--hkdev-rv-slider-btn-size, 52px) !important;
+    min-height: var(--hkdev-rv-slider-btn-size, 52px) !important;
+    padding: 0 !important;
+    margin: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border: none !important;
+    border: 2px solid rgba(255, 255, 255, 0.92) !important;
     border-radius: 50% !important;
-    background: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255, 255, 255, 0.94) !important;
     color: var(--hkdev-rv-text) !important;
     cursor: pointer !important;
-    transition: background-color .2s ease, color .2s ease !important;
+    line-height: 1 !important;
+    font-size: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    transition: background-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+.hkdev-rv-slider-btn .hkdev-rv-control-icon{
+    width: var(--hkdev-rv-slider-icon, 28px) !important;
+    height: var(--hkdev-rv-slider-icon, 28px) !important;
+    min-width: var(--hkdev-rv-slider-icon, 28px) !important;
+    min-height: var(--hkdev-rv-slider-icon, 28px) !important;
+    max-width: none !important;
+    max-height: none !important;
+    display: block !important;
+    flex-shrink: 0 !important;
+    pointer-events: none !important;
 }
 
 .hkdev-rv-slider-btn:hover{
     background: var(--hkdev-rv-primary) !important;
     color: #ffffff !important;
+    transform: translateY(-50%) scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
 }
 
-.hkdev-rv-prev{ left: 12px !important; }
-.hkdev-rv-next{ right: 12px !important; }
+.hkdev-rv-prev{ left: 16px !important; }
+.hkdev-rv-next{ right: 16px !important; }
+
+@media (min-width: 992px){
+    .hkdev-rv{
+        --hkdev-rv-modal-close-size: 52px;
+        --hkdev-rv-modal-close-icon: 28px;
+        --hkdev-rv-slider-btn-size: 58px;
+        --hkdev-rv-slider-icon: 32px;
+    }
+
+    .hkdev-rv-modal-close,
+    .hkdev-rv-pmodal-close{
+        top: 18px !important;
+        right: 18px !important;
+    }
+
+    .hkdev-rv-prev{ left: 20px !important; }
+    .hkdev-rv-next{ right: 20px !important; }
+}
 
 .hkdev-rv-slider-counter{
     position: absolute !important;
