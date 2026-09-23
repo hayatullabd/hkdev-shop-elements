@@ -328,14 +328,21 @@
     font-size: 20px !important;
 }/* ==========================================================
    PRODUCT GRID
-========================================================== */.hkdev-shop-grid:not(.swiper-wrapper){
+========================================================== */.hkdev-shop-wrapper{
+    --hkdev-cols-mobile: 2;
+    --hkdev-cols-tablet: 3;
+    --hkdev-cols-desktop: 4;
+}.hkdev-shop-grid:not(.swiper-wrapper){
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(var(--hkdev-cols-mobile, 2), minmax(0, 1fr)) !important;
     gap: 20px !important;
 }@media (min-width: 768px){.hkdev-shop-grid:not(.swiper-wrapper){
+        grid-template-columns: repeat(var(--hkdev-cols-tablet, 3), minmax(0, 1fr)) !important;
         gap: 24px !important;
-    }/* NOTE: selectors must be at least as specific as .hkdev-shop-grid:not(.swiper-wrapper),
-       otherwise the base 2-column rule always wins. */.hkdev-shop-grid.hkdev-columns-2{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-3{ grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-4{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-5{ grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-6{ grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
+    }
+}@media (min-width: 1024px){.hkdev-shop-grid:not(.swiper-wrapper){
+        grid-template-columns: repeat(var(--hkdev-cols-desktop, 4), minmax(0, 1fr)) !important;
+    }.hkdev-shop-grid.hkdev-columns-2{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-3{ grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-4{ grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-5{ grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }.hkdev-shop-grid.hkdev-columns-6{ grid-template-columns: repeat(6, minmax(0, 1fr)) !important; }
 }/* ==========================================================
    PRODUCT CARD
 ========================================================== */.hkdev-product-card{

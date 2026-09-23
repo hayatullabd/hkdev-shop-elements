@@ -24,6 +24,7 @@ use HkdevShopElements\Includes\Catalog_Engine;
  */
 class Catalog_Widget extends Widget_Base {
 
+	use Product_Controls;
 	use Style_Controls;
 
 	/**
@@ -102,21 +103,7 @@ class Catalog_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'columns',
-			[
-				'label'   => esc_html__( 'Columns', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '4',
-				'options' => [
-					'2' => '2',
-					'3' => '3',
-					'4' => '4',
-					'5' => '5',
-					'6' => '6',
-				],
-			]
-		);
+		$this->register_cards_per_view_controls( '4' );
 
 		$this->add_control(
 			'per_page',
@@ -208,10 +195,13 @@ class Catalog_Widget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		$cols     = $this->get_cards_per_view( $settings );
 
 		echo Catalog_Engine::instance()->render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			[
-				'columns'      => $settings['columns'],
+				'columns'        => (string) $cols['desktop'],
+				'columns_tablet' => (string) $cols['tablet'],
+				'columns_mobile' => (string) $cols['mobile'],
 				'per_page'     => $settings['per_page'],
 				'categories'   => $settings['categories'],
 				'show_search'  => $settings['show_search'],

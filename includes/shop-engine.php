@@ -1060,6 +1060,27 @@ class Shop_Engine {
 	}
 
 	/**
+	 * Inline CSS custom properties for responsive product grid columns.
+	 *
+	 * @param int $mobile  Mobile column count.
+	 * @param int $tablet  Tablet column count.
+	 * @param int $desktop Desktop column count.
+	 * @return string
+	 */
+	public function grid_columns_style_attr( $mobile, $tablet, $desktop ) {
+		$mobile  = max( 1, min( 3, (int) $mobile ) );
+		$tablet  = max( 1, min( 8, (int) $tablet ) );
+		$desktop = max( 1, min( 8, (int) $desktop ) );
+
+		return sprintf(
+			'--hkdev-cols-mobile:%1$d;--hkdev-cols-tablet:%2$d;--hkdev-cols-desktop:%3$d;',
+			$mobile,
+			$tablet,
+			$desktop
+		);
+	}
+
+	/**
 	 * Master shop renderer (grid + carousel + optional category tabs).
 	 *
 	 * @param array $atts Shortcode/widget attributes.
@@ -1070,6 +1091,8 @@ class Shop_Engine {
 			[
 				'limit'            => 12,
 				'columns'          => 4,
+				'columns_tablet'   => 3,
+				'columns_mobile'   => 2,
 				'image_size'       => 'woocommerce_thumbnail',
 				'category'         => '',
 				'exclude'          => '',
@@ -1098,11 +1121,17 @@ class Shop_Engine {
 			$atts
 		);
 
+		$cols_mobile  = max( 1, min( 3, (int) $atts['columns_mobile'] ) );
+		$cols_tablet  = max( 1, min( 8, (int) $atts['columns_tablet'] ) );
+		$cols_desktop = max( 1, min( 8, (int) $atts['columns'] ) );
+		$grid_style   = $this->grid_columns_style_attr( $cols_mobile, $cols_tablet, $cols_desktop );
+
 		$carousel = wp_parse_args(
 			is_array( $atts['carousel'] ) ? $atts['carousel'] : [],
 			[
-				'mobile'   => 2,
-				'tablet'   => 3,
+				'mobile'   => $cols_mobile,
+				'tablet'   => $cols_tablet,
+				'desktop'  => $cols_desktop,
 				'gap'      => 20,
 				'speed'    => 600,
 				'autoplay' => false,
@@ -1112,6 +1141,9 @@ class Shop_Engine {
 				'dots'     => true,
 			]
 		);
+		$carousel['mobile']  = max( 1, (int) ( $carousel['mobile'] ?? $cols_mobile ) );
+		$carousel['tablet']  = max( 1, (int) ( $carousel['tablet'] ?? $cols_tablet ) );
+		$carousel['desktop'] = max( 1, (int) ( $carousel['desktop'] ?? $cols_desktop ) );
 
 		$unique_id            = 'hkdev-shop-' . wp_rand( 1000, 9999 );
 		$include_children_val = ( 'no' === $atts['include_children'] ) ? false : true;
@@ -1191,8 +1223,9 @@ class Shop_Engine {
 		?>
 
 		<div class="<?php echo esc_attr( $wrapper_class ); ?>" id="<?php echo esc_attr( $unique_id ); ?>"
+			 style="<?php echo esc_attr( $grid_style ); ?>"
 			 data-limit="<?php echo esc_attr( $atts['limit'] ); ?>"
-			 data-columns="<?php echo esc_attr( $atts['columns'] ); ?>"
+			 data-columns="<?php echo esc_attr( $cols_desktop ); ?>"
 			 data-image_size="<?php echo esc_attr( $atts['image_size'] ); ?>"
 			 data-type="<?php echo esc_attr( $atts['type'] ); ?>"
 			 data-days="<?php echo esc_attr( $atts['days'] ); ?>"
@@ -1306,7 +1339,7 @@ class Shop_Engine {
 					<div class="hkdev-nav-btn hkdev-prev-<?php echo esc_attr( $unique_id ); ?> kh-prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></div>
 					<div class="hkdev-nav-btn hkdev-next-<?php echo esc_attr( $unique_id ); ?> kh-next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg></div>
 				<?php else : ?>
-					<div class="hkdev-shop-grid hkdev-columns-<?php echo esc_attr( $atts['columns'] ); ?>">
+					<div class="hkdev-shop-grid hkdev-columns-<?php echo esc_attr( $cols_desktop ); ?>">
 						<?php if ( $query->have_posts() ) : ?>
 							<?php
 							while ( $query->have_posts() ) {

@@ -23,7 +23,11 @@
     --hkdev-rv-shadow-lg: 0 14px 34px rgba(0, 0, 0, 0.10);
     --hkdev-rv-gap: 18px;
     --hkdev-rv-video-cols: 4;
+    --hkdev-rv-video-cols-tablet: 3;
+    --hkdev-rv-video-cols-mobile: 2;
     --hkdev-rv-proof-cols: 4;
+    --hkdev-rv-proof-cols-tablet: 3;
+    --hkdev-rv-proof-cols-mobile: 2;
     --hkdev-rv-video-ratio: 3 / 4;
     --hkdev-rv-proof-ratio: 4 / 5;
     --hkdev-rv-play-size: 58px;
@@ -180,7 +184,7 @@
 /* ---------------- Video grid ---------------- */
 .hkdev-rv-video-grid{
     display: grid !important;
-    grid-template-columns: repeat(var(--hkdev-rv-video-cols, 4), minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(var(--hkdev-rv-video-cols-mobile, 2), minmax(0, 1fr)) !important;
     gap: var(--hkdev-rv-gap, 18px) !important;
 }
 
@@ -318,7 +322,7 @@
 /* ---------------- Proof grid ---------------- */
 .hkdev-rv-proof-grid{
     display: grid !important;
-    grid-template-columns: repeat(var(--hkdev-rv-proof-cols, 4), minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(var(--hkdev-rv-proof-cols-mobile, 2), minmax(0, 1fr)) !important;
     gap: var(--hkdev-rv-gap, 18px) !important;
 }
 
@@ -840,10 +844,21 @@ body.hkdev-rv-locked{
 }
 
 /* ---------------- Responsive ---------------- */
-@media (max-width: 1024px){
-    .hkdev-rv-video-grid,
+@media (min-width: 768px){
+    .hkdev-rv-video-grid{
+        grid-template-columns: repeat(var(--hkdev-rv-video-cols-tablet, 3), minmax(0, 1fr)) !important;
+    }
     .hkdev-rv-proof-grid{
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(var(--hkdev-rv-proof-cols-tablet, 3), minmax(0, 1fr)) !important;
+    }
+}
+
+@media (min-width: 1024px){
+    .hkdev-rv-video-grid{
+        grid-template-columns: repeat(var(--hkdev-rv-video-cols, 4), minmax(0, 1fr)) !important;
+    }
+    .hkdev-rv-proof-grid{
+        grid-template-columns: repeat(var(--hkdev-rv-proof-cols, 4), minmax(0, 1fr)) !important;
     }
 }
 
@@ -851,7 +866,6 @@ body.hkdev-rv-locked{
     .hkdev-rv-title{ font-size: 24px !important; }
     .hkdev-rv-video-grid,
     .hkdev-rv-proof-grid{
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 14px !important;
     }
     .hkdev-rv-pmodal-content{
@@ -863,11 +877,8 @@ body.hkdev-rv-locked{
 }
 
 @media (max-width: 480px){
-    .hkdev-rv-video-grid{
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    }
     .hkdev-rv-proof-grid{
-        grid-template-columns: minmax(0, 1fr) !important;
+        grid-template-columns: repeat(min(var(--hkdev-rv-proof-cols-mobile, 2), 1), minmax(0, 1fr)) !important;
     }
     .hkdev-rv-tab-btn{
         padding: 9px 14px !important;

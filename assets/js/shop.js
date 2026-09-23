@@ -110,6 +110,7 @@ jQuery(function($) {
     const carouselDefaults = {
         mobile: 2,
         tablet: 3,
+        desktop: 4,
         gap: 20,
         speed: 600,
         autoplay: false,
@@ -244,7 +245,7 @@ jQuery(function($) {
         }
 
         const cfg = hkdevCarouselConfig($wrapper);
-        const desktopCols = parseInt($wrapper.data('columns'), 10) || 4;
+        const desktopCols = parseInt(cfg.desktop, 10) || parseInt($wrapper.data('columns'), 10) || 4;
         const $dots = $wrapper.find('.hkdev-carousel-dots');
         const slideKey = hkdevCarouselStoreKey($wrapper);
         const savedSlide = hkdevReadStoredSlide(slideKey);

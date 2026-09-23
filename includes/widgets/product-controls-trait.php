@@ -139,47 +139,6 @@ trait Product_Controls {
 		);
 
 		$this->add_control(
-			'carousel_mobile',
-			[
-				'label'       => esc_html__( 'Mobile Slides', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SLIDER,
-				'size_units'  => [ 'px' ],
-				'range'       => [
-					'px' => [
-						'min'  => 1,
-						'max'  => 3,
-						'step' => 1,
-					],
-				],
-				'default'     => [
-					'unit' => 'px',
-					'size' => 2,
-				],
-				'description' => esc_html__( 'How many cards are fully visible at a time on phones.', 'hkdev-shop-elements' ),
-			]
-		);
-
-		$this->add_control(
-			'carousel_tablet',
-			[
-				'label'      => esc_html__( 'Tablet Slides', 'hkdev-shop-elements' ),
-				'type'       => Controls_Manager::SLIDER,
-				'size_units' => [ 'px' ],
-				'range'      => [
-					'px' => [
-						'min'  => 1,
-						'max'  => 5,
-						'step' => 1,
-					],
-				],
-				'default'    => [
-					'unit' => 'px',
-					'size' => 3,
-				],
-			]
-		);
-
-		$this->add_control(
 			'carousel_gap',
 			[
 				'label'      => esc_html__( 'Space Between', 'hkdev-shop-elements' ),
@@ -294,6 +253,98 @@ trait Product_Controls {
 	}
 
 	/**
+	 * Select options for column / slide counts.
+	 *
+	 * @param int $max Maximum value.
+	 * @param int $min Minimum value.
+	 * @return array<string,string>
+	 */
+	protected function column_count_options( $max = 6, $min = 1 ) {
+		$options = [];
+		for ( $i = $min; $i <= $max; $i++ ) {
+			$options[ (string) $i ] = (string) $i;
+		}
+		return $options;
+	}
+
+	/**
+	 * Mobile / tablet / desktop cards per row (grid) or slides (carousel).
+	 *
+	 * @param string $desktop_default Default desktop count.
+	 * @return void
+	 */
+	protected function register_cards_per_view_controls( $desktop_default = '4', $desktop_max = 6 ) {
+		$this->add_control(
+			'cards_per_view_help',
+			[
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => esc_html__( 'How many cards show per row (grid) or at once (carousel) on each breakpoint.', 'hkdev-shop-elements' ),
+				'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+			]
+		);
+
+		$this->add_control(
+			'columns_mobile',
+			[
+				'label'   => esc_html__( 'Mobile', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => '2',
+				'options' => $this->column_count_options( 3, 1 ),
+			]
+		);
+
+		$this->add_control(
+			'columns_tablet',
+			[
+				'label'   => esc_html__( 'Tablet', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => '3',
+				'options' => $this->column_count_options( 5, 1 ),
+			]
+		);
+
+		$this->add_control(
+			'columns',
+			[
+				'label'   => esc_html__( 'Desktop', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => $desktop_default,
+				'options' => $this->column_count_options( max( 1, (int) $desktop_max ), 1 ),
+			]
+		);
+	}
+
+	/**
+	 * Normalized responsive card counts from widget settings.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return array{mobile:int,tablet:int,desktop:int}
+	 */
+	protected function get_cards_per_view( $settings ) {
+		$pick = static function ( $key, $fallback ) use ( $settings ) {
+			if ( isset( $settings[ $key ] ) && '' !== $settings[ $key ] ) {
+				return max( 1, (int) $settings[ $key ] );
+			}
+			return $fallback;
+		};
+
+		$num = static function ( $key, $fallback ) use ( $settings ) {
+			if ( isset( $settings[ $key ]['size'] ) && '' !== $settings[ $key ]['size'] ) {
+				return max( 1, (int) $settings[ $key ]['size'] );
+			}
+			return $fallback;
+		};
+
+		$desktop = $pick( 'columns', 4 );
+
+		return [
+			'mobile'  => min( 3, $pick( 'columns_mobile', $num( 'carousel_mobile', 2 ) ) ),
+			'tablet'  => min( 6, $pick( 'columns_tablet', $num( 'carousel_tablet', 3 ) ) ),
+			'desktop' => min( 8, max( 1, $desktop ) ),
+		];
+	}
+
+	/**
 	 * Card config passed to the shortcode attributes.
 	 *
 	 * @param array $settings Widget settings.
@@ -334,9 +385,12 @@ trait Product_Controls {
 			return ( 'yes' === $settings[ $key ] ) ? 'yes' : 'no';
 		};
 
+		$counts = $this->get_cards_per_view( $settings );
+
 		return [
-			'mobile'   => max( 1, (int) $num( 'carousel_mobile', 2 ) ),
-			'tablet'   => max( 1, (int) $num( 'carousel_tablet', 3 ) ),
+			'mobile'   => $counts['mobile'],
+			'tablet'   => $counts['tablet'],
+			'desktop'  => $counts['desktop'],
 			'gap'      => max( 0, (int) $num( 'carousel_gap', 20 ) ),
 			'speed'    => max( 150, (int) $num( 'carousel_speed', 600 ) ),
 			'autoplay' => ( 'yes' === $is_yes( 'carousel_autoplay' ) ),
