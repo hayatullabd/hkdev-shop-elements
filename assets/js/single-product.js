@@ -74,6 +74,18 @@ jQuery(document).ready(function($) {
     const productType = $spWrapper.data('product-type') || 'simple';
     const variations = $('.hkdev-sp-variable-options').data('variations') || [];
 
+    function setStockNoticeVisible(visible) {
+        const $notice = $('#hkdev-sp-stock-notice');
+        if (!$notice.length) {
+            return;
+        }
+        if (visible) {
+            $notice.show();
+        } else {
+            $notice.hide();
+        }
+    }
+
     function setPurchaseButtonsState(isEnabled) {
         const $atc = $('#hkdev-sp-add-to-cart');
         const $buy = $('#hkdev-sp-buy-now');
@@ -85,6 +97,7 @@ jQuery(document).ready(function($) {
             $buy.prop('disabled', false).removeClass('is-out-of-stock').css('opacity', '1');
             $qty.prop('disabled', true);
             $qtyBtns.prop('disabled', true);
+            setStockNoticeVisible(false);
             return;
         }
 
@@ -258,6 +271,7 @@ jQuery(document).ready(function($) {
         });
 
         if (!allSelected) {
+            setStockNoticeVisible(false);
             setPurchaseButtonsState(false);
             return;
         }
@@ -295,8 +309,10 @@ jQuery(document).ready(function($) {
             $('.stock-val').html(match.is_in_stock ? '<span class="in-stock-pill">' + hkdevJsT('in_stock') + '</span>' : '<span class="out-stock-pill">' + hkdevJsT('out_of_stock') + '</span>');
 
             $('#hkdev-sp-add-to-cart, #hkdev-sp-buy-now').attr('data-variation-id', match.variation_id).data('variation-id', match.variation_id);
+            setStockNoticeVisible(!match.is_in_stock);
             setPurchaseButtonsState(!!match.is_in_stock);
         } else {
+            setStockNoticeVisible(false);
             setPurchaseButtonsState(false);
         }
     }
