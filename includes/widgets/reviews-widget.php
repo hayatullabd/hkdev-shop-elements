@@ -1053,6 +1053,16 @@ class Reviews_Widget extends Widget_Base {
 			$config = Review_Engine::instance()->get_global_render_config();
 		} else {
 			$config = Review_Engine::instance()->build_config_from_elementor( $settings );
+			// Legacy widgets: inherit modal button/ribbon text from admin when empty.
+			if ( empty( $config['view_button_text'] ) || empty( $config['top_pick_label'] ) ) {
+				$global = Review_Engine::instance()->get_stored_settings();
+				if ( empty( $config['view_button_text'] ) && ! empty( $global['view_button_text'] ) ) {
+					$config['view_button_text'] = (string) $global['view_button_text'];
+				}
+				if ( empty( $config['top_pick_label'] ) && ! empty( $global['top_pick_label'] ) ) {
+					$config['top_pick_label'] = (string) $global['top_pick_label'];
+				}
+			}
 		}
 
 		echo Review_Engine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

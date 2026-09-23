@@ -234,8 +234,12 @@ class Review_Engine {
 	 * @return array
 	 */
 	public function build_config_from_elementor( array $settings ) {
-		$yes_no = static function ( $key ) use ( $settings ) {
-			return ( isset( $settings[ $key ] ) && 'yes' === $settings[ $key ] );
+		$yes_no = static function ( $key, $default_on = false ) use ( $settings ) {
+			if ( ! array_key_exists( $key, $settings ) ) {
+				return $default_on;
+			}
+
+			return 'yes' === $settings[ $key ];
 		};
 
 		$videos = [];
@@ -278,27 +282,27 @@ class Review_Engine {
 			'anchor'               => isset( $settings['anchor'] ) ? sanitize_title( $settings['anchor'] ) : '',
 			'heading'              => isset( $settings['heading'] ) ? $settings['heading'] : '',
 			'subheading'           => isset( $settings['subheading'] ) ? $settings['subheading'] : '',
-			'show_header'          => $yes_no( 'show_header' ),
+			'show_header'          => $yes_no( 'show_header', true ),
 			'show_heading'         => true,
 			'show_subheading'      => true,
-			'show_tabs'            => $yes_no( 'show_tabs' ),
+			'show_tabs'            => $yes_no( 'show_tabs', true ),
 			'tab_video_label'      => isset( $settings['tab_video_label'] ) ? $settings['tab_video_label'] : '',
 			'tab_written_label'    => isset( $settings['tab_written_label'] ) ? $settings['tab_written_label'] : '',
 			'default_tab'          => isset( $settings['default_tab'] ) ? $settings['default_tab'] : 'written',
-			'show_video_name'      => $yes_no( 'show_video_name' ),
-			'show_video_stars'     => $yes_no( 'show_video_stars' ),
-			'show_video_play'      => $yes_no( 'show_video_play' ),
-			'show_video_overlay'   => $yes_no( 'show_video_overlay' ),
-			'video_thumb_fallback' => $yes_no( 'video_thumb_fallback' ),
-			'show_card_name'       => $yes_no( 'show_card_name' ),
-			'show_verified'        => $yes_no( 'show_verified' ),
-			'show_proof_stars'     => $yes_no( 'show_proof_stars' ),
-			'show_modal_quote'     => $yes_no( 'show_modal_quote' ),
-			'show_modal_badge'     => $yes_no( 'show_modal_badge' ),
-			'show_product'         => $yes_no( 'show_product' ),
+			'show_video_name'      => $yes_no( 'show_video_name', true ),
+			'show_video_stars'     => $yes_no( 'show_video_stars', true ),
+			'show_video_play'      => $yes_no( 'show_video_play', true ),
+			'show_video_overlay'   => $yes_no( 'show_video_overlay', true ),
+			'video_thumb_fallback' => $yes_no( 'video_thumb_fallback', true ),
+			'show_card_name'       => $yes_no( 'show_card_name', true ),
+			'show_verified'        => $yes_no( 'show_verified', true ),
+			'show_proof_stars'     => $yes_no( 'show_proof_stars', true ),
+			'show_modal_quote'     => $yes_no( 'show_modal_quote', true ),
+			'show_modal_badge'     => $yes_no( 'show_modal_badge', true ),
+			'show_product'         => $yes_no( 'show_product', true ),
 			'video_empty'          => isset( $settings['video_empty'] ) ? $settings['video_empty'] : '',
 			'written_empty'        => isset( $settings['written_empty'] ) ? $settings['written_empty'] : '',
-			'show_filter'          => $yes_no( 'show_filter' ),
+			'show_filter'          => $yes_no( 'show_filter', true ),
 			'filter_label'         => isset( $settings['filter_label'] ) ? $settings['filter_label'] : '',
 			'filter_default'       => isset( $settings['filter_default'] ) ? $settings['filter_default'] : 'recent',
 			'filter_highest'       => isset( $settings['filter_highest'] ) ? $settings['filter_highest'] : '',
@@ -581,7 +585,7 @@ class Review_Engine {
 									'images'  => $images,
 									'quote'   => ! empty( $config['show_modal_quote'] ) ? (string) $quote : '',
 									'badge'   => ! empty( $config['show_modal_badge'] ) ? (string) $config['proof_badge'] : '',
-									'product' => ! empty( $config['show_product'] ) ? $this->product_promo_html( $product, '', $config['view_button_text'] ) : '',
+									'product' => ! empty( $config['show_product'] ) ? $this->product_promo_html( $product, (string) $config['top_pick_label'], $config['view_button_text'] ) : '',
 								];
 								?>
 								<div class="hkdev-rv-pcard" data-open-proof="<?php echo esc_attr( $index ); ?>" data-rating="<?php echo esc_attr( $rating ); ?>" data-order="<?php echo esc_attr( $index ); ?>" role="button" tabindex="0" aria-label="<?php echo esc_attr( $name ); ?>">
@@ -788,7 +792,19 @@ class Review_Engine {
 		}
 
 		$product = wc_get_product( $product_id );
-		if ( ! $product || ! $product->is_visible() ) {
+		if ( ! $product ) {
+			return '';
+		}
+
+		if ( $product->is_type( 'variation' ) ) {
+			$parent = wc_get_product( $product->get_parent_id() );
+			if ( $parent ) {
+				$product = $parent;
+			}
+		}
+
+		// Admin/Elementor picks may include catalog-hidden products; still show when published.
+		if ( 'publish' !== $product->get_status() ) {
 			return '';
 		}
 
