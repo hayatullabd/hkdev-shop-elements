@@ -315,7 +315,7 @@ final class Checkout_Options {
         $is_first              = true;
 
         ?>
-        <div class="wrap hkdev-admin-wrap">
+        <div class="wrap hkdev-admin-wrap hkdev-admin-compact">
 
             <!-- HEADER -->
             <div class="hkdev-admin-header">

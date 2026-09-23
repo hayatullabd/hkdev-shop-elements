@@ -226,17 +226,17 @@ final class Review_Options {
 		$proofs = is_array( $s['proofs'] ?? null ) ? $s['proofs'] : [];
 
 		?>
-		<div class="wrap hkdev-admin-wrap hkdev-reviews-admin">
+		<div class="wrap hkdev-admin-wrap hkdev-admin-compact hkdev-reviews-admin">
 			<div class="hkdev-admin-header">
 				<div class="hkdev-admin-branding">
 					<span class="hkdev-admin-logo dashicons dashicons-star-filled"></span>
 					<div class="hkdev-admin-titles">
 						<h1><?php esc_html_e( 'Customer Reviews', 'hkdev-shop-elements' ); ?></h1>
-						<p><?php esc_html_e( 'Manage video reviews and social proofs once — use them via Elementor (global mode) or the shortcode.', 'hkdev-shop-elements' ); ?></p>
+						<p><?php esc_html_e( 'Central library for Elementor (global) and shortcode.', 'hkdev-shop-elements' ); ?></p>
 					</div>
 				</div>
 				<div class="hkdev-admin-actions">
-					<code class="hkdev-rv-shortcode-hint">[hkdev_customer_reviews]</code>
+					<span class="hkdev-rv-shortcode-hint" title="<?php esc_attr_e( 'Shortcode', 'hkdev-shop-elements' ); ?>"><span class="hkdev-rv-shortcode-label"><?php esc_html_e( 'Shortcode', 'hkdev-shop-elements' ); ?></span><code>[hkdev_customer_reviews]</code></span>
 				</div>
 			</div>
 			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
@@ -276,7 +276,9 @@ final class Review_Options {
 					</div>
 				</div>
 
-				<?php submit_button( __( 'Save Changes', 'hkdev-shop-elements' ), 'primary', 'submit', true ); ?>
+				<div class="hkdev-admin-form-footer">
+					<?php submit_button( __( 'Save Changes', 'hkdev-shop-elements' ), 'primary', 'submit', true ); ?>
+				</div>
 			</form>
 		</div>
 		<?php
@@ -291,61 +293,57 @@ final class Review_Options {
 		?>
 		<div class="hkdev-admin-card">
 			<div class="hkdev-admin-card-header">
-				<span class="hkdev-admin-card-icon dashicons dashicons-megaphone"></span>
-				<h2><?php esc_html_e( 'Section Header', 'hkdev-shop-elements' ); ?></h2>
+				<span class="hkdev-admin-card-icon dashicons dashicons-admin-settings"></span>
+				<h2><?php esc_html_e( 'Header & Tabs', 'hkdev-shop-elements' ); ?></h2>
 			</div>
 			<div class="hkdev-admin-card-body">
-				<div class="hkdev-settings-grid">
-					<div class="hkdev-field">
-						<label class="hkdev-checkbox">
-							<input type="checkbox" name="hkdev_rv_show_header" value="1"<?php echo $checked( 'show_header' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-							<?php esc_html_e( 'Show header', 'hkdev-shop-elements' ); ?>
-						</label>
-					</div>
-					<div class="hkdev-field">
-						<label for="hkdev_rv_heading"><?php esc_html_e( 'Heading', 'hkdev-shop-elements' ); ?></label>
-						<input type="text" id="hkdev_rv_heading" name="hkdev_rv_heading" value="<?php echo esc_attr( $val( 'heading' ) ); ?>">
-					</div>
-					<div class="hkdev-field hkdev-field-wide">
-						<label for="hkdev_rv_subheading"><?php esc_html_e( 'Subheading', 'hkdev-shop-elements' ); ?></label>
-						<textarea id="hkdev_rv_subheading" name="hkdev_rv_subheading" rows="2"><?php echo esc_textarea( $val( 'subheading' ) ); ?></textarea>
-						<p class="description"><?php esc_html_e( 'Basic HTML allowed: strong, em, br.', 'hkdev-shop-elements' ); ?></p>
-					</div>
-					<div class="hkdev-field">
-						<label for="hkdev_rv_anchor"><?php esc_html_e( 'Anchor ID', 'hkdev-shop-elements' ); ?></label>
-						<input type="text" id="hkdev_rv_anchor" name="hkdev_rv_anchor" value="<?php echo esc_attr( $val( 'anchor' ) ); ?>" placeholder="customer-reviews">
+				<div class="hkdev-admin-subsection">
+					<h3 class="hkdev-admin-subtitle"><?php esc_html_e( 'Section header', 'hkdev-shop-elements' ); ?></h3>
+					<div class="hkdev-settings-grid hkdev-settings-grid-3">
+						<div class="hkdev-field hkdev-field-check">
+							<label class="hkdev-checkbox">
+								<input type="checkbox" name="hkdev_rv_show_header" value="1"<?php echo $checked( 'show_header' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+								<?php esc_html_e( 'Show header', 'hkdev-shop-elements' ); ?>
+							</label>
+						</div>
+						<div class="hkdev-field">
+							<label for="hkdev_rv_heading"><?php esc_html_e( 'Heading', 'hkdev-shop-elements' ); ?></label>
+							<input type="text" id="hkdev_rv_heading" name="hkdev_rv_heading" value="<?php echo esc_attr( $val( 'heading' ) ); ?>">
+						</div>
+						<div class="hkdev-field">
+							<label for="hkdev_rv_anchor"><?php esc_html_e( 'Anchor ID', 'hkdev-shop-elements' ); ?></label>
+							<input type="text" id="hkdev_rv_anchor" name="hkdev_rv_anchor" value="<?php echo esc_attr( $val( 'anchor' ) ); ?>" placeholder="customer-reviews">
+						</div>
+						<div class="hkdev-field hkdev-field-wide">
+							<label for="hkdev_rv_subheading"><?php esc_html_e( 'Subheading', 'hkdev-shop-elements' ); ?></label>
+							<textarea id="hkdev_rv_subheading" name="hkdev_rv_subheading" rows="2"><?php echo esc_textarea( $val( 'subheading' ) ); ?></textarea>
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-
-		<div class="hkdev-admin-card">
-			<div class="hkdev-admin-card-header">
-				<span class="hkdev-admin-card-icon dashicons dashicons-menu"></span>
-				<h2><?php esc_html_e( 'Tabs', 'hkdev-shop-elements' ); ?></h2>
-			</div>
-			<div class="hkdev-admin-card-body">
-				<div class="hkdev-settings-grid">
-					<div class="hkdev-field">
-						<label class="hkdev-checkbox">
-							<input type="checkbox" name="hkdev_rv_show_tabs" value="1"<?php echo $checked( 'show_tabs' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-							<?php esc_html_e( 'Show tab switcher (when both tabs have items)', 'hkdev-shop-elements' ); ?>
-						</label>
-					</div>
-					<div class="hkdev-field">
-						<label for="hkdev_rv_tab_video_label"><?php esc_html_e( 'Video tab label', 'hkdev-shop-elements' ); ?></label>
-						<input type="text" id="hkdev_rv_tab_video_label" name="hkdev_rv_tab_video_label" value="<?php echo esc_attr( $val( 'tab_video_label' ) ); ?>">
-					</div>
-					<div class="hkdev-field">
-						<label for="hkdev_rv_tab_written_label"><?php esc_html_e( 'Social proof tab label', 'hkdev-shop-elements' ); ?></label>
-						<input type="text" id="hkdev_rv_tab_written_label" name="hkdev_rv_tab_written_label" value="<?php echo esc_attr( $val( 'tab_written_label' ) ); ?>">
-					</div>
-					<div class="hkdev-field">
-						<label for="hkdev_rv_default_tab"><?php esc_html_e( 'Default tab', 'hkdev-shop-elements' ); ?></label>
-						<select id="hkdev_rv_default_tab" name="hkdev_rv_default_tab">
-							<option value="written"<?php selected( $val( 'default_tab' ), 'written' ); ?>><?php esc_html_e( 'Social Proofs', 'hkdev-shop-elements' ); ?></option>
-							<option value="video"<?php selected( $val( 'default_tab' ), 'video' ); ?>><?php esc_html_e( 'Video Reviews', 'hkdev-shop-elements' ); ?></option>
-						</select>
+				<div class="hkdev-admin-subsection">
+					<h3 class="hkdev-admin-subtitle"><?php esc_html_e( 'Tab switcher', 'hkdev-shop-elements' ); ?></h3>
+					<div class="hkdev-settings-grid hkdev-settings-grid-3">
+						<div class="hkdev-field hkdev-field-check">
+							<label class="hkdev-checkbox">
+								<input type="checkbox" name="hkdev_rv_show_tabs" value="1"<?php echo $checked( 'show_tabs' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+								<?php esc_html_e( 'Show tabs when both have items', 'hkdev-shop-elements' ); ?>
+							</label>
+						</div>
+						<div class="hkdev-field">
+							<label for="hkdev_rv_tab_video_label"><?php esc_html_e( 'Video tab', 'hkdev-shop-elements' ); ?></label>
+							<input type="text" id="hkdev_rv_tab_video_label" name="hkdev_rv_tab_video_label" value="<?php echo esc_attr( $val( 'tab_video_label' ) ); ?>">
+						</div>
+						<div class="hkdev-field">
+							<label for="hkdev_rv_tab_written_label"><?php esc_html_e( 'Social proof tab', 'hkdev-shop-elements' ); ?></label>
+							<input type="text" id="hkdev_rv_tab_written_label" name="hkdev_rv_tab_written_label" value="<?php echo esc_attr( $val( 'tab_written_label' ) ); ?>">
+						</div>
+						<div class="hkdev-field">
+							<label for="hkdev_rv_default_tab"><?php esc_html_e( 'Default tab', 'hkdev-shop-elements' ); ?></label>
+							<select id="hkdev_rv_default_tab" name="hkdev_rv_default_tab">
+								<option value="written"<?php selected( $val( 'default_tab' ), 'written' ); ?>><?php esc_html_e( 'Social Proofs', 'hkdev-shop-elements' ); ?></option>
+								<option value="video"<?php selected( $val( 'default_tab' ), 'video' ); ?>><?php esc_html_e( 'Video Reviews', 'hkdev-shop-elements' ); ?></option>
+							</select>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -367,12 +365,12 @@ final class Review_Options {
 				<h2><?php esc_html_e( 'Video Reviews', 'hkdev-shop-elements' ); ?></h2>
 			</div>
 			<div class="hkdev-admin-card-body">
-				<div class="hkdev-rv-toggle-row">
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_name" value="1"<?php echo $checked( 'show_video_name' ); // phpcs:ignore ?>><?php esc_html_e( 'Show name', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_stars" value="1"<?php echo $checked( 'show_video_stars' ); // phpcs:ignore ?>><?php esc_html_e( 'Show stars', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_play" value="1"<?php echo $checked( 'show_video_play' ); // phpcs:ignore ?>><?php esc_html_e( 'Show play button', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_overlay" value="1"<?php echo $checked( 'show_video_overlay' ); // phpcs:ignore ?>><?php esc_html_e( 'Show overlay', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_video_thumb_fallback" value="1"<?php echo $checked( 'video_thumb_fallback' ); // phpcs:ignore ?>><?php esc_html_e( 'YouTube thumbnail fallback', 'hkdev-shop-elements' ); ?></label>
+				<div class="hkdev-rv-toggle-row hkdev-chip-row">
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_name" value="1"<?php echo $checked( 'show_video_name' ); // phpcs:ignore ?>><?php esc_html_e( 'Name', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_stars" value="1"<?php echo $checked( 'show_video_stars' ); // phpcs:ignore ?>><?php esc_html_e( 'Stars', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_play" value="1"<?php echo $checked( 'show_video_play' ); // phpcs:ignore ?>><?php esc_html_e( 'Play btn', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_video_overlay" value="1"<?php echo $checked( 'show_video_overlay' ); // phpcs:ignore ?>><?php esc_html_e( 'Overlay', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_video_thumb_fallback" value="1"<?php echo $checked( 'video_thumb_fallback' ); // phpcs:ignore ?>><?php esc_html_e( 'YT thumb', 'hkdev-shop-elements' ); ?></label>
 				</div>
 
 				<div class="hkdev-rv-repeater" data-type="video">
@@ -448,9 +446,11 @@ final class Review_Options {
 					<label><?php esc_html_e( 'Thumbnail', 'hkdev-shop-elements' ); ?></label>
 					<input type="hidden" class="hkdev-rv-thumb-id" name="hkdev_rv_videos[<?php echo esc_attr( (string) $index ); ?>][thumbnail_id]" value="<?php echo esc_attr( (string) $thumb_id ); ?>">
 					<input type="hidden" class="hkdev-rv-thumb-url" name="hkdev_rv_videos[<?php echo esc_attr( (string) $index ); ?>][image]" value="<?php echo esc_attr( $image ); ?>">
-					<button type="button" class="button hkdev-rv-pick-thumb"><?php esc_html_e( 'Select image', 'hkdev-shop-elements' ); ?></button>
-					<button type="button" class="button hkdev-rv-clear-thumb"><?php esc_html_e( 'Clear', 'hkdev-shop-elements' ); ?></button>
-					<img class="hkdev-rv-thumb-preview<?php echo $image ? ' is-visible' : ''; ?>" src="<?php echo esc_url( $image ); ?>" alt="">
+					<div class="hkdev-rv-media-toolbar">
+						<button type="button" class="button button-small hkdev-rv-pick-thumb"><?php esc_html_e( 'Thumbnail', 'hkdev-shop-elements' ); ?></button>
+						<button type="button" class="button button-small hkdev-rv-clear-thumb"><?php esc_html_e( 'Clear', 'hkdev-shop-elements' ); ?></button>
+						<img class="hkdev-rv-thumb-preview<?php echo $image ? ' is-visible' : ''; ?>" src="<?php echo esc_url( $image ); ?>" alt="">
+					</div>
 				</div>
 			</div>
 		</div>
@@ -471,11 +471,11 @@ final class Review_Options {
 				<h2><?php esc_html_e( 'Social Proofs', 'hkdev-shop-elements' ); ?></h2>
 			</div>
 			<div class="hkdev-admin-card-body">
-				<div class="hkdev-rv-toggle-row">
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_card_name" value="1"<?php echo $checked( 'show_card_name' ); // phpcs:ignore ?>><?php esc_html_e( 'Show name', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_verified" value="1"<?php echo $checked( 'show_verified' ); // phpcs:ignore ?>><?php esc_html_e( 'Show verified badge', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_proof_stars" value="1"<?php echo $checked( 'show_proof_stars' ); // phpcs:ignore ?>><?php esc_html_e( 'Show stars', 'hkdev-shop-elements' ); ?></label>
-					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_filter" value="1"<?php echo $checked( 'show_filter' ); // phpcs:ignore ?>><?php esc_html_e( 'Show sort filter', 'hkdev-shop-elements' ); ?></label>
+				<div class="hkdev-rv-toggle-row hkdev-chip-row">
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_card_name" value="1"<?php echo $checked( 'show_card_name' ); // phpcs:ignore ?>><?php esc_html_e( 'Name', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_verified" value="1"<?php echo $checked( 'show_verified' ); // phpcs:ignore ?>><?php esc_html_e( 'Verified', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_proof_stars" value="1"<?php echo $checked( 'show_proof_stars' ); // phpcs:ignore ?>><?php esc_html_e( 'Stars', 'hkdev-shop-elements' ); ?></label>
+					<label class="hkdev-checkbox"><input type="checkbox" name="hkdev_rv_show_filter" value="1"<?php echo $checked( 'show_filter' ); // phpcs:ignore ?>><?php esc_html_e( 'Sort filter', 'hkdev-shop-elements' ); ?></label>
 				</div>
 
 				<div class="hkdev-rv-repeater" data-type="proof">
@@ -551,8 +551,10 @@ final class Review_Options {
 				<div class="hkdev-field hkdev-field-wide">
 					<label><?php esc_html_e( 'Images', 'hkdev-shop-elements' ); ?></label>
 					<input type="hidden" class="hkdev-rv-gallery-ids" name="hkdev_rv_proofs[<?php echo esc_attr( (string) $index ); ?>][image_ids]" value="<?php echo esc_attr( implode( ',', $ids ) ); ?>">
-					<button type="button" class="button hkdev-rv-pick-gallery"><?php esc_html_e( 'Select images', 'hkdev-shop-elements' ); ?></button>
-					<button type="button" class="button hkdev-rv-clear-gallery"><?php esc_html_e( 'Clear', 'hkdev-shop-elements' ); ?></button>
+					<div class="hkdev-rv-media-toolbar">
+						<button type="button" class="button button-small hkdev-rv-pick-gallery"><?php esc_html_e( 'Images', 'hkdev-shop-elements' ); ?></button>
+						<button type="button" class="button button-small hkdev-rv-clear-gallery"><?php esc_html_e( 'Clear', 'hkdev-shop-elements' ); ?></button>
+					</div>
 					<div class="hkdev-rv-gallery-previews">
 						<?php foreach ( $previews as $url ) : ?>
 							<img src="<?php echo esc_url( $url ); ?>" alt="">
@@ -574,10 +576,12 @@ final class Review_Options {
 		<div class="hkdev-admin-card">
 			<div class="hkdev-admin-card-header">
 				<span class="hkdev-admin-card-icon dashicons dashicons-editor-ul"></span>
-				<h2><?php esc_html_e( 'Filter & product promo', 'hkdev-shop-elements' ); ?></h2>
+				<h2><?php esc_html_e( 'Labels & Modal', 'hkdev-shop-elements' ); ?></h2>
 			</div>
 			<div class="hkdev-admin-card-body">
-				<div class="hkdev-settings-grid">
+				<div class="hkdev-admin-subsection">
+					<h3 class="hkdev-admin-subtitle"><?php esc_html_e( 'Filter & promo', 'hkdev-shop-elements' ); ?></h3>
+				<div class="hkdev-settings-grid hkdev-settings-grid-3">
 					<div class="hkdev-field">
 						<label for="hkdev_rv_filter_label"><?php esc_html_e( 'Filter label', 'hkdev-shop-elements' ); ?></label>
 						<input type="text" id="hkdev_rv_filter_label" name="hkdev_rv_filter_label" value="<?php echo esc_attr( $val( 'filter_label' ) ); ?>">
