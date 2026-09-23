@@ -384,21 +384,18 @@ class Shop_Widget extends Widget_Base {
 				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
 				'default'      => 'yes',
 				'return_value' => 'yes',
-				'description'  => esc_html__( 'Appends the next batch without reloading. Hidden when no more products remain.', 'hkdev-shop-elements' ),
-				'condition'    => [ 'style' => 'grid' ],
+				'description'  => esc_html__( 'Grid layout only: loads the next batch without reloading. Carousel ignores this setting.', 'hkdev-shop-elements' ),
 			]
 		);
 
 		$this->add_control(
 			'load_more_text',
 			[
-				'label'     => esc_html__( 'Load More Text', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::TEXT,
-				'default'   => esc_html__( 'Load More', 'hkdev-shop-elements' ),
-				'condition' => [
-					'load_more' => 'yes',
-					'style'     => 'grid',
-				],
+				'label'       => esc_html__( 'Load More Text', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::TEXT,
+				'default'     => esc_html__( 'Load More', 'hkdev-shop-elements' ),
+				'condition'   => [ 'load_more' => 'yes' ],
+				'description' => esc_html__( 'Used when Layout Style is Grid and Load More is enabled.', 'hkdev-shop-elements' ),
 			]
 		);
 
