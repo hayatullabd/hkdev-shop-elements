@@ -1,5 +1,5 @@
 /**
- * HKDEV Customer Reviews — admin repeater + media pickers.
+ * HKDEV Customer Reviews — admin repeater + media pickers + product search.
  */
 (function ($) {
     'use strict';
@@ -27,6 +27,79 @@
     function syncProofHead($item) {
         var name = $.trim($item.find('.hkdev-rv-name-input').val());
         $item.find('.hkdev-rv-repeater-head strong').text(name || 'Social proof');
+    }
+
+    function destroyProductSelect($select) {
+        if (!$select || !$select.length) {
+            return;
+        }
+        if ($select.hasClass('enhanced') && $.fn.selectWoo) {
+            try {
+                $select.selectWoo('destroy');
+            } catch (err) { /* ignore */ }
+        }
+        $select.removeClass('enhanced select2-hidden-accessible');
+        $select.siblings('.select2-container').remove();
+    }
+
+    function resetProductSelect($select) {
+        destroyProductSelect($select);
+        $select.empty().append($('<option value=""></option>'));
+    }
+
+    function initProductSelect($scope) {
+        if (!$.fn.selectWoo) {
+            return;
+        }
+
+        var $root = $scope && $scope.length ? $scope : $('.hkdev-reviews-admin');
+        var cfg = window.hkdevRvAdmin || {};
+        var wcParams = window.wc_enhanced_select_params;
+
+        $root.find('.hkdev-rv-product-search').filter(':not(.enhanced)').each(function () {
+            var $el = $(this);
+
+            $el.selectWoo({
+                allowClear: true,
+                placeholder: $el.data('placeholder') || cfg.placeholder || '',
+                width: '100%',
+                minimumInputLength: parseInt($el.data('minimum_input_length'), 10) || cfg.minInput || 1,
+                ajax: {
+                    url: wcParams ? wcParams.ajax_url : (cfg.ajaxUrl || window.ajaxurl),
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        var payload = { term: params.term };
+
+                        if (wcParams && wcParams.search_products_nonce) {
+                            payload.action = $el.data('action') || 'woocommerce_json_search_products';
+                            payload.security = wcParams.search_products_nonce;
+                        } else {
+                            payload.action = cfg.searchAction || 'hkdev_rv_search_products';
+                            payload.security = cfg.searchNonce || '';
+                        }
+
+                        return payload;
+                    },
+                    processResults: function (data) {
+                        var terms = [];
+
+                        if (data && data.results) {
+                            return data;
+                        }
+
+                        if (data) {
+                            $.each(data, function (id, text) {
+                                terms.push({ id: id, text: text });
+                            });
+                        }
+
+                        return { results: terms };
+                    },
+                    cache: true
+                }
+            }).addClass('enhanced');
+        });
     }
 
     function initReviewTabs() {
@@ -64,14 +137,15 @@
             var type = $(this).data('type');
             var $repeater = $(this).closest('.hkdev-rv-repeater');
             var $list = $repeater.find('.hkdev-rv-repeater-list');
-            var $clone = $list.find('.hkdev-rv-repeater-item').last().clone();
+            var $clone = $list.find('.hkdev-rv-repeater-item').last().clone(false, false);
 
+            $clone.find('.select2-container').remove();
             $clone.find('input[type="text"], input[type="url"], input[type="number"], textarea').val('');
-            $clone.find('select').prop('selectedIndex', 0);
+            $clone.find('input[type="number"]').filter('[name*="[rating]"]').val('5');
+            resetProductSelect($clone.find('.hkdev-rv-product-search'));
             $clone.find('.hkdev-rv-thumb-id, .hkdev-rv-gallery-ids, .hkdev-rv-thumb-url').val('');
             $clone.find('.hkdev-rv-thumb-preview').removeClass('is-visible').attr('src', '');
             $clone.find('.hkdev-rv-gallery-previews').empty();
-            $clone.find('input[type="number"]').filter('[name*="[rating]"]').val('5');
 
             $list.append($clone);
 
@@ -82,6 +156,8 @@
                 reindexRepeater($list, 'hkdev_rv_proofs');
                 syncProofHead($clone);
             }
+
+            initProductSelect($clone);
         });
 
         $root.on('click', '.hkdev-rv-remove-row', function (e) {
@@ -92,8 +168,8 @@
 
             if ($list.find('.hkdev-rv-repeater-item').length <= 1) {
                 $item.find('input[type="text"], input[type="url"], textarea').val('');
-                $item.find('select').prop('selectedIndex', 0);
                 $item.find('input[type="number"]').val('5');
+                resetProductSelect($item.find('.hkdev-rv-product-search'));
                 $item.find('.hkdev-rv-thumb-id, .hkdev-rv-gallery-ids, .hkdev-rv-thumb-url').val('');
                 $item.find('.hkdev-rv-thumb-preview').removeClass('is-visible').attr('src', '');
                 $item.find('.hkdev-rv-gallery-previews').empty();
@@ -183,5 +259,12 @@
         initReviewTabs();
         initRepeaters();
         initMedia();
+        initProductSelect($('.hkdev-reviews-admin'));
+
+        if (typeof wc_enhanced_select_params !== 'undefined') {
+            $(document.body).on('wc-enhanced-select-init', function () {
+                initProductSelect($('.hkdev-reviews-admin'));
+            });
+        }
     });
 })(jQuery);
