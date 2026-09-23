@@ -257,6 +257,7 @@ final class Header_Options {
 			'cart'    => [ 'dashicons-cart', esc_html__( 'Floating Cart', 'hkdev-shop-elements' ) ],
 			'appearance' => [ 'dashicons-art', esc_html__( 'Appearance', 'hkdev-shop-elements' ) ],
 		];
+		$nav_items = Admin_Menu::instance()->filter_header_builder_nav( $nav_items, $config );
 		?>
 		<div class="wrap hkdev-hd-wrap">
 
@@ -274,6 +275,7 @@ final class Header_Options {
 					</div>
 				</div>
 			</div>
+			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG, 'builder' ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible hd-notice"><p><?php esc_html_e( 'Header settings saved.', 'hkdev-shop-elements' ); ?></p></div>
@@ -405,6 +407,7 @@ final class Header_Options {
 						</section>
 
 						<!-- ============ TOP BAR ============ -->
+						<?php if ( isset( $nav_items['topbar'] ) ) : ?>
 						<section class="hd-card" id="hd-sec-topbar">
 							<header class="hd-card-head">
 								<span class="hd-card-icon"><span class="dashicons dashicons-welcome-widgets-menus"></span></span>
@@ -452,6 +455,7 @@ final class Header_Options {
 
 							</div>
 						</section>
+						<?php endif; ?>
 
 						<!-- ============ CONTACT ============ -->
 						<section class="hd-card" id="hd-sec-contact">
@@ -514,6 +518,7 @@ final class Header_Options {
 									</div>
 								</div>
 
+								<?php if ( Admin_Menu::instance()->is_widget_enabled( 'hkdev_tracking' ) ) : ?>
 								<div class="hd-field">
 									<div class="hd-field-info">
 										<label class="hd-field-title" for="hkdev-hd-track-url"><?php esc_html_e( 'Track Order URL', 'hkdev-shop-elements' ); ?></label>
@@ -523,6 +528,7 @@ final class Header_Options {
 										<input type="url" id="hkdev-hd-track-url" name="hkdev_hd_track_url" value="<?php echo esc_attr( $config['track_url'] ); ?>" placeholder="https://example.com/track-order/">
 									</div>
 								</div>
+								<?php endif; ?>
 
 								<div class="hd-field">
 									<div class="hd-field-info">
@@ -554,6 +560,7 @@ final class Header_Options {
 						</section>
 
 						<!-- ============ FLOATING CART ============ -->
+						<?php if ( isset( $nav_items['cart'] ) ) : ?>
 						<section class="hd-card" id="hd-sec-cart">
 							<header class="hd-card-head">
 								<span class="hd-card-icon"><span class="dashicons dashicons-cart"></span></span>
@@ -592,6 +599,7 @@ final class Header_Options {
 
 							</div>
 						</section>
+						<?php endif; ?>
 
 						<!-- ============ APPEARANCE ============ -->
 						<section class="hd-card" id="hd-sec-appearance">

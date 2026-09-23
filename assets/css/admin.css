@@ -18,6 +18,15 @@
 .hkdev-admin-actions .button:hover{background:rgba(255,255,255,.3);color:#fff;border-color:rgba(255,255,255,.55)}
 .hkdev-admin-actions .button .dashicons{font-size:15px;width:15px;height:15px;line-height:15px}
 
+/* ---------- Cross-page module nav ---------- */
+.hkdev-admin-module-nav{display:flex;flex-wrap:wrap;gap:8px;margin:-6px 0 18px;padding:10px 12px;background:#fff;border:1px solid #e2e6ea;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.hkdev-admin-module-nav.is-builder{margin:0 0 18px;background:#f7faf8;border-color:#d8e8dc}
+.hkdev-admin-module-link{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;font-size:12.5px;font-weight:600;color:#475467;text-decoration:none;border:1px solid transparent;transition:background .15s ease,color .15s ease,border-color .15s ease}
+.hkdev-admin-module-link .dashicons{font-size:16px;width:16px;height:16px;line-height:16px;color:#667085}
+.hkdev-admin-module-link:hover{background:#f4fbf6;color:#03a550;border-color:#c8ebd4}
+.hkdev-admin-module-link.is-active{background:linear-gradient(135deg,#03a550,#028a40);color:#fff;box-shadow:0 2px 8px rgba(3,165,80,.22)}
+.hkdev-admin-module-link.is-active .dashicons{color:#fff}
+
 /* ---------- Cards ---------- */
 .hkdev-admin-card{background:#fff;border:1px solid #e2e6ea;border-radius:10px;box-shadow:0 1px 3px rgba(16,24,40,.06);margin-bottom:18px;overflow:hidden}
 .hkdev-admin-card-header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid #eef1f4;background:#fbfcfc}

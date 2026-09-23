@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.92
+ * Version:           0.5.93
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -284,6 +284,9 @@ function hkdev_elements_boot() {
 		} ],
 		[ 'includes/widget-options.php', static function () {
 			Includes\Widget_Options::instance()->init();
+		} ],
+		[ 'includes/admin-menu.php', static function () {
+			Includes\Admin_Menu::instance()->init();
 		} ],
 		[ 'includes/widget-manager.php', static function () {
 			Includes\Widget_Manager::instance()->init();

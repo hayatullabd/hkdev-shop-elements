@@ -239,6 +239,7 @@ final class Contact_Form_Options {
 					</a>
 				</div>
 			</div>
+			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Contact form settings saved.', 'hkdev-shop-elements' ); ?></p></div>
