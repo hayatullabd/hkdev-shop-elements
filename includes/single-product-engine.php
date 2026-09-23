@@ -659,6 +659,12 @@ class Single_Product_Engine {
 		$purchase_disabled_attr = $disable_purchase_btns ? ' disabled' : '';
 		$purchase_disabled_cls  = $disable_purchase_btns ? ' is-out-of-stock' : '';
 
+		// Purchase-zone stock notice: simple / fully OOS on load; partial variable stock is handled in JS.
+		$show_oos_notice_initial = $disable_purchase_btns && ! $is_variable;
+		if ( $disable_purchase_btns && $is_variable && ! $is_in_stock ) {
+			$show_oos_notice_initial = true;
+		}
+
 		// ---- WhatsApp / Call order buttons ----
 		$phone         = trim( (string) $atts['phone'] );
 		$whatsapp      = trim( (string) $atts['whatsapp'] );
@@ -848,6 +854,11 @@ class Single_Product_Engine {
 							</button>
 						</div>
 					<?php endif; ?>
+
+					<div class="hkdev-sp-stock-notice" id="hkdev-sp-stock-notice" role="status" aria-live="polite"<?php echo $show_oos_notice_initial ? '' : ' style="display:none;"'; ?>>
+						<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+						<span class="hkdev-sp-stock-notice-text"><?php esc_html_e( 'This product is currently out of stock.', 'hkdev-shop-elements' ); ?></span>
+					</div>
 
 					<!-- Quantity & Buttons -->
 					<div class="hkdev-sp-action-row">
