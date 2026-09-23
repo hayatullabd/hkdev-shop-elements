@@ -136,7 +136,7 @@ class Reviews_Widget extends Widget_Base {
 			[
 				'label'   => esc_html__( 'Reviews Data', 'hkdev-shop-elements' ),
 				'type'    => Controls_Manager::SELECT,
-				'default' => 'custom',
+				'default' => 'global',
 				'options' => [
 					'global' => esc_html__( 'Use plugin settings (Customer Reviews menu)', 'hkdev-shop-elements' ),
 					'custom' => esc_html__( 'Custom (configure in this widget)', 'hkdev-shop-elements' ),

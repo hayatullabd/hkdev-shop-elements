@@ -16,6 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Review_Options {
 
+	/**
+	 * Warnings from the last settings save (e.g. truncated POST).
+	 *
+	 * @var string[]
+	 */
+	private $last_save_warnings = [];
+
 	const MENU_SLUG     = 'hkdev-shop-elements';
 	const SETTINGS_SLUG = 'hkdev-shop-elements-reviews';
 	const NONCE_ACTION  = 'hkdev_rv_settings_save';
@@ -317,6 +324,123 @@ final class Review_Options {
 	}
 
 	/**
+	 * Parse video rows from POST. Returns null when the section was not submitted (preserve stored rows).
+	 *
+	 * @return array<int,array>|null
+	 */
+	private function parse_video_rows_from_post() {
+		if ( ! isset( $_POST['hkdev_rv_videos_present'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return null;
+		}
+
+		if ( empty( $_POST['hkdev_rv_videos'] ) || ! is_array( $_POST['hkdev_rv_videos'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return [];
+		}
+
+		$videos = [];
+
+		foreach ( wp_unslash( $_POST['hkdev_rv_videos'] ) as $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$name  = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
+			$video = isset( $row['video'] ) ? esc_url_raw( $row['video'] ) : '';
+			$quote = isset( $row['quote'] ) ? sanitize_textarea_field( $row['quote'] ) : '';
+
+			if ( '' === trim( $name ) && '' === trim( $video ) && '' === trim( $quote ) ) {
+				continue;
+			}
+
+			$thumb_id = isset( $row['thumbnail_id'] ) ? absint( $row['thumbnail_id'] ) : 0;
+			$image    = isset( $row['image'] ) ? esc_url_raw( $row['image'] ) : '';
+			if ( $thumb_id && '' === $image ) {
+				$url   = wp_get_attachment_image_url( $thumb_id, 'medium_large' );
+				$image = $url ? $url : '';
+			}
+
+			$videos[] = [
+				'name'         => $name,
+				'thumbnail_id' => $thumb_id,
+				'image'        => $image,
+				'video'        => $video,
+				'rating'       => isset( $row['rating'] ) ? max( 1, min( 5, (int) $row['rating'] ) ) : 5,
+				'quote'        => $quote,
+				'product_id'   => isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0,
+			];
+		}
+
+		return $videos;
+	}
+
+	/**
+	 * Parse social proof rows from POST. Returns null when the section was not submitted (preserve stored rows).
+	 *
+	 * @return array<int,array>|null
+	 */
+	private function parse_proof_rows_from_post() {
+		if ( ! isset( $_POST['hkdev_rv_proofs_present'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return null;
+		}
+
+		$expected_rows = isset( $_POST['hkdev_rv_proofs_expected_rows'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			? max( 0, (int) $_POST['hkdev_rv_proofs_expected_rows'] ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			: null;
+
+		if ( empty( $_POST['hkdev_rv_proofs'] ) || ! is_array( $_POST['hkdev_rv_proofs'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( null !== $expected_rows && $expected_rows > 1 ) {
+				$this->last_save_warnings[] = __( 'Social proofs may not have saved completely (server form limit). Previous social proofs were kept. Try saving again with fewer video rows, or ask your host to raise max_input_vars.', 'hkdev-shop-elements' );
+				return null;
+			}
+			return [];
+		}
+
+		$proofs = [];
+
+		foreach ( wp_unslash( $_POST['hkdev_rv_proofs'] ) as $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+
+			$name  = isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '';
+			$quote = isset( $row['quote'] ) ? sanitize_textarea_field( $row['quote'] ) : '';
+			$ids_raw = isset( $row['image_ids'] ) ? (string) $row['image_ids'] : '';
+			$ids     = array_values( array_filter( array_map( 'absint', explode( ',', $ids_raw ) ) ) );
+
+			if ( '' === trim( $name ) && '' === trim( $quote ) && empty( $ids ) ) {
+				continue;
+			}
+
+			$images = [];
+			foreach ( $ids as $id ) {
+				$url = wp_get_attachment_image_url( $id, 'medium_large' );
+				if ( ! $url ) {
+					$url = wp_get_attachment_image_url( $id, 'full' );
+				}
+				if ( $url ) {
+					$images[] = $url;
+				}
+			}
+
+			$proofs[] = [
+				'name'       => $name,
+				'image_ids'  => implode( ',', $ids ),
+				'images'     => $images,
+				'rating'     => isset( $row['rating'] ) ? max( 1, min( 5, (int) $row['rating'] ) ) : 5,
+				'quote'      => $quote,
+				'product_id' => isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0,
+			];
+		}
+
+		if ( null !== $expected_rows && $expected_rows > 0 && count( $proofs ) < $expected_rows ) {
+			$this->last_save_warnings[] = __( 'Some social proof rows were missing from the save request; kept your previous social proofs. Save again or reduce the number of video review fields.', 'hkdev-shop-elements' );
+			return null;
+		}
+
+		return $proofs;
+	}
+
+	/**
 	 * @return void
 	 */
 	public function render_settings_page() {
@@ -324,10 +448,12 @@ final class Review_Options {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'hkdev-shop-elements' ) );
 		}
 
-		$saved_notice = false;
+		$saved_notice   = false;
+		$save_warnings  = [];
 
 		if ( isset( $_POST['hkdev_rv_submit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( self::NONCE_ACTION );
+			$this->last_save_warnings = [];
 
 			$text = static function ( $key ) {
 				return isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -341,48 +467,20 @@ final class Review_Options {
 				return isset( $_POST[ $key ] ) && '1' === $_POST[ $key ] ? 'yes' : 'no'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			};
 
-			$videos = [];
-			if ( ! empty( $_POST['hkdev_rv_videos'] ) && is_array( $_POST['hkdev_rv_videos'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				foreach ( wp_unslash( $_POST['hkdev_rv_videos'] ) as $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					if ( ! is_array( $row ) ) {
-						continue;
-					}
-					$thumb_id = isset( $row['thumbnail_id'] ) ? absint( $row['thumbnail_id'] ) : 0;
-					$image    = isset( $row['image'] ) ? esc_url_raw( $row['image'] ) : '';
-					if ( $thumb_id && '' === $image ) {
-						$url = wp_get_attachment_image_url( $thumb_id, 'medium_large' );
-						$image = $url ? $url : '';
-					}
+			$existing_settings = Review_Engine::instance()->get_stored_settings();
 
-					$videos[] = [
-						'name'          => isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '',
-						'thumbnail_id'  => $thumb_id,
-						'image'         => $image,
-						'video'         => isset( $row['video'] ) ? esc_url_raw( $row['video'] ) : '',
-						'rating'        => isset( $row['rating'] ) ? max( 1, min( 5, (int) $row['rating'] ) ) : 5,
-						'quote'         => isset( $row['quote'] ) ? sanitize_textarea_field( $row['quote'] ) : '',
-						'product_id'    => isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0,
-					];
-				}
+			$videos = $this->parse_video_rows_from_post();
+			if ( null === $videos ) {
+				$videos = isset( $existing_settings['videos'] ) && is_array( $existing_settings['videos'] )
+					? $existing_settings['videos']
+					: [];
 			}
 
-			$proofs = [];
-			if ( ! empty( $_POST['hkdev_rv_proofs'] ) && is_array( $_POST['hkdev_rv_proofs'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-				foreach ( wp_unslash( $_POST['hkdev_rv_proofs'] ) as $row ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-					if ( ! is_array( $row ) ) {
-						continue;
-					}
-					$ids_raw = isset( $row['image_ids'] ) ? (string) $row['image_ids'] : '';
-					$ids     = array_filter( array_map( 'absint', explode( ',', $ids_raw ) ) );
-
-					$proofs[] = [
-						'name'       => isset( $row['name'] ) ? sanitize_text_field( $row['name'] ) : '',
-						'image_ids'  => implode( ',', $ids ),
-						'rating'     => isset( $row['rating'] ) ? max( 1, min( 5, (int) $row['rating'] ) ) : 5,
-						'quote'      => isset( $row['quote'] ) ? sanitize_textarea_field( $row['quote'] ) : '',
-						'product_id' => isset( $row['product_id'] ) ? absint( $row['product_id'] ) : 0,
-					];
-				}
+			$proofs = $this->parse_proof_rows_from_post();
+			if ( null === $proofs ) {
+				$proofs = isset( $existing_settings['proofs'] ) && is_array( $existing_settings['proofs'] )
+					? $existing_settings['proofs']
+					: [];
 			}
 
 			$settings = [
@@ -422,7 +520,8 @@ final class Review_Options {
 			];
 
 			update_option( Review_Engine::OPTION_NAME, $settings );
-			$saved_notice = true;
+			$saved_notice  = true;
+			$save_warnings   = $this->last_save_warnings;
 		}
 
 		$s        = $this->stored();
@@ -460,6 +559,9 @@ final class Review_Options {
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Customer review settings saved.', 'hkdev-shop-elements' ); ?></p></div>
 			<?php endif; ?>
+			<?php foreach ( $save_warnings as $warning ) : ?>
+				<div class="notice notice-warning is-dismissible"><p><?php echo esc_html( $warning ); ?></p></div>
+			<?php endforeach; ?>
 
 			<form method="post" id="hkdev-reviews-settings">
 				<?php wp_nonce_field( self::NONCE_ACTION ); ?>
@@ -481,11 +583,11 @@ final class Review_Options {
 					<div class="hkdev-tab-content" id="hkdev-tab-rv-general">
 						<?php $this->render_general_tab( $val, $checked ); ?>
 					</div>
-					<div class="hkdev-tab-content" id="hkdev-tab-rv-videos">
-						<?php $this->render_videos_tab( $videos, $checked ); ?>
-					</div>
 					<div class="hkdev-tab-content" id="hkdev-tab-rv-proofs">
 						<?php $this->render_proofs_tab( $proofs, $checked ); ?>
+					</div>
+					<div class="hkdev-tab-content" id="hkdev-tab-rv-videos">
+						<?php $this->render_videos_tab( $videos, $checked ); ?>
 					</div>
 					<div class="hkdev-tab-content" id="hkdev-tab-rv-labels">
 						<?php $this->render_labels_tab( $val, $checked ); ?>
@@ -640,6 +742,8 @@ final class Review_Options {
 				</div>
 
 				<div class="hkdev-rv-repeater" data-type="video" data-empty-label="<?php esc_attr_e( 'New video review', 'hkdev-shop-elements' ); ?>">
+					<input type="hidden" name="hkdev_rv_videos_present" value="1">
+					<input type="hidden" name="hkdev_rv_videos_expected_rows" class="hkdev-rv-expected-rows" value="<?php echo esc_attr( (string) max( 1, count( $videos ) ) ); ?>">
 					<div class="hkdev-rv-repeater-list hkdev-rv-accordion-list">
 						<?php
 						if ( empty( $videos ) ) {
@@ -753,6 +857,8 @@ final class Review_Options {
 				</div>
 
 				<div class="hkdev-rv-repeater" data-type="proof" data-empty-label="<?php esc_attr_e( 'New social proof', 'hkdev-shop-elements' ); ?>">
+					<input type="hidden" name="hkdev_rv_proofs_present" value="1">
+					<input type="hidden" name="hkdev_rv_proofs_expected_rows" class="hkdev-rv-expected-rows" value="<?php echo esc_attr( (string) max( 1, count( $proofs ) ) ); ?>">
 					<div class="hkdev-rv-repeater-list hkdev-rv-accordion-list">
 						<?php
 						if ( empty( $proofs ) ) {
