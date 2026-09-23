@@ -33,10 +33,10 @@
     --hkdev-rv-overlay: rgba(0, 0, 0, 0.66);
     --hkdev-rv-modal-video-w: 460px;
     --hkdev-rv-modal-proof-w: 960px;
-    --hkdev-rv-modal-close-size: 46px;
-    --hkdev-rv-modal-close-icon: 24px;
-    --hkdev-rv-slider-btn-size: 52px;
-    --hkdev-rv-slider-icon: 28px;
+    --hkdev-rv-modal-close-size: 42px;
+    --hkdev-rv-modal-close-icon: 28px;
+    --hkdev-rv-slider-btn-size: 46px;
+    --hkdev-rv-slider-icon: 32px;
     font-family: var(--hkdev-font, 'Hind Siliguri', 'Poppins', sans-serif) !important;
     color: var(--hkdev-rv-text) !important;
     background: var(--hkdev-rv-section-bg) !important;
@@ -555,10 +555,10 @@ body.hkdev-rv-locked{
     top: 14px !important;
     right: 14px !important;
     z-index: 6 !important;
-    width: var(--hkdev-rv-modal-close-size, 46px) !important;
-    height: var(--hkdev-rv-modal-close-size, 46px) !important;
-    min-width: var(--hkdev-rv-modal-close-size, 46px) !important;
-    min-height: var(--hkdev-rv-modal-close-size, 46px) !important;
+    width: min(var(--hkdev-rv-modal-close-size, 42px), 52px) !important;
+    height: min(var(--hkdev-rv-modal-close-size, 42px), 52px) !important;
+    min-width: min(var(--hkdev-rv-modal-close-size, 42px), 52px) !important;
+    min-height: min(var(--hkdev-rv-modal-close-size, 42px), 52px) !important;
     padding: 0 !important;
     margin: 0 !important;
     display: flex !important;
@@ -612,16 +612,23 @@ body.hkdev-rv-locked{
 }
 
 .hkdev-rv .hkdev-rv-btn-glyph-close{
-    font-size: clamp(28px, var(--hkdev-rv-modal-close-icon, 32px), 40px) !important;
+    font-size: max(
+        calc(min(var(--hkdev-rv-modal-close-size, 42px), 52px) * 0.68),
+        var(--hkdev-rv-modal-close-icon, 28px)
+    ) !important;
     color: #141a14 !important;
-    margin-top: -3px !important;
+    margin-top: -2px !important;
 }
 
 .hkdev-rv .hkdev-rv-btn-glyph-prev,
 .hkdev-rv .hkdev-rv-btn-glyph-next{
-    font-size: clamp(32px, var(--hkdev-rv-slider-icon, 38px), 48px) !important;
-    font-weight: 700 !important;
+    font-size: max(
+        calc(min(var(--hkdev-rv-slider-btn-size, 46px), 54px) * 0.76),
+        var(--hkdev-rv-slider-icon, 32px)
+    ) !important;
+    font-weight: 900 !important;
     color: #141a14 !important;
+    line-height: 0.82 !important;
 }
 
 .hkdev-rv .hkdev-rv-btn-glyph-prev{
@@ -730,10 +737,10 @@ body.hkdev-rv-locked{
     top: 50% !important;
     z-index: 5 !important;
     transform: translateY(-50%) !important;
-    width: var(--hkdev-rv-slider-btn-size, 52px) !important;
-    height: var(--hkdev-rv-slider-btn-size, 52px) !important;
-    min-width: var(--hkdev-rv-slider-btn-size, 52px) !important;
-    min-height: var(--hkdev-rv-slider-btn-size, 52px) !important;
+    width: min(var(--hkdev-rv-slider-btn-size, 46px), 54px) !important;
+    height: min(var(--hkdev-rv-slider-btn-size, 46px), 54px) !important;
+    min-width: min(var(--hkdev-rv-slider-btn-size, 46px), 54px) !important;
+    min-height: min(var(--hkdev-rv-slider-btn-size, 46px), 54px) !important;
     padding: 0 !important;
     margin: 0 !important;
     display: flex !important;
@@ -767,29 +774,28 @@ body.hkdev-rv-locked{
 .hkdev-rv-next{ right: 16px !important; }
 
 @media (min-width: 992px){
-    .hkdev-rv{
-        --hkdev-rv-modal-close-size: 52px;
-        --hkdev-rv-modal-close-icon: 28px;
-        --hkdev-rv-slider-btn-size: 58px;
-        --hkdev-rv-slider-icon: 32px;
-    }
-
     .hkdev-rv-modal-close,
     .hkdev-rv-pmodal-close{
-        top: 18px !important;
-        right: 18px !important;
+        top: 16px !important;
+        right: 16px !important;
     }
 
-    .hkdev-rv-prev{ left: 20px !important; }
-    .hkdev-rv-next{ right: 20px !important; }
+    .hkdev-rv-prev{ left: 18px !important; }
+    .hkdev-rv-next{ right: 18px !important; }
 
     .hkdev-rv .hkdev-rv-btn-glyph-close{
-        font-size: clamp(30px, var(--hkdev-rv-modal-close-icon, 34px), 42px) !important;
+        font-size: max(
+            calc(min(var(--hkdev-rv-modal-close-size, 44px), 52px) * 0.72),
+            var(--hkdev-rv-modal-close-icon, 30px)
+        ) !important;
     }
 
     .hkdev-rv .hkdev-rv-btn-glyph-prev,
     .hkdev-rv .hkdev-rv-btn-glyph-next{
-        font-size: clamp(36px, var(--hkdev-rv-slider-icon, 42px), 52px) !important;
+        font-size: max(
+            calc(min(var(--hkdev-rv-slider-btn-size, 48px), 54px) * 0.8),
+            var(--hkdev-rv-slider-icon, 36px)
+        ) !important;
     }
 }
 
