@@ -261,8 +261,21 @@ class Shop_Widget extends Widget_Base {
 				'default'     => 0,
 				'min'         => 0,
 				'max'         => 365,
-				'description' => esc_html__( 'Trending looks only at products published within this many days (0 = last 30 days).', 'hkdev-shop-elements' ),
+				'description' => esc_html__( 'Trending looks only at products published within this many days (0 = last 30 days). Ignored when Custom Products are selected.', 'hkdev-shop-elements' ),
 				'condition'   => [ 'type' => 'trending' ],
+			]
+		);
+
+		$this->add_control(
+			'custom_products',
+			[
+				'label'       => esc_html__( 'Custom Products', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT2,
+				'multiple'    => true,
+				'label_block' => true,
+				'options'     => Shop_Engine::product_options(),
+				'description' => esc_html__( 'Pick products manually for this section. They appear in the order you select. Leave empty to use automatic sales ranking (Best Selling / Trending).', 'hkdev-shop-elements' ),
+				'condition'   => [ 'type' => [ 'best_selling', 'trending' ] ],
 			]
 		);
 
@@ -400,6 +413,11 @@ class Shop_Widget extends Widget_Base {
 			}
 		}
 
+		$custom_product_ids = [];
+		if ( ! empty( $settings['custom_products'] ) && is_array( $settings['custom_products'] ) ) {
+			$custom_product_ids = array_values( array_filter( array_map( 'absint', $settings['custom_products'] ) ) );
+		}
+
 		$atts = [
 			'limit'            => isset( $settings['limit'] ) ? absint( $settings['limit'] ) : 12,
 			'columns'          => isset( $settings['columns'] ) ? $settings['columns'] : '4',
@@ -425,6 +443,10 @@ class Shop_Widget extends Widget_Base {
 			'carousel'         => $this->get_carousel_config( $settings ),
 			'title_lines'      => $this->get_title_lines( $settings ),
 		];
+
+		if ( ! empty( $custom_product_ids ) && in_array( $atts['type'], [ 'best_selling', 'trending' ], true ) ) {
+			$atts['product_ids'] = implode( ',', $custom_product_ids );
+		}
 
 		echo \HkdevShopElements\Includes\Shop_Engine::instance()->master_shop_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}

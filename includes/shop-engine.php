@@ -435,11 +435,90 @@ class Shop_Engine {
 				'on_sale'          => 'no',
 				'featured'         => 'no',
 				'stock_status'     => '',
+				'product_ids'      => '',
 			]
 		);
 
 		$order = ( 'ASC' === strtoupper( (string) $params['order_by'] ) ) ? 'ASC' : 'DESC';
 		$type  = (string) $params['type'];
+
+		$manual_ids = array_values(
+			array_unique(
+				array_filter(
+					wp_parse_id_list(
+						is_array( $params['product_ids'] )
+							? $params['product_ids']
+							: explode( ',', (string) $params['product_ids'] )
+					)
+				)
+			)
+		);
+
+		if ( ! empty( $manual_ids ) && in_array( $type, [ 'best_selling', 'trending' ], true ) ) {
+			$limit  = max( 1, (int) $params['limit'] );
+			$paged  = max( 1, (int) $params['paged'] );
+			$offset = ( $paged - 1 ) * $limit;
+			$slice  = array_slice( $manual_ids, $offset, $limit );
+
+			$args = [
+				'post_type'              => 'product',
+				'post_status'            => 'publish',
+				'post__in'               => ! empty( $slice ) ? $slice : [ 0 ],
+				'orderby'                => 'post__in',
+				'posts_per_page'         => max( 1, count( $slice ) ),
+				'paged'                  => 1,
+				'ignore_sticky_posts'    => true,
+				'update_post_meta_cache' => true,
+				'update_post_term_cache' => true,
+			];
+
+			$exclude_ids = wp_parse_id_list( (array) $params['exclude_ids'] );
+			if ( ! empty( $exclude_ids ) ) {
+				$args['post__not_in'] = $exclude_ids; // phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_post__not_in
+			}
+
+			$tax_query = [ 'relation' => 'AND' ];
+			$hidden    = self::hidden_from_catalog_clause();
+			if ( $hidden ) {
+				$tax_query[] = $hidden;
+			}
+
+			if ( 'yes' === $params['featured'] ) {
+				$tax_query[] = [
+					'taxonomy' => 'product_visibility',
+					'field'    => 'name',
+					'terms'    => 'featured',
+					'operator' => 'IN',
+				];
+			}
+
+			if ( count( $tax_query ) > 1 ) {
+				$args['tax_query'] = $tax_query;
+			}
+
+			if ( ! empty( $params['stock_status'] ) ) {
+				$args['meta_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => '_stock_status',
+						'value'   => sanitize_key( $params['stock_status'] ),
+						'compare' => '=',
+					],
+				];
+			}
+
+			if ( 'yes' === $params['on_sale'] && function_exists( 'wc_get_product_ids_on_sale' ) ) {
+				$on_sale_ids = wp_parse_id_list( (array) wc_get_product_ids_on_sale() );
+				$on_sale_ids = array_values( array_intersect( $manual_ids, $on_sale_ids ) );
+				$slice       = array_values( array_intersect( $slice, $on_sale_ids ) );
+				if ( empty( $slice ) ) {
+					$slice = [ 0 ];
+				}
+				$args['post__in']       = $slice;
+				$args['posts_per_page'] = count( $slice );
+			}
+
+			return $args;
+		}
 
 		$args = [
 			'post_type'      => 'product',
@@ -675,6 +754,44 @@ class Shop_Engine {
 	}
 
 	/**
+	 * Build id => title options for product pickers (Elementor / admin).
+	 *
+	 * @param int $limit Max products to list.
+	 * @return array<int,string>
+	 */
+	public static function product_options( $limit = 500 ) {
+		$options = [];
+
+		if ( ! post_type_exists( 'product' ) ) {
+			return $options;
+		}
+
+		$ids = get_posts(
+			[
+				'post_type'              => 'product',
+				'post_status'            => 'publish',
+				'posts_per_page'         => max( 1, min( 1000, (int) $limit ) ),
+				'orderby'                => 'title',
+				'order'                  => 'ASC',
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			]
+		);
+
+		foreach ( $ids as $id ) {
+			$title = get_the_title( $id );
+			if ( '' === $title ) {
+				continue;
+			}
+			$options[ (int) $id ] = $title . ' (#' . (int) $id . ')';
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Collect the sanitised listing parameters from a filter / load-more request.
 	 *
 	 * @param bool $with_paged Whether to read the requested page number.
@@ -696,6 +813,7 @@ class Shop_Engine {
 			'stock_status'     => isset( $_POST['stock_status'] ) ? sanitize_key( wp_unslash( $_POST['stock_status'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'image_size'       => isset( $_POST['image_size'] ) ? sanitize_key( wp_unslash( $_POST['image_size'] ) ) : 'woocommerce_thumbnail', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'hover_img'        => ( isset( $_POST['hover_img'] ) && 'no' === sanitize_text_field( wp_unslash( $_POST['hover_img'] ) ) ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			'product_ids'      => isset( $_POST['product_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['product_ids'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		];
 
 		if ( $with_paged ) {
@@ -1026,6 +1144,12 @@ class Shop_Engine {
 			}
 		}
 
+		$product_ids = array_values(
+			array_unique(
+				array_filter( array_map( 'absint', explode( ',', (string) $atts['product_ids'] ) ) )
+			)
+		);
+
 		$listing_params = [
 			'category'         => $atts['category'],
 			'exclude'          => $atts['exclude'],
@@ -1040,13 +1164,13 @@ class Shop_Engine {
 			'on_sale'          => $atts['on_sale'],
 			'featured'         => $atts['featured'],
 			'stock_status'     => $atts['stock_status'],
+			'product_ids'      => implode( ',', $product_ids ),
 		];
 
 		$args = $this->build_product_query_args( $listing_params );
 
-		// Explicit product ID list (used by the Related Products widget).
-		$product_ids = array_values( array_filter( array_map( 'absint', explode( ',', (string) $atts['product_ids'] ) ) ) );
-		if ( ! empty( $product_ids ) ) {
+		// Explicit product ID list (Related Products widget — not Best Selling / Trending manual picks).
+		if ( ! empty( $product_ids ) && ! in_array( $atts['type'], [ 'best_selling', 'trending' ], true ) ) {
 			$args = [
 				'post_type'      => 'product',
 				'post_status'    => 'publish',
@@ -1057,6 +1181,12 @@ class Shop_Engine {
 		}
 
 		$query = new \WP_Query( $args );
+
+		if ( ! empty( $product_ids ) && in_array( $atts['type'], [ 'best_selling', 'trending' ], true ) ) {
+			$limit              = max( 1, (int) $atts['limit'] );
+			$query->found_posts = count( $product_ids );
+			$query->max_num_pages = (int) max( 1, ceil( count( $product_ids ) / $limit ) );
+		}
 		ob_start();
 		?>
 
@@ -1080,6 +1210,7 @@ class Shop_Engine {
 			 data-on_sale="<?php echo esc_attr( $atts['on_sale'] ); ?>"
 			 data-featured="<?php echo esc_attr( $atts['featured'] ); ?>"
 			 data-stock_status="<?php echo esc_attr( $atts['stock_status'] ); ?>"
+			 data-product_ids="<?php echo esc_attr( implode( ',', $product_ids ) ); ?>"
 			 data-hover-img="<?php echo esc_attr( $atts['hover_img'] ); ?>"
 			 data-hkdev-elements="1">
 
