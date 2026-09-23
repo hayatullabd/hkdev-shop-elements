@@ -825,12 +825,54 @@ a.added_to_cart.wc-forward {
     clear: both !important;
 }
 
-.hkdev-sp-tab-content .entry-content img,
-.hkdev-sp-tab-content .entry-content figure img {
+/* Product photos only — not inline WordPress / Twemoji images in text. */
+.hkdev-sp-tab-content .entry-content img:not(.emoji):not(.wp-smiley),
+.hkdev-sp-tab-content .entry-content figure img:not(.emoji):not(.wp-smiley) {
     max-width: 100% !important;
     width: auto !important;
     height: auto !important;
     display: block !important;
+}
+
+.hkdev-sp-tab-content .entry-content img.emoji,
+.hkdev-sp-tab-content .entry-content img.wp-smiley {
+    display: inline !important;
+    width: 1.15em !important;
+    height: 1.15em !important;
+    max-width: 1.15em !important;
+    min-width: 0 !important;
+    margin: 0 0.08em !important;
+    vertical-align: -0.12em !important;
+    float: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.hkdev-sp-tab-content .entry-content p,
+.hkdev-sp-tab-content .entry-content li {
+    font-size: 15px !important;
+    line-height: 1.75 !important;
+    margin: 0 0 0.85em !important;
+}
+
+.hkdev-sp-tab-content .entry-content p:last-child,
+.hkdev-sp-tab-content .entry-content ul:last-child,
+.hkdev-sp-tab-content .entry-content ol:last-child {
+    margin-bottom: 0 !important;
+}
+
+.hkdev-sp-tab-content .entry-content h1,
+.hkdev-sp-tab-content .entry-content h2,
+.hkdev-sp-tab-content .entry-content h3,
+.hkdev-sp-tab-content .entry-content h4 {
+    font-size: clamp(17px, 4vw, 22px) !important;
+    line-height: 1.4 !important;
+    margin: 1.1em 0 0.5em !important;
+}
+
+.hkdev-sp-tab-content .entry-content strong,
+.hkdev-sp-tab-content .entry-content b {
+    font-weight: 700 !important;
 }
 
 .hkdev-sp-tab-content .entry-content figure,
@@ -881,9 +923,18 @@ a.added_to_cart.wc-forward {
     overflow: hidden !important;
 }
 
-.hkdev-sp-faq-answer img {
+.hkdev-sp-faq-answer img:not(.emoji):not(.wp-smiley) {
     max-width: 100% !important;
     height: auto !important;
+}
+
+.hkdev-sp-faq-answer img.emoji,
+.hkdev-sp-faq-answer img.wp-smiley {
+    display: inline !important;
+    width: 1.15em !important;
+    height: 1.15em !important;
+    max-width: 1.15em !important;
+    vertical-align: -0.12em !important;
 }
 
 /* Product FAQ Section */
