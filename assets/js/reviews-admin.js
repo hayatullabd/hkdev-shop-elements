@@ -368,6 +368,14 @@
         });
     }
 
+    function syncExpectedRowCounts($root) {
+        $root.find('.hkdev-rv-repeater').each(function () {
+            var $rep = $(this);
+            var count = $rep.find('.hkdev-rv-repeater-list .hkdev-rv-repeater-item').length;
+            $rep.find('.hkdev-rv-expected-rows').first().val(String(Math.max(0, count)));
+        });
+    }
+
     $(function () {
         var $root = $('.hkdev-reviews-admin');
         initReviewTabs();
@@ -375,5 +383,9 @@
         initRepeaters();
         initMedia();
         initProductSelect($root);
+
+        $('#hkdev-reviews-settings').on('submit', function () {
+            syncExpectedRowCounts($root);
+        });
     });
 })(jQuery);

@@ -155,6 +155,9 @@ class Review_Engine {
 				$images = [];
 				if ( ! empty( $row['images'] ) && is_array( $row['images'] ) ) {
 					foreach ( $row['images'] as $url ) {
+						if ( is_array( $url ) && ! empty( $url['url'] ) ) {
+							$url = (string) $url['url'];
+						}
 						$url = esc_url_raw( (string) $url );
 						if ( '' !== $url ) {
 							$images[] = $url;
@@ -407,7 +410,30 @@ class Review_Engine {
 		$config = wp_parse_args( $config, $this->defaults() );
 
 		$videos = array_values( array_filter( (array) $config['videos'] ) );
-		$proofs = array_values( array_filter( (array) $config['proofs'] ) );
+		$proofs = array_values(
+			array_filter(
+				(array) $config['proofs'],
+				static function ( $row ) {
+					if ( ! is_array( $row ) ) {
+						return false;
+					}
+
+					$name = isset( $row['name'] ) ? trim( (string) $row['name'] ) : '';
+					$quote = isset( $row['quote'] ) ? trim( (string) $row['quote'] ) : '';
+					$images = isset( $row['images'] ) && is_array( $row['images'] ) ? array_filter( $row['images'] ) : [];
+
+					if ( ! empty( $images ) || '' !== $name || '' !== $quote ) {
+						return true;
+					}
+
+					if ( ! empty( $row['image_ids'] ) ) {
+						return true;
+					}
+
+					return false;
+				}
+			)
+		);
 
 		$subheading = ! empty( $config['show_subheading'] ) ? $this->allow_inline_html( $config['subheading'] ) : '';
 		$heading    = ! empty( $config['show_heading'] ) ? trim( (string) $config['heading'] ) : '';
