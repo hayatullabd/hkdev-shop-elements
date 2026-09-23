@@ -30,21 +30,23 @@ trait Product_Controls {
 	 * @return void
 	 */
 	protected function register_product_controls( $for_products = true ) {
-		$this->register_card_controls( $for_products );
+		$this->register_product_title_controls();
+		if ( $for_products ) {
+			$this->register_product_image_controls();
+		}
 		$this->register_carousel_controls();
 	}
 
 	/**
-	 * Content tab – product card options.
+	 * Content tab – product title on the card.
 	 *
-	 * @param bool $for_products Include the product-only controls (hover image).
 	 * @return void
 	 */
-	protected function register_card_controls( $for_products = true ) {
+	protected function register_product_title_controls() {
 		$this->start_controls_section(
-			'section_card',
+			'section_product_title',
 			[
-				'label' => esc_html__( 'Product Card', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Product Title', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -64,22 +66,61 @@ trait Product_Controls {
 			]
 		);
 
-		if ( $for_products ) {
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Content tab – product image behaviour on the card.
+	 *
+	 * @return void
+	 */
+	protected function register_product_image_controls( $include_image_size = false ) {
+		$this->start_controls_section(
+			'section_product_images',
+			[
+				'label' => esc_html__( 'Product Images', 'hkdev-shop-elements' ),
+			]
+		);
+
+		if ( $include_image_size && method_exists( $this, 'hkdev_image_size_options' ) ) {
 			$this->add_control(
-				'hover_img',
+				'image_size',
 				[
-					'label'        => esc_html__( 'Second Image on Hover', 'hkdev-shop-elements' ),
-					'type'         => Controls_Manager::SWITCHER,
-					'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
-					'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
-					'default'      => 'yes',
-					'return_value' => 'yes',
-					'description'  => esc_html__( 'Swaps in the next gallery image while the pointer is over a card. Products with a single image are unaffected.', 'hkdev-shop-elements' ),
+					'label'       => esc_html__( 'Thumbnail Size', 'hkdev-shop-elements' ),
+					'type'        => Controls_Manager::SELECT,
+					'default'     => 'woocommerce_thumbnail',
+					'options'     => $this->hkdev_image_size_options(),
+					'description' => esc_html__( 'WordPress image size loaded in the card. Crop/shape: Style → Image Styles.', 'hkdev-shop-elements' ),
 				]
 			);
 		}
 
+		$this->add_control(
+			'hover_img',
+			[
+				'label'        => esc_html__( 'Second Image on Hover', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'description'  => esc_html__( 'Swaps in the next gallery image while the pointer is over a card. Products with a single image are unaffected.', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->end_controls_section();
+	}
+
+	/**
+	 * @deprecated Use register_product_title_controls() / register_product_image_controls().
+	 * @param bool $for_products Include hover image controls.
+	 * @return void
+	 */
+	protected function register_card_controls( $for_products = true ) {
+		$this->register_product_title_controls();
+		if ( $for_products ) {
+			$this->register_product_image_controls();
+		}
 	}
 
 	/**
@@ -92,7 +133,7 @@ trait Product_Controls {
 		$this->start_controls_section(
 			'section_carousel',
 			[
-				'label'     => esc_html__( 'Carousel', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Carousel Settings', 'hkdev-shop-elements' ),
 				'condition' => $condition,
 			]
 		);

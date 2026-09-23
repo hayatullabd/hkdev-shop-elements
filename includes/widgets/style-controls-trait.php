@@ -335,7 +335,7 @@ trait Style_Controls {
 		$this->start_controls_section(
 			'hkdev_style_layout',
 			[
-				'label' => esc_html__( 'Layout & Spacing', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Layout Design', 'hkdev-shop-elements' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -369,7 +369,7 @@ trait Style_Controls {
 		$this->start_controls_section(
 			'hkdev_style_image',
 			[
-				'label' => esc_html__( 'Product Image', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Image Styles', 'hkdev-shop-elements' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);
@@ -408,17 +408,41 @@ trait Style_Controls {
 
 		$this->end_controls_section();
 
-		/* ---------------- Text ---------------- */
+		/* ---------------- Product categories (meta line) ---------------- */
 		$this->start_controls_section(
-			'hkdev_style_text',
+			'hkdev_style_categories',
 			[
-				'label' => esc_html__( 'Card Text', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Product Categories', 'hkdev-shop-elements' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);
 
 		$this->hkdev_typography( 'sk_cat', esc_html__( 'Category / Brand', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-label' );
-		$this->hkdev_typography( 'sk_title', esc_html__( 'Product Title', 'hkdev-shop-elements' ), $scope . ' .hkdev-title' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Product title ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_title',
+			[
+				'label' => esc_html__( 'Product Title', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->hkdev_typography( 'sk_title', esc_html__( 'Title Typography', 'hkdev-shop-elements' ), $scope . ' .hkdev-title' );
+
+		$this->end_controls_section();
+
+		/* ---------------- Product price ---------------- */
+		$this->start_controls_section(
+			'hkdev_style_price',
+			[
+				'label' => esc_html__( 'Product Price', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
 		$this->hkdev_typography( 'sk_price', esc_html__( 'Price', 'hkdev-shop-elements' ), $scope . ' .hkdev-price-container .price .amount' );
 		$this->hkdev_color( 'sk_price_old', esc_html__( 'Old (Struck) Price', 'hkdev-shop-elements' ), $scope . ' .hkdev-price-container .price del .amount', 'color' );
 
@@ -428,7 +452,7 @@ trait Style_Controls {
 		$this->start_controls_section(
 			'hkdev_style_button',
 			[
-				'label' => esc_html__( 'Buy Now Button', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Add to Cart Button', 'hkdev-shop-elements' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);

@@ -47,7 +47,7 @@ trait Heading_Controls {
 		$this->start_controls_section(
 			'section_heading',
 			[
-				'label' => esc_html__( 'Heading', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Section Heading', 'hkdev-shop-elements' ),
 			]
 		);
 
