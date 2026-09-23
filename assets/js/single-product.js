@@ -238,7 +238,7 @@ jQuery(document).ready(function($) {
         const row = $(this).closest('.hkdev-sp-variation-row');
         row.find('.hkdev-sp-swatch-item').removeClass('selected');
         $(this).addClass('selected');
-        row.find('.selected-val').text($(this).attr('data-value'));
+        row.find('.selected-val').text($(this).attr('data-label') || $(this).text() || $(this).attr('data-value'));
         updateVariation();
     });
 
