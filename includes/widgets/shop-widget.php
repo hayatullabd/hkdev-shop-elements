@@ -96,48 +96,65 @@ class Shop_Widget extends Widget_Base {
 	 * @return void
 	 */
 	protected function register_controls() {
+		/* ---- Layout: Presentation ---- */
 		$this->start_controls_section(
-			'section_content',
+			'section_presentation',
 			[
-				'label' => esc_html__( 'Query', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Presentation', 'hkdev-shop-elements' ),
 			]
 		);
 
 		$this->add_control(
-			'limit',
+			'style',
 			[
-				'label'   => esc_html__( 'Number of Products', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::NUMBER,
-				'default' => 12,
-				'min'     => 1,
-				'max'     => 100,
+				'label'       => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'grid',
+				'options'     => [
+					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
+					'carousel' => esc_html__( 'Carousel / Slider', 'hkdev-shop-elements' ),
+				],
+				'description' => esc_html__( 'Grid uses columns below. Carousel opens the Carousel Settings section.', 'hkdev-shop-elements' ),
 			]
 		);
 
 		$this->add_control(
 			'columns',
 			[
-				'label'   => esc_html__( 'Columns', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => '4',
-				'options' => [
+				'label'       => esc_html__( 'Columns', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => '4',
+				'options'     => [
 					'2' => '2',
 					'3' => '3',
 					'4' => '4',
 					'5' => '5',
 					'6' => '6',
 				],
+				'description' => esc_html__( 'How many product cards appear per row on desktop.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'style' => 'grid' ],
 			]
 		);
 
 		$this->add_control(
-			'image_size',
+			'limit',
 			[
-				'label'       => esc_html__( 'Image Size', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'woocommerce_thumbnail',
-				'options'     => $this->hkdev_image_size_options(),
-				'description' => esc_html__( 'Which product image file is loaded in the card. The visual crop is controlled from Style → Image.', 'hkdev-shop-elements' ),
+				'label'       => esc_html__( 'Products Per Page', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::NUMBER,
+				'default'     => 12,
+				'min'         => 1,
+				'max'         => 100,
+				'description' => esc_html__( 'How many products load at once (Load More adds the next batch).', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->end_controls_section();
+
+		/* ---- Layout: Query ---- */
+		$this->start_controls_section(
+			'section_query',
+			[
+				'label' => esc_html__( 'Query', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -152,6 +169,46 @@ class Shop_Widget extends Widget_Base {
 					'best_selling' => esc_html__( 'Best Selling', 'hkdev-shop-elements' ),
 					'trending'     => esc_html__( 'Trending', 'hkdev-shop-elements' ),
 				],
+			]
+		);
+
+		$this->add_control(
+			'custom_products',
+			[
+				'label'       => esc_html__( 'Custom Products', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT2,
+				'multiple'    => true,
+				'label_block' => true,
+				'options'     => Shop_Engine::product_options(),
+				'description' => esc_html__( 'Manual picks for Best Selling / Trending. Order matches selection. Empty = automatic ranking.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'type' => [ 'best_selling', 'trending' ] ],
+			]
+		);
+
+		$this->add_control(
+			'days',
+			[
+				'label'       => esc_html__( 'Trending Days', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::NUMBER,
+				'default'     => 0,
+				'min'         => 0,
+				'max'         => 365,
+				'description' => esc_html__( 'Only products published within this window (0 = 30 days). Ignored when Custom Products are set.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'type' => 'trending' ],
+			]
+		);
+
+		$this->add_control(
+			'order_by',
+			[
+				'label'     => esc_html__( 'Sort Order', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'DESC',
+				'options'   => [
+					'DESC' => esc_html__( 'Newest First', 'hkdev-shop-elements' ),
+					'ASC'  => esc_html__( 'Oldest First', 'hkdev-shop-elements' ),
+				],
+				'condition' => [ 'type' => 'recent' ],
 			]
 		);
 
@@ -253,42 +310,13 @@ class Shop_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'days',
-			[
-				'label'       => esc_html__( 'Trending Days', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::NUMBER,
-				'default'     => 0,
-				'min'         => 0,
-				'max'         => 365,
-				'description' => esc_html__( 'Trending looks only at products published within this many days (0 = last 30 days). Ignored when Custom Products are selected.', 'hkdev-shop-elements' ),
-				'condition'   => [ 'type' => 'trending' ],
-			]
-		);
+		$this->end_controls_section();
 
-		$this->add_control(
-			'custom_products',
+		/* ---- Layout: AJAX tab filters ---- */
+		$this->start_controls_section(
+			'section_ajax_tabs',
 			[
-				'label'       => esc_html__( 'Custom Products', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT2,
-				'multiple'    => true,
-				'label_block' => true,
-				'options'     => Shop_Engine::product_options(),
-				'description' => esc_html__( 'Pick products manually for this section. They appear in the order you select. Leave empty to use automatic sales ranking (Best Selling / Trending).', 'hkdev-shop-elements' ),
-				'condition'   => [ 'type' => [ 'best_selling', 'trending' ] ],
-			]
-		);
-
-		$this->add_control(
-			'order_by',
-			[
-				'label'   => esc_html__( 'Order', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'DESC',
-				'options' => [
-					'DESC' => esc_html__( 'Newest First', 'hkdev-shop-elements' ),
-					'ASC'  => esc_html__( 'Oldest First', 'hkdev-shop-elements' ),
-				],
+				'label' => esc_html__( 'AJAX Tab Filters', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -337,17 +365,13 @@ class Shop_Widget extends Widget_Base {
 			]
 		);
 
-		$this->add_control(
-			'style',
+		$this->end_controls_section();
+
+		/* ---- Layout: Pagination ---- */
+		$this->start_controls_section(
+			'section_pagination',
 			[
-				'label'       => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'grid',
-				'options'     => [
-					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
-					'carousel' => esc_html__( 'Carousel / Slider', 'hkdev-shop-elements' ),
-				],
-				'description' => esc_html__( 'Carousel shows the slides, autoplay and arrow options in the Carousel section below.', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Pagination', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -360,7 +384,8 @@ class Shop_Widget extends Widget_Base {
 				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
 				'default'      => 'yes',
 				'return_value' => 'yes',
-				'description'  => esc_html__( 'Appends the next batch of products without reloading the page. Only appears when there are more products than the Item Limit.', 'hkdev-shop-elements' ),
+				'description'  => esc_html__( 'Appends the next batch without reloading. Hidden when no more products remain.', 'hkdev-shop-elements' ),
+				'condition'    => [ 'style' => 'grid' ],
 			]
 		);
 
@@ -370,14 +395,21 @@ class Shop_Widget extends Widget_Base {
 				'label'     => esc_html__( 'Load More Text', 'hkdev-shop-elements' ),
 				'type'      => Controls_Manager::TEXT,
 				'default'   => esc_html__( 'Load More', 'hkdev-shop-elements' ),
-				'condition' => [ 'load_more' => 'yes' ],
+				'condition' => [
+					'load_more' => 'yes',
+					'style'     => 'grid',
+				],
 			]
 		);
 
 		$this->end_controls_section();
 
-		$this->register_product_controls();
+		$this->register_carousel_controls();
+
 		$this->register_heading_controls();
+		$this->register_product_title_controls();
+		$this->register_product_image_controls( true );
+
 		$this->register_style_sections( '{{WRAPPER}} .hkdev-shop-wrapper' );
 	}
 
