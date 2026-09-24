@@ -3,7 +3,7 @@
  * HKDEV Footer Engine (HKDEV Shop Elements plugin).
  *
  * Renders a brand-matched site footer: brand blurb + contact details, quick
- * links menu, WooCommerce category links, newsletter form with social icons
+ * links menus (Quick Links + optional second menu column), newsletter form with social icons
  * and a bottom bar holding the payment badges and the copyright notice.
  * Self-contained – works with ANY theme + Elementor + WooCommerce.
  *
@@ -97,8 +97,7 @@ class Footer_Engine {
 			'menu_title'        => __( 'Quick Links', 'hkdev-shop-elements' ),
 			'show_categories'   => 'yes',
 			'categories_title'  => __( 'Categories', 'hkdev-shop-elements' ),
-			'categories'        => [],
-			'categories_limit'  => 6,
+			'categories_menu'   => '',
 			'show_newsletter'   => 'yes',
 			'newsletter_title'  => __( 'Newsletter', 'hkdev-shop-elements' ),
 			'newsletter_text'   => __( 'Subscribe to get special offers, free giveaways and once-in-a-lifetime deals.', 'hkdev-shop-elements' ),
@@ -378,76 +377,13 @@ class Footer_Engine {
 	}
 
 	/**
-	 * Product category terms for the footer column (manual pick or auto top-level).
+	 * Navigation menu markup for a footer link column.
 	 *
-	 * @param array $atts Footer render attributes.
-	 * @return \WP_Term[]
-	 */
-	private function footer_category_terms( $atts ) {
-		if ( 'yes' !== $atts['show_categories'] || ! taxonomy_exists( 'product_cat' ) ) {
-			return [];
-		}
-
-		$picked = isset( $atts['categories'] ) ? $atts['categories'] : [];
-		if ( is_string( $picked ) && '' !== trim( $picked ) ) {
-			$picked = array_map( 'trim', explode( ',', $picked ) );
-		}
-		if ( ! is_array( $picked ) ) {
-			$picked = [];
-		}
-
-		$picked = array_values(
-			array_filter(
-				array_map(
-					static function ( $item ) {
-						if ( is_numeric( $item ) ) {
-							return (string) absint( $item );
-						}
-						return sanitize_title( (string) $item );
-					},
-					$picked
-				)
-			)
-		);
-
-		if ( ! empty( $picked ) ) {
-			$terms = [];
-			foreach ( $picked as $ref ) {
-				$term = is_numeric( $ref )
-					? get_term( (int) $ref, 'product_cat' )
-					: get_term_by( 'slug', $ref, 'product_cat' );
-				if ( $term && ! is_wp_error( $term ) ) {
-					$terms[] = $term;
-				}
-			}
-			return $terms;
-		}
-
-		$cats = get_terms(
-			[
-				'taxonomy'   => 'product_cat',
-				'hide_empty' => true,
-				'parent'     => 0,
-				'number'     => absint( $atts['categories_limit'] ) ? absint( $atts['categories_limit'] ) : 6,
-				'orderby'    => 'name',
-				'order'      => 'ASC',
-			]
-		);
-
-		if ( is_wp_error( $cats ) ) {
-			return [];
-		}
-
-		return $cats;
-	}
-
-	/**
-	 * Navigation menu markup for the quick links column.
-	 *
-	 * @param string $menu Menu id/slug/name.
+	 * @param string $menu              Menu id/slug/name.
+	 * @param bool   $fallback_to_first When menu is empty, use the first registered menu.
 	 * @return string
 	 */
-	private function menu_html( $menu ) {
+	private function menu_html( $menu, $fallback_to_first = true ) {
 		$args = [
 			'echo'        => false,
 			'container'   => false,
@@ -458,12 +394,19 @@ class Footer_Engine {
 		];
 
 		if ( empty( $menu ) ) {
+			if ( ! $fallback_to_first ) {
+				return '';
+			}
 			$menus = wp_get_nav_menus();
 			if ( ! empty( $menus ) ) {
 				$args['menu'] = $menus[0]->term_id;
 			}
 		} else {
 			$args['menu'] = $menu;
+		}
+
+		if ( empty( $args['menu'] ) ) {
+			return '';
 		}
 
 		$html = wp_nav_menu( $args );
@@ -514,8 +457,14 @@ class Footer_Engine {
 		// ---- Quick links menu -------------------------------------------
 		$menu_html = $this->menu_html( $atts['menu'] );
 
-		// ---- Categories -------------------------------------------------
-		$cats = $this->footer_category_terms( $atts );
+		// ---- Second link column (custom menu, e.g. categories) ----------
+		$categories_menu_html = '';
+		if ( 'yes' === $atts['show_categories'] ) {
+			$categories_menu_html = $this->menu_html(
+				isset( $atts['categories_menu'] ) ? $atts['categories_menu'] : '',
+				false
+			);
+		}
 
 		// ---- Social links -----------------------------------------------
 		$socials = [
@@ -615,25 +564,13 @@ class Footer_Engine {
 							</div>
 						<?php endif; ?>
 
-						<!-- Categories -->
-						<?php if ( ! empty( $cats ) ) : ?>
+						<!-- Second menu column -->
+						<?php if ( $categories_menu_html ) : ?>
 							<div class="hkdev-footer-col">
 								<h3 class="hkdev-footer-title"><?php echo esc_html( $atts['categories_title'] ); ?></h3>
-								<ul class="hkdev-footer-links">
-									<?php foreach ( $cats as $cat ) : ?>
-										<?php
-										$footer_cat_link = get_term_link( $cat );
-										if ( is_wp_error( $footer_cat_link ) ) {
-											continue;
-										}
-										?>
-										<li>
-											<a href="<?php echo esc_url( $footer_cat_link ); ?>">
-												<?php echo esc_html( $cat->name ); ?>
-											</a>
-										</li>
-									<?php endforeach; ?>
-								</ul>
+								<nav class="hkdev-footer-nav" aria-label="<?php echo esc_attr( $atts['categories_title'] ); ?>">
+									<?php echo $categories_menu_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								</nav>
 							</div>
 						<?php endif; ?>
 
