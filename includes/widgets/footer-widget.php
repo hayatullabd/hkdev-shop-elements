@@ -16,7 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Shop_Engine;
 
 /**
  * Class Footer_Widget
@@ -205,7 +204,7 @@ class Footer_Widget extends Widget_Base {
 		$this->add_control(
 			'show_categories',
 			[
-				'label'        => esc_html__( 'Show Product Categories', 'hkdev-shop-elements' ),
+				'label'        => esc_html__( 'Show Second Link Column', 'hkdev-shop-elements' ),
 				'type'         => Controls_Manager::SWITCHER,
 				'return_value' => 'yes',
 				'default'      => 'yes',
@@ -214,39 +213,24 @@ class Footer_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'categories_menu',
+			[
+				'label'       => esc_html__( 'Categories Menu', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => '',
+				'options'     => $this->get_menus_options_for_column(),
+				'description' => esc_html__( 'Build the menu under Appearance → Menus, then select it here.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'show_categories' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
 			'categories_title',
 			[
-				'label'     => esc_html__( 'Categories Title', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Column Title', 'hkdev-shop-elements' ),
 				'type'      => Controls_Manager::TEXT,
 				'default'   => esc_html__( 'Categories', 'hkdev-shop-elements' ),
 				'condition' => [ 'show_categories' => 'yes' ],
-			]
-		);
-
-		$this->add_control(
-			'categories',
-			[
-				'label'       => esc_html__( 'Select Categories', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT2,
-				'multiple'    => true,
-				'label_block' => true,
-				'default'     => [],
-				'options'     => Shop_Engine::term_options( 'product_cat' ),
-				'description' => esc_html__( 'Pick categories manually (like Quick Links). Leave empty to auto-list top-level categories.', 'hkdev-shop-elements' ),
-				'condition'   => [ 'show_categories' => 'yes' ],
-			]
-		);
-
-		$this->add_control(
-			'categories_limit',
-			[
-				'label'       => esc_html__( 'Auto Categories Limit', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::NUMBER,
-				'default'     => 6,
-				'min'         => 1,
-				'max'         => 30,
-				'description' => esc_html__( 'Used only when no categories are selected above.', 'hkdev-shop-elements' ),
-				'condition'   => [ 'show_categories' => 'yes' ],
 			]
 		);
 
@@ -558,6 +542,24 @@ class Footer_Widget extends Widget_Base {
 	}
 
 	/**
+	 * Menu list for the second column (no automatic default).
+	 *
+	 * @return array<string,string>
+	 */
+	private function get_menus_options_for_column() {
+		$options = [ '' => esc_html__( '— Select a menu —', 'hkdev-shop-elements' ) ];
+
+		$menus = wp_get_nav_menus();
+		if ( ! empty( $menus ) ) {
+			foreach ( $menus as $menu ) {
+				$options[ $menu->term_id ] = $menu->name;
+			}
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Render the widget output.
 	 *
 	 * @return void
@@ -581,8 +583,7 @@ class Footer_Widget extends Widget_Base {
 			'menu_title'        => isset( $settings['menu_title'] ) ? $settings['menu_title'] : '',
 			'show_categories'   => ( isset( $settings['show_categories'] ) && 'yes' === $settings['show_categories'] ) ? 'yes' : 'no',
 			'categories_title'  => isset( $settings['categories_title'] ) ? $settings['categories_title'] : '',
-			'categories'        => ( isset( $settings['categories'] ) && is_array( $settings['categories'] ) ) ? $settings['categories'] : [],
-			'categories_limit'  => isset( $settings['categories_limit'] ) ? absint( $settings['categories_limit'] ) : 6,
+			'categories_menu'   => isset( $settings['categories_menu'] ) ? $settings['categories_menu'] : '',
 			'show_newsletter'   => ( isset( $settings['show_newsletter'] ) && 'yes' === $settings['show_newsletter'] ) ? 'yes' : 'no',
 			'newsletter_title'  => isset( $settings['newsletter_title'] ) ? $settings['newsletter_title'] : '',
 			'newsletter_text'   => isset( $settings['newsletter_text'] ) ? $settings['newsletter_text'] : '',
