@@ -926,14 +926,21 @@ class Header_Engine {
 			'menu_class'  => $class,
 			'menu_id'     => '',
 			'fallback_cb' => false,
-			'depth'       => 3,
+			'depth'       => 0,
 		];
 
 		if ( ! empty( $menu ) ) {
 			$args['menu'] = $menu;
 		}
 
+		// Themes often force depth=1 on every menu, which drops sub items.
+		$keep_children = static function ( $nav_args ) {
+			$nav_args['depth'] = 0;
+			return $nav_args;
+		};
+		add_filter( 'wp_nav_menu_args', $keep_children, PHP_INT_MAX );
 		$html = wp_nav_menu( $args );
+		remove_filter( 'wp_nav_menu_args', $keep_children, PHP_INT_MAX );
 
 		return $html ? $html : '';
 	}
