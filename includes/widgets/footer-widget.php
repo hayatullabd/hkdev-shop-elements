@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
+use HkdevShopElements\Includes\Shop_Engine;
 
 /**
  * Class Footer_Widget
@@ -223,14 +224,29 @@ class Footer_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
+			'categories',
+			[
+				'label'       => esc_html__( 'Select Categories', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT2,
+				'multiple'    => true,
+				'label_block' => true,
+				'default'     => [],
+				'options'     => Shop_Engine::term_options( 'product_cat' ),
+				'description' => esc_html__( 'Pick categories manually (like Quick Links). Leave empty to auto-list top-level categories.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'show_categories' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
 			'categories_limit',
 			[
-				'label'     => esc_html__( 'Number of Categories', 'hkdev-shop-elements' ),
-				'type'      => Controls_Manager::NUMBER,
-				'default'   => 6,
-				'min'       => 1,
-				'max'       => 30,
-				'condition' => [ 'show_categories' => 'yes' ],
+				'label'       => esc_html__( 'Auto Categories Limit', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::NUMBER,
+				'default'     => 6,
+				'min'         => 1,
+				'max'         => 30,
+				'description' => esc_html__( 'Used only when no categories are selected above.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'show_categories' => 'yes' ],
 			]
 		);
 
@@ -565,6 +581,7 @@ class Footer_Widget extends Widget_Base {
 			'menu_title'        => isset( $settings['menu_title'] ) ? $settings['menu_title'] : '',
 			'show_categories'   => ( isset( $settings['show_categories'] ) && 'yes' === $settings['show_categories'] ) ? 'yes' : 'no',
 			'categories_title'  => isset( $settings['categories_title'] ) ? $settings['categories_title'] : '',
+			'categories'        => ( isset( $settings['categories'] ) && is_array( $settings['categories'] ) ) ? $settings['categories'] : [],
 			'categories_limit'  => isset( $settings['categories_limit'] ) ? absint( $settings['categories_limit'] ) : 6,
 			'show_newsletter'   => ( isset( $settings['show_newsletter'] ) && 'yes' === $settings['show_newsletter'] ) ? 'yes' : 'no',
 			'newsletter_title'  => isset( $settings['newsletter_title'] ) ? $settings['newsletter_title'] : '',

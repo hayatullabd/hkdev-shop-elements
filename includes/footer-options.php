@@ -165,6 +165,7 @@ final class Footer_Options {
 				'menu_title'        => $text( 'hkdev_ft_menu_title' ),
 				'show_categories'   => $yes_no( 'hkdev_ft_show_categories' ),
 				'categories_title'  => $text( 'hkdev_ft_categories_title' ),
+				'categories'        => [],
 				'categories_limit'  => isset( $_POST['hkdev_ft_categories_limit'] ) ? absint( wp_unslash( $_POST['hkdev_ft_categories_limit'] ) ) : 6, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				'show_newsletter'   => $yes_no( 'hkdev_ft_show_newsletter' ),
 				'newsletter_title'  => $text( 'hkdev_ft_newsletter_title' ),
@@ -229,6 +230,19 @@ final class Footer_Options {
 				$config['categories_limit'] = 6;
 			}
 
+			if ( isset( $_POST['hkdev_ft_categories'] ) && is_array( $_POST['hkdev_ft_categories'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$config['categories'] = array_values(
+					array_filter(
+						array_map(
+							static function ( $slug ) {
+								return sanitize_title( wp_unslash( (string) $slug ) );
+							},
+							wp_unslash( $_POST['hkdev_ft_categories'] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+						)
+					)
+				);
+			}
+
 			update_option( Footer_Engine::CONFIG_OPTION, $config );
 			$saved_notice = true;
 		}
@@ -241,6 +255,21 @@ final class Footer_Options {
 
 		$config   = $engine->get_config();
 		$menus    = wp_get_nav_menus();
+		$cat_terms = [];
+		if ( taxonomy_exists( 'product_cat' ) ) {
+			$cat_terms = get_terms(
+				[
+					'taxonomy'   => 'product_cat',
+					'hide_empty' => false,
+					'orderby'    => 'name',
+					'order'      => 'ASC',
+				]
+			);
+			if ( is_wp_error( $cat_terms ) ) {
+				$cat_terms = [];
+			}
+		}
+		$selected_cats = isset( $config['categories'] ) && is_array( $config['categories'] ) ? $config['categories'] : [];
 		$subs     = $engine->get_subscribers();
 		$subs_cnt = count( $subs );
 
@@ -451,7 +480,7 @@ final class Footer_Options {
 								<div class="hd-field">
 									<div class="hd-field-info">
 										<span class="hd-field-title"><?php esc_html_e( 'Product Categories', 'hkdev-shop-elements' ); ?></span>
-										<p class="hd-field-help"><?php esc_html_e( 'List your top WooCommerce categories.', 'hkdev-shop-elements' ); ?></p>
+										<p class="hd-field-help"><?php esc_html_e( 'Show a WooCommerce categories column in the footer.', 'hkdev-shop-elements' ); ?></p>
 									</div>
 									<div class="hd-field-input">
 										<label class="hd-switch">
@@ -463,8 +492,31 @@ final class Footer_Options {
 
 								<div class="hd-field">
 									<div class="hd-field-info">
+										<label class="hd-field-title" for="hkdev-ft-categories"><?php esc_html_e( 'Select Categories', 'hkdev-shop-elements' ); ?></label>
+										<p class="hd-field-help"><?php esc_html_e( 'Pick categories manually (like Quick Links). Hold Ctrl/Cmd to select multiple. Leave empty to auto-list top-level categories using the limit below.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input">
+										<select id="hkdev-ft-categories" name="hkdev_ft_categories[]" multiple size="8" class="widefat">
+											<?php foreach ( $cat_terms as $cat_term ) : ?>
+												<option value="<?php echo esc_attr( $cat_term->slug ); ?>" <?php selected( in_array( $cat_term->slug, $selected_cats, true ) || in_array( (string) $cat_term->term_id, $selected_cats, true ), true ); ?>>
+													<?php
+													echo esc_html(
+														str_repeat( '— ', max( 0, (int) $cat_term->parent ? 1 : 0 ) ) . $cat_term->name
+													);
+													?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+										<?php if ( empty( $cat_terms ) ) : ?>
+											<p class="hd-field-help hd-field-help-inline"><?php esc_html_e( 'No product categories found. Add categories in Products → Categories first.', 'hkdev-shop-elements' ); ?></p>
+										<?php endif; ?>
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
 										<span class="hd-field-title"><?php esc_html_e( 'Categories Title & Limit', 'hkdev-shop-elements' ); ?></span>
-										<p class="hd-field-help"><?php esc_html_e( 'Heading above the list and how many categories to show.', 'hkdev-shop-elements' ); ?></p>
+										<p class="hd-field-help"><?php esc_html_e( 'Column heading. Limit applies only when no categories are selected above.', 'hkdev-shop-elements' ); ?></p>
 									</div>
 									<div class="hd-field-input">
 										<div class="hd-input-group">

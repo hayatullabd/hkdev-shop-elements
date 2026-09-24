@@ -97,6 +97,7 @@ class Footer_Engine {
 			'menu_title'        => __( 'Quick Links', 'hkdev-shop-elements' ),
 			'show_categories'   => 'yes',
 			'categories_title'  => __( 'Categories', 'hkdev-shop-elements' ),
+			'categories'        => [],
 			'categories_limit'  => 6,
 			'show_newsletter'   => 'yes',
 			'newsletter_title'  => __( 'Newsletter', 'hkdev-shop-elements' ),
@@ -377,6 +378,70 @@ class Footer_Engine {
 	}
 
 	/**
+	 * Product category terms for the footer column (manual pick or auto top-level).
+	 *
+	 * @param array $atts Footer render attributes.
+	 * @return \WP_Term[]
+	 */
+	private function footer_category_terms( $atts ) {
+		if ( 'yes' !== $atts['show_categories'] || ! taxonomy_exists( 'product_cat' ) ) {
+			return [];
+		}
+
+		$picked = isset( $atts['categories'] ) ? $atts['categories'] : [];
+		if ( is_string( $picked ) && '' !== trim( $picked ) ) {
+			$picked = array_map( 'trim', explode( ',', $picked ) );
+		}
+		if ( ! is_array( $picked ) ) {
+			$picked = [];
+		}
+
+		$picked = array_values(
+			array_filter(
+				array_map(
+					static function ( $item ) {
+						if ( is_numeric( $item ) ) {
+							return (string) absint( $item );
+						}
+						return sanitize_title( (string) $item );
+					},
+					$picked
+				)
+			)
+		);
+
+		if ( ! empty( $picked ) ) {
+			$terms = [];
+			foreach ( $picked as $ref ) {
+				$term = is_numeric( $ref )
+					? get_term( (int) $ref, 'product_cat' )
+					: get_term_by( 'slug', $ref, 'product_cat' );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$terms[] = $term;
+				}
+			}
+			return $terms;
+		}
+
+		$cats = get_terms(
+			[
+				'taxonomy'   => 'product_cat',
+				'hide_empty' => true,
+				'parent'     => 0,
+				'number'     => absint( $atts['categories_limit'] ) ? absint( $atts['categories_limit'] ) : 6,
+				'orderby'    => 'name',
+				'order'      => 'ASC',
+			]
+		);
+
+		if ( is_wp_error( $cats ) ) {
+			return [];
+		}
+
+		return $cats;
+	}
+
+	/**
 	 * Navigation menu markup for the quick links column.
 	 *
 	 * @param string $menu Menu id/slug/name.
@@ -450,22 +515,7 @@ class Footer_Engine {
 		$menu_html = $this->menu_html( $atts['menu'] );
 
 		// ---- Categories -------------------------------------------------
-		$cats = [];
-		if ( 'yes' === $atts['show_categories'] && taxonomy_exists( 'product_cat' ) ) {
-			$cats = get_terms(
-				[
-					'taxonomy'   => 'product_cat',
-					'hide_empty' => true,
-					'parent'     => 0,
-					'number'     => absint( $atts['categories_limit'] ) ? absint( $atts['categories_limit'] ) : 6,
-					'orderby'    => 'name',
-					'order'      => 'ASC',
-				]
-			);
-			if ( is_wp_error( $cats ) ) {
-				$cats = [];
-			}
-		}
+		$cats = $this->footer_category_terms( $atts );
 
 		// ---- Social links -----------------------------------------------
 		$socials = [
