@@ -622,8 +622,11 @@
 				return;
 			}
 
-			var rect = $item[0].getBoundingClientRect();
-			var panelWidth = Math.max(220, $headerFlyout.outerWidth() || 220);
+			var link = $item.children('a')[0] || $item[0];
+			var rect = link.getBoundingClientRect();
+			var bar = $item.closest('.hkdev-header-navbar')[0];
+			var barBottom = bar ? bar.getBoundingClientRect().bottom : rect.bottom;
+			var panelWidth = Math.max(230, $headerFlyout.outerWidth() || 230);
 			var left = rect.left;
 
 			if (left + panelWidth > window.innerWidth - 12) {
@@ -631,17 +634,22 @@
 			}
 
 			$headerFlyout.css({
-				top: Math.round(rect.bottom - 1) + 'px',
+				top: Math.round(barBottom) + 'px',
 				left: Math.round(left) + 'px'
 			});
 		}
 
+		function navbarIsVisible() {
+			var $bar = $('.hkdev-header-navbar').first();
+			return $bar.length && $bar.is(':visible');
+		}
+
 		function openHeaderFlyout($item) {
-			if (!window.matchMedia('(min-width: 1025px)').matches) {
+			if (!navbarIsVisible()) {
 				return;
 			}
 
-			var $sub = $item.children('.sub-menu, .children').first();
+			var $sub = $item.children('.sub-menu, .children, ul').first();
 
 			if (!$sub.length || !$sub.children('li').length) {
 				closeHeaderFlyout();
@@ -650,7 +658,10 @@
 
 			closeHeaderFlyout();
 			$headerFlyoutItem = $item.addClass('is-flyout-open');
-			$headerFlyout = $sub.clone(false, false).addClass('hkdev-header-flyout').appendTo(document.body);
+			$headerFlyout = $sub.clone(false, false);
+			$headerFlyout.removeClass('sub-menu children').addClass('hkdev-header-flyout');
+			$headerFlyout.find('ul').removeClass('sub-menu children').addClass('hkdev-header-flyout-sub');
+			$headerFlyout.appendTo(document.body);
 			placeHeaderFlyout($item);
 		}
 
@@ -658,8 +669,19 @@
 			if (headerFlyoutTimer) {
 				window.clearTimeout(headerFlyoutTimer);
 			}
-			headerFlyoutTimer = window.setTimeout(closeHeaderFlyout, 160);
+			headerFlyoutTimer = window.setTimeout(closeHeaderFlyout, 350);
 		}
+
+		$(document).on('mouseenter', '.hkdev-header-flyout li', function () {
+			var $li = $(this);
+			var $nested = $li.children('.hkdev-header-flyout-sub').first();
+
+			$li.siblings().children('.hkdev-header-flyout-sub').removeClass('is-open');
+
+			if ($nested.length) {
+				$nested.addClass('is-open');
+			}
+		});
 
 		$(document).on('mouseenter', '.hkdev-header-nav .hkdev-header-menu > li', function () {
 			var $item = $(this);
