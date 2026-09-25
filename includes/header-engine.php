@@ -850,6 +850,15 @@ class Header_Engine {
 			$offset = 120;
 		}
 
+		$float_cart_inline_style = '--hkdev-float-cart-offset:' . $offset . 'px;';
+		if ( 'middle' === $float_pos ) {
+			$float_cart_inline_style .= 'top:50% !important;bottom:auto !important;transform:translateY(-50%) !important;';
+		} elseif ( 'bottom' === $float_pos || ( 'custom' === $float_pos && 'bottom' === $anchor ) ) {
+			$float_cart_inline_style .= 'top:auto !important;bottom:' . $offset . 'px !important;transform:translateY(0) !important;';
+		} else {
+			$float_cart_inline_style .= 'top:' . $offset . 'px !important;bottom:auto !important;transform:translateY(0) !important;';
+		}
+
 		if ( ! $this->mini_cart_printed ) {
 			echo $this->mini_cart_drawer_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
@@ -861,7 +870,7 @@ class Header_Engine {
 			data-hide-empty="<?php echo esc_attr( $hide_empty ); ?>"
 			data-pos="<?php echo esc_attr( $float_pos ); ?>"
 			data-custom-anchor="<?php echo esc_attr( $anchor ); ?>"
-			style="--hkdev-float-cart-offset:<?php echo esc_attr( $offset ); ?>px"
+			style="<?php echo esc_attr( $float_cart_inline_style ); ?>"
 			aria-label="<?php esc_attr_e( 'Cart', 'hkdev-shop-elements' ); ?>"
 		>
 			<span class="hkdev-float-cart-top">
