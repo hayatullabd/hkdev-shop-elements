@@ -1586,6 +1586,7 @@ body.hkdev-header-locked {
 .hkdev-float-cart {
     position: fixed !important;
     top: 50% !important;
+    bottom: auto !important;
     right: 0 !important;
     z-index: 9990 !important;
     display: flex !important;
@@ -1601,6 +1602,42 @@ body.hkdev-header-locked {
 
 .hkdev-float-cart:hover {
     transform: translateY(-50%) translateX(-5px) !important;
+}
+
+.hkdev-float-cart[data-pos="top"] {
+    top: var(--hkdev-float-cart-offset, 120px) !important;
+    bottom: auto !important;
+    transform: translateY(0) !important;
+}
+
+.hkdev-float-cart[data-pos="top"]:hover {
+    transform: translateX(-5px) !important;
+}
+
+.hkdev-float-cart[data-pos="bottom"] {
+    top: auto !important;
+    bottom: var(--hkdev-float-cart-offset, 120px) !important;
+    transform: translateY(0) !important;
+}
+
+.hkdev-float-cart[data-pos="bottom"]:hover {
+    transform: translateX(-5px) !important;
+}
+
+.hkdev-float-cart[data-pos="custom"][data-custom-anchor="top"] {
+    top: var(--hkdev-float-cart-offset, 120px) !important;
+    bottom: auto !important;
+    transform: translateY(0) !important;
+}
+
+.hkdev-float-cart[data-pos="custom"][data-custom-anchor="bottom"] {
+    top: auto !important;
+    bottom: var(--hkdev-float-cart-offset, 120px) !important;
+    transform: translateY(0) !important;
+}
+
+.hkdev-float-cart[data-pos="custom"]:hover {
+    transform: translateX(-5px) !important;
 }
 
 .hkdev-float-cart[data-hide-empty="1"].is-empty {

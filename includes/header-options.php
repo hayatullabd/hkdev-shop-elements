@@ -168,6 +168,9 @@ final class Header_Options {
 				'mini_cart'        => $yes_no( 'hkdev_hd_mini_cart' ),
 				'float_cart'       => $yes_no( 'hkdev_hd_float_cart' ),
 				'float_cart_empty' => $yes_no( 'hkdev_hd_float_cart_empty' ),
+				'float_cart_pos'   => $choice( 'hkdev_hd_float_cart_pos', [ 'middle', 'top', 'bottom', 'custom' ], 'middle' ),
+				'float_cart_anchor' => $choice( 'hkdev_hd_float_cart_anchor', [ 'top', 'bottom' ], 'top' ),
+				'float_cart_offset' => isset( $_POST['hkdev_hd_float_cart_offset'] ) ? absint( wp_unslash( $_POST['hkdev_hd_float_cart_offset'] ) ) : 120, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// ---- Appearance ----
 				'st_font'          => $font_stack( 'hkdev_hd_st_font' ),
@@ -559,6 +562,44 @@ final class Header_Options {
 											<input type="checkbox" name="hkdev_hd_float_cart_empty" value="yes" <?php checked( 'yes', $config['float_cart_empty'] ); ?>>
 											<span class="hd-switch-track" aria-hidden="true"></span>
 										</label>
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
+										<label class="hd-field-title" for="hkdev-hd-float-cart-pos"><?php esc_html_e( 'Floating Cart Position', 'hkdev-shop-elements' ); ?></label>
+										<p class="hd-field-help"><?php esc_html_e( 'Move only the floating cart block up, down, or use a custom offset.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input">
+										<select id="hkdev-hd-float-cart-pos" name="hkdev_hd_float_cart_pos">
+											<option value="middle" <?php selected( 'middle', $config['float_cart_pos'] ); ?>><?php esc_html_e( 'Middle', 'hkdev-shop-elements' ); ?></option>
+											<option value="top" <?php selected( 'top', $config['float_cart_pos'] ); ?>><?php esc_html_e( 'Up (Top)', 'hkdev-shop-elements' ); ?></option>
+											<option value="bottom" <?php selected( 'bottom', $config['float_cart_pos'] ); ?>><?php esc_html_e( 'Down (Bottom)', 'hkdev-shop-elements' ); ?></option>
+											<option value="custom" <?php selected( 'custom', $config['float_cart_pos'] ); ?>><?php esc_html_e( 'Custom', 'hkdev-shop-elements' ); ?></option>
+										</select>
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
+										<label class="hd-field-title" for="hkdev-hd-float-cart-anchor"><?php esc_html_e( 'Custom Anchor', 'hkdev-shop-elements' ); ?></label>
+										<p class="hd-field-help"><?php esc_html_e( 'When Custom is selected, choose whether offset starts from top or bottom.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input">
+										<select id="hkdev-hd-float-cart-anchor" name="hkdev_hd_float_cart_anchor">
+											<option value="top" <?php selected( 'top', $config['float_cart_anchor'] ); ?>><?php esc_html_e( 'From Top', 'hkdev-shop-elements' ); ?></option>
+											<option value="bottom" <?php selected( 'bottom', $config['float_cart_anchor'] ); ?>><?php esc_html_e( 'From Bottom', 'hkdev-shop-elements' ); ?></option>
+										</select>
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
+										<label class="hd-field-title" for="hkdev-hd-float-cart-offset"><?php esc_html_e( 'Custom Offset (px)', 'hkdev-shop-elements' ); ?></label>
+										<p class="hd-field-help"><?php esc_html_e( 'Distance in pixels for Top/Bottom/Custom positions.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input">
+										<input type="number" class="hd-compact" id="hkdev-hd-float-cart-offset" name="hkdev_hd_float_cart_offset" value="<?php echo esc_attr( absint( $config['float_cart_offset'] ) ); ?>" min="1" max="1200">
 									</div>
 								</div>
 

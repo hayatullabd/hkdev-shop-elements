@@ -120,6 +120,9 @@ class Header_Engine {
 			'mini_cart'        => 'yes',
 			'float_cart'       => 'yes',
 			'float_cart_empty' => 'no',
+			'float_cart_pos'   => 'middle',
+			'float_cart_anchor' => 'top',
+			'float_cart_offset' => 120,
 
 			// ---- Appearance (edited from the Header admin → Appearance) ----
 			// Empty/0 means "keep the plugin default". Size values are per device:
@@ -838,6 +841,14 @@ class Header_Engine {
 
 		$config     = $this->get_config();
 		$hide_empty = ( 'yes' === $config['float_cart_empty'] ) ? '0' : '1';
+		$float_pos  = isset( $config['float_cart_pos'] ) ? (string) $config['float_cart_pos'] : 'middle';
+		$float_pos  = in_array( $float_pos, [ 'middle', 'top', 'bottom', 'custom' ], true ) ? $float_pos : 'middle';
+		$anchor     = isset( $config['float_cart_anchor'] ) ? (string) $config['float_cart_anchor'] : 'top';
+		$anchor     = in_array( $anchor, [ 'top', 'bottom' ], true ) ? $anchor : 'top';
+		$offset     = isset( $config['float_cart_offset'] ) ? absint( $config['float_cart_offset'] ) : 120;
+		if ( $offset < 1 ) {
+			$offset = 120;
+		}
 
 		if ( ! $this->mini_cart_printed ) {
 			echo $this->mini_cart_drawer_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -848,6 +859,9 @@ class Header_Engine {
 			href="<?php echo esc_url( wc_get_cart_url() ); ?>"
 			data-mini-cart="<?php echo ( 'yes' === $config['mini_cart'] ) ? '1' : '0'; ?>"
 			data-hide-empty="<?php echo esc_attr( $hide_empty ); ?>"
+			data-pos="<?php echo esc_attr( $float_pos ); ?>"
+			data-custom-anchor="<?php echo esc_attr( $anchor ); ?>"
+			style="--hkdev-float-cart-offset:<?php echo esc_attr( $offset ); ?>px"
 			aria-label="<?php esc_attr_e( 'Cart', 'hkdev-shop-elements' ); ?>"
 		>
 			<span class="hkdev-float-cart-top">
