@@ -150,6 +150,7 @@ final class Header_Options {
 				'logo'             => $url( 'hkdev_hd_logo' ),
 				'logo_width'       => isset( $_POST['hkdev_hd_logo_width'] ) ? absint( wp_unslash( $_POST['hkdev_hd_logo_width'] ) ) : 150, // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				'menu'             => $text( 'hkdev_hd_menu' ),
+				'mobile_menu'      => $text( 'hkdev_hd_mobile_menu' ),
 				'sticky'           => $yes_no( 'hkdev_hd_sticky' ),
 				'hide_desk'        => $choice( 'hkdev_hd_hide_desk', [ 'full', 'top', 'none' ], 'full' ),
 				'hide_mobile'      => $choice( 'hkdev_hd_hide_mobile', [ 'full', 'top', 'none' ], 'full' ),
@@ -348,6 +349,24 @@ final class Header_Options {
 											<option value=""><?php esc_html_e( '— Default —', 'hkdev-shop-elements' ); ?></option>
 											<?php foreach ( $menus as $menu ) : ?>
 												<option value="<?php echo esc_attr( $menu->term_id ); ?>" <?php selected( (string) $config['menu'], (string) $menu->term_id ); ?>><?php echo esc_html( $menu->name ); ?></option>
+											<?php endforeach; ?>
+										</select>
+										<?php if ( empty( $menus ) ) : ?>
+											<p class="hd-field-help hd-field-help-inline"><?php esc_html_e( 'No menu found. Create one under Appearance → Menus first.', 'hkdev-shop-elements' ); ?></p>
+										<?php endif; ?>
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
+										<label class="hd-field-title" for="hkdev-hd-mobile-menu"><?php esc_html_e( 'Mobile Panel Menu (3-dash)', 'hkdev-shop-elements' ); ?></label>
+										<p class="hd-field-help"><?php esc_html_e( 'Menu shown inside the mobile hamburger panel. Leave as Same as Header Menu to reuse the main menu.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input">
+										<select id="hkdev-hd-mobile-menu" name="hkdev_hd_mobile_menu">
+											<option value=""><?php esc_html_e( '— Same as Header Menu —', 'hkdev-shop-elements' ); ?></option>
+											<?php foreach ( $menus as $menu ) : ?>
+												<option value="<?php echo esc_attr( $menu->term_id ); ?>" <?php selected( (string) $config['mobile_menu'], (string) $menu->term_id ); ?>><?php echo esc_html( $menu->name ); ?></option>
 											<?php endforeach; ?>
 										</select>
 										<?php if ( empty( $menus ) ) : ?>

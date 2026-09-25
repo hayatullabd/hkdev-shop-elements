@@ -102,6 +102,7 @@ class Header_Engine {
 			'logo'             => '',
 			'logo_width'       => 150,
 			'menu'             => '',
+			'mobile_menu'      => '',
 			'sticky'           => 'yes',
 			'hide_desk'        => 'full',
 			'hide_mobile'      => 'full',
@@ -1005,7 +1006,14 @@ class Header_Engine {
 		$email         = trim( (string) $atts['email'] );
 
 		// ---- Menu -------------------------------------------------------
-		$menu_html = ( 'yes' === $atts['show_menu'] ) ? $this->menu_html( $atts['menu'], 'hkdev-header-menu' ) : '';
+		$desktop_menu = trim( (string) $atts['menu'] );
+		$mobile_menu  = isset( $atts['mobile_menu'] ) ? trim( (string) $atts['mobile_menu'] ) : '';
+		if ( '' === $mobile_menu ) {
+			$mobile_menu = $desktop_menu;
+		}
+
+		$menu_html        = ( 'yes' === $atts['show_menu'] ) ? $this->menu_html( $desktop_menu, 'hkdev-header-menu' ) : '';
+		$panel_menu_html  = ( 'yes' === $atts['show_menu'] ) ? $this->menu_html( $mobile_menu, 'hkdev-header-menu hkdev-header-panel-menu' ) : '';
 
 		// ---- Cart -------------------------------------------------------
 		$cart_url   = function_exists( 'wc_get_cart_url' ) ? wc_get_cart_url() : home_url( '/' );
@@ -1200,6 +1208,12 @@ class Header_Engine {
 				<div class="hkdev-header-panel-search">
 					<?php echo $this->search_form( 'is-panel' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
+			<?php endif; ?>
+
+			<?php if ( $panel_menu_html ) : ?>
+				<nav class="hkdev-header-panel-nav" aria-label="<?php esc_attr_e( 'Mobile menu', 'hkdev-shop-elements' ); ?>">
+					<?php echo $panel_menu_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+				</nav>
 			<?php endif; ?>
 
 			<div class="hkdev-header-panel-links">
