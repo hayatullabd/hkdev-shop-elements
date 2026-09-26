@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
+use HkdevShopElements\Includes\Core\ShopEngine;
 
 /**
  * Class Related_Widget
@@ -126,6 +127,32 @@ class Related_Widget extends Widget_Base {
 		$this->end_controls_section();
 
 		$this->start_controls_section(
+			'section_presentation',
+			[
+				'label' => esc_html__( 'Presentation', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->register_cards_per_view_controls( '4' );
+
+		$this->add_control(
+			'style',
+			[
+				'label'   => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'grid',
+				'options' => [
+					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
+					'carousel' => esc_html__( 'Carousel', 'hkdev-shop-elements' ),
+				],
+			]
+		);
+
+		$this->register_design_controls();
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
 			'section_query',
 			[
 				'label' => esc_html__( 'Query', 'hkdev-shop-elements' ),
@@ -153,31 +180,6 @@ class Related_Widget extends Widget_Base {
 			]
 		);
 
-		$this->register_cards_per_view_controls( '4' );
-
-		$this->add_control(
-			'image_size',
-			[
-				'label'   => esc_html__( 'Image Size', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'woocommerce_thumbnail',
-				'options' => $this->hkdev_image_size_options(),
-			]
-		);
-
-		$this->add_control(
-			'style',
-			[
-				'label'   => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'grid',
-				'options' => [
-					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
-					'carousel' => esc_html__( 'Carousel', 'hkdev-shop-elements' ),
-				],
-			]
-		);
-
 		$this->add_control(
 			'fallback',
 			[
@@ -193,8 +195,25 @@ class Related_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
-		$this->register_product_controls();
+		$this->register_product_controls( true, true );
 		$this->register_style_sections();
+		$this->register_carousel_style_controls();
+
+		$this->start_controls_section(
+			'hkdev_style_related_heading',
+			[
+				'label'     => esc_html__( 'Related Heading', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'show_title' => 'yes' ],
+			]
+		);
+
+		$this->hkdev_typography( 'sk_rel_heading', esc_html__( 'Heading Typography', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-related-heading' );
+		$this->hkdev_color( 'sk_rel_heading_color', esc_html__( 'Heading Color', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-related-heading', 'color' );
+		$this->hkdev_color( 'sk_rel_heading_accent', esc_html__( 'Accent Bar', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-related-heading::before', 'background-color' );
+		$this->hkdev_dimensions( 'sk_rel_heading_margin', esc_html__( 'Heading Margin', 'hkdev-shop-elements' ), '{{WRAPPER}} .hkdev-related-heading', 'margin' );
+
+		$this->end_controls_section();
 	}
 
 	/**
@@ -222,22 +241,25 @@ class Related_Widget extends Widget_Base {
 
 		$cols = $this->get_cards_per_view( $settings );
 
-		$atts = [
-			'limit'            => $limit,
-			'columns'          => (string) $cols['desktop'],
-			'columns_tablet'   => (string) $cols['tablet'],
-			'columns_mobile'   => (string) $cols['mobile'],
-			'image_size'       => isset( $settings['image_size'] ) ? sanitize_key( $settings['image_size'] ) : 'woocommerce_thumbnail',
-			'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
-			'show_tabs'        => 'no',
-			'include_children' => 'yes',
-			'type'             => 'recent',
-			'carousel'         => $this->get_carousel_config( $settings ),
-			'title_lines'      => $this->get_title_lines( $settings ),
-			'hover_img'        => $this->get_hover_img( $settings ),
-		];
+		$atts = array_merge(
+			$this->get_design_atts( $settings ),
+			$this->get_image_atts( $settings ),
+			[
+				'limit'            => $limit,
+				'columns'          => (string) $cols['desktop'],
+				'columns_tablet'   => (string) $cols['tablet'],
+				'columns_mobile'   => (string) $cols['mobile'],
+				'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
+				'show_tabs'        => 'no',
+				'include_children' => 'yes',
+				'type'             => 'recent',
+				'carousel'         => $this->get_carousel_config( $settings ),
+				'title_lines'      => $this->get_title_lines( $settings ),
+				'hover_img'        => $this->get_hover_img( $settings ),
+			]
+		);
 
-		$related_ids = \HkdevShopElements\Includes\Shop_Engine::instance()->get_related_product_ids( $product_id, $limit );
+		$related_ids = ShopEngine::instance()->get_related_product_ids( $product_id, $limit );
 
 		if ( ! empty( $related_ids ) ) {
 			$atts['product_ids'] = implode( ',', $related_ids );
@@ -248,12 +270,12 @@ class Related_Widget extends Widget_Base {
 			return;
 		}
 
-		$grid = \HkdevShopElements\Includes\Shop_Engine::instance()->master_shop_shortcode( $atts );
+		$grid = ShopEngine::instance()->master_shop_shortcode( $atts );
 
 		$show_title = isset( $settings['show_title'] ) && 'yes' === $settings['show_title'];
 		$title      = isset( $settings['title'] ) ? trim( (string) $settings['title'] ) : '';
 
-		echo '<div class="hkdev-related-wrapper">';
+		echo '<div class="hkdev-related-wrapper" style="' . esc_attr( ShopEngine::design_style_attr( $atts ) ) . '" data-card-preset="' . esc_attr( $atts['card_preset'] ) . '" data-card-theme="' . esc_attr( $atts['card_theme'] ) . '" data-font-mode="' . esc_attr( $atts['font_mode'] ) . '">';
 		if ( $show_title && '' !== $title ) {
 			echo '<h2 class="hkdev-related-heading">' . esc_html( $title ) . '</h2>';
 		}

@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Catalog_Engine;
+use HkdevShopElements\Includes\Core\CatalogEngine;
 
 /**
  * Class Catalog_Widget
@@ -116,6 +116,8 @@ class Catalog_Widget extends Widget_Base {
 			]
 		);
 
+		$this->register_design_controls();
+
 		$this->add_control(
 			'categories',
 			[
@@ -157,17 +159,6 @@ class Catalog_Widget extends Widget_Base {
 		);
 
 		$this->add_control(
-			'hover_img',
-			[
-				'label'        => esc_html__( 'Second image on hover', 'hkdev-shop-elements' ),
-				'type'         => Controls_Manager::SWITCHER,
-				'default'      => 'yes',
-				'return_value' => 'yes',
-				'description'  => esc_html__( 'Swaps in the next gallery image while the pointer is over a card.', 'hkdev-shop-elements' ),
-			]
-		);
-
-		$this->add_control(
 			'hide_hidden',
 			[
 				'label'        => esc_html__( 'Hide "Hidden" products', 'hkdev-shop-elements' ),
@@ -180,6 +171,9 @@ class Catalog_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		$this->register_product_title_controls();
+		$this->register_product_image_controls( true );
+
 		// Product card styling (same controls as the Shop Grid widget).
 		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog' );
 	}
@@ -190,26 +184,31 @@ class Catalog_Widget extends Widget_Base {
 	 * @return void
 	 */
 	protected function render() {
-		if ( ! class_exists( Catalog_Engine::class ) ) {
+		if ( ! class_exists( CatalogEngine::class ) ) {
 			return;
 		}
 
 		$settings = $this->get_settings_for_display();
 		$cols     = $this->get_cards_per_view( $settings );
 
-		echo Catalog_Engine::instance()->render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-			[
-				'columns'        => (string) $cols['desktop'],
-				'columns_tablet' => (string) $cols['tablet'],
-				'columns_mobile' => (string) $cols['mobile'],
-				'per_page'     => $settings['per_page'],
-				'categories'   => $settings['categories'],
-				'show_search'  => $settings['show_search'],
-				'show_sort'    => $settings['show_sort'],
-				'show_filters' => $settings['show_filters'],
-				'hover_img'    => ( ! isset( $settings['hover_img'] ) || 'yes' === $settings['hover_img'] ) ? 'yes' : 'no',
-				'hide_hidden'  => ( isset( $settings['hide_hidden'] ) && 'yes' === $settings['hide_hidden'] ) ? 'yes' : 'no',
-			],
+		echo CatalogEngine::instance()->render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			array_merge(
+				$this->get_design_atts( $settings ),
+				$this->get_image_atts( $settings ),
+				[
+					'columns'        => (string) $cols['desktop'],
+					'columns_tablet' => (string) $cols['tablet'],
+					'columns_mobile' => (string) $cols['mobile'],
+					'per_page'       => $settings['per_page'],
+					'categories'     => $settings['categories'],
+					'show_search'    => $settings['show_search'],
+					'show_sort'      => $settings['show_sort'],
+					'show_filters'   => $settings['show_filters'],
+					'hover_img'      => $this->get_hover_img( $settings ),
+					'hide_hidden'    => ( isset( $settings['hide_hidden'] ) && 'yes' === $settings['hide_hidden'] ) ? 'yes' : 'no',
+					'title_lines'    => $this->get_title_lines( $settings ),
+				]
+			),
 			false
 		);
 	}

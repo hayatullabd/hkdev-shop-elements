@@ -314,6 +314,7 @@ jQuery(document).ready(function($) {
     // 5. Image Zoom Feature (class-driven so CSS !important wins over hover scale)
     $(document).on('click', '#hkdev-sp-zoom-btn, #hkdev-sp-zoom-container', function(e) {
         if($(e.target).closest('.hkdev-sp-arrow').length) return;
+        if($(this).closest('.hkdev-sp-wrapper').attr('data-zoom') === 'no') return;
 
         const $viewport = $('#hkdev-sp-viewport');
         $viewport.toggleClass('zoomed-active');

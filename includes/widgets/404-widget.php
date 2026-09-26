@@ -240,6 +240,6 @@ class Page404_Widget extends Widget_Base {
 			'accent_color'   => isset( $settings['accent_color'] ) ? $settings['accent_color'] : '#03a550',
 		];
 
-		echo \HkdevShopElements\Includes\Page404_Engine::instance()->page404_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\Page404Engine::instance()->page404_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

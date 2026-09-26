@@ -260,7 +260,7 @@ class Catalog_Engine {
 		// is therefore opt-in, and only ever added when WooCommerce actually has
 		// the term, so the ids handed to WP_Tax_Query are always real.
 		if ( ! empty( $params['hide_hidden'] ) ) {
-			$hidden = Shop_Engine::hidden_from_catalog_clause();
+			$hidden = \HkdevShopElements\Includes\Core\ShopEngine::hidden_from_catalog_clause();
 
 			if ( $hidden ) {
 				$tax_query[] = $hidden;
@@ -468,10 +468,11 @@ class Catalog_Engine {
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- the nonce was verified above.
 		$hover = ! isset( $_POST['hover_img'] ) || 'no' !== sanitize_text_field( wp_unslash( $_POST['hover_img'] ) );
+		$image = \HkdevShopElements\Includes\Core\ShopEngine::normalize_image_atts( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		wp_send_json_success(
 			[
-				'html'       => $this->grid_html( $query, $columns, (bool) $params['append'], $hover ),
+				'html'       => $this->grid_html( $query, $columns, (bool) $params['append'], $hover, $image ),
 				'chips_html' => $this->chips_html( $params, $locks ),
 				'count_html' => $this->count_html( $query, $params ),
 				'found'      => (int) $query->found_posts,
@@ -505,6 +506,23 @@ class Catalog_Engine {
 				'show_filters' => 'yes',
 				'hover_img'    => 'yes',
 				'hide_hidden'  => 'no',
+				'title_lines'  => 0,
+				'image_size'   => 'woocommerce_thumbnail',
+				'image_size_mode' => 'preset',
+				'custom_img_w' => 0,
+				'custom_img_h' => 0,
+				'custom_img_w_tablet' => 0,
+				'custom_img_h_tablet' => 0,
+				'custom_img_w_mobile' => 0,
+				'custom_img_h_mobile' => 0,
+				'custom_img_fit' => 'cover',
+				'custom_img_pos_x' => 50,
+				'custom_img_pos_y' => 50,
+				'font_mode'    => 'single',
+				'font_family'  => 'hind_siliguri',
+				'font_family_latin' => 'system_sans',
+				'card_preset'  => 'clean',
+				'card_theme'   => 'green',
 			],
 			$atts,
 			'hkdev_catalog'
@@ -538,7 +556,11 @@ class Catalog_Engine {
 		$columns        = isset( $atts['columns'] ) ? max( 1, min( 6, absint( $atts['columns'] ) ) ) : 4;
 		$columns_tablet = isset( $atts['columns_tablet'] ) ? max( 1, min( 6, absint( $atts['columns_tablet'] ) ) ) : 3;
 		$columns_mobile = isset( $atts['columns_mobile'] ) ? max( 1, min( 3, absint( $atts['columns_mobile'] ) ) ) : 2;
-		$grid_style     = Shop_Engine::instance()->grid_columns_style_attr( $columns_mobile, $columns_tablet, $columns );
+		$design         = \HkdevShopElements\Includes\Core\ShopEngine::normalize_design_atts( $atts );
+		$image          = \HkdevShopElements\Includes\Core\ShopEngine::normalize_image_atts( $atts );
+		$title_lines    = isset( $atts['title_lines'] ) ? absint( $atts['title_lines'] ) : 0;
+		$grid_style     = \HkdevShopElements\Includes\Core\ShopEngine::instance()->grid_columns_style_attr( $columns_mobile, $columns_tablet, $columns );
+		$grid_style    .= \HkdevShopElements\Includes\Core\ShopEngine::design_style_attr( $atts );
 		$per_page     = isset( $atts['per_page'] ) ? max( 1, min( 60, absint( $atts['per_page'] ) ) ) : 12;
 		$show_search  = ( ! isset( $atts['show_search'] ) || 'yes' === $atts['show_search'] );
 		$show_sort    = ( ! isset( $atts['show_sort'] ) || 'yes' === $atts['show_sort'] );
@@ -586,6 +608,21 @@ class Catalog_Engine {
 			data-hide-hidden="<?php echo $hide_hidden ? '1' : '0'; ?>"
 			data-locked-cats="<?php echo esc_attr( implode( ',', $locks['cats'] ) ); ?>"
 			data-locked-tags="<?php echo esc_attr( implode( ',', $locks['tags'] ) ); ?>"
+			data-title-lines="<?php echo esc_attr( $title_lines ); ?>"
+			data-image_size="<?php echo esc_attr( $image['image_size'] ); ?>"
+			data-image_size_mode="<?php echo esc_attr( $image['image_size_mode'] ); ?>"
+			data-custom_img_w="<?php echo esc_attr( $image['custom_img_w'] ); ?>"
+			data-custom_img_h="<?php echo esc_attr( $image['custom_img_h'] ); ?>"
+			data-custom_img_w_tablet="<?php echo esc_attr( $image['custom_img_w_tablet'] ); ?>"
+			data-custom_img_h_tablet="<?php echo esc_attr( $image['custom_img_h_tablet'] ); ?>"
+			data-custom_img_w_mobile="<?php echo esc_attr( $image['custom_img_w_mobile'] ); ?>"
+			data-custom_img_h_mobile="<?php echo esc_attr( $image['custom_img_h_mobile'] ); ?>"
+			data-custom_img_fit="<?php echo esc_attr( $image['custom_img_fit'] ); ?>"
+			data-custom_img_pos_x="<?php echo esc_attr( $image['custom_img_pos_x'] ); ?>"
+			data-custom_img_pos_y="<?php echo esc_attr( $image['custom_img_pos_y'] ); ?>"
+			data-card-preset="<?php echo esc_attr( $design['card_preset'] ); ?>"
+			data-card-theme="<?php echo esc_attr( $design['card_theme'] ); ?>"
+			data-font-mode="<?php echo esc_attr( $design['font_mode'] ); ?>"
 			data-nonce="<?php echo esc_attr( wp_create_nonce( self::NONCE_ACTION ) ); ?>">
 			<?php
 			echo $this->controls_html( $params, $bounds, $show_search, $show_sort, $show_filters, $is_archive, $locks ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -599,7 +636,7 @@ class Catalog_Engine {
 					<div class="hkdev-cat-chips"><?php echo $this->chips_html( $params, $locks ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 					<div class="hkdev-cat-count"><?php echo $this->count_html( $query, $params ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
 					<div class="hkdev-cat-grid hkdev-shop-grid hkdev-columns-<?php echo esc_attr( $columns ); ?>">
-						<?php echo $this->grid_html( $query, $columns, false, $show_hover ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo $this->grid_html( $query, $columns, false, $show_hover, $image ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 					<div class="hkdev-cat-foot">
 						<button type="button" class="hkdev-cat-more" <?php echo ( $params['page'] >= (int) $query->max_num_pages ) ? 'hidden' : ''; ?>>
@@ -611,7 +648,7 @@ class Catalog_Engine {
 				wp_reset_postdata();
 
 				// Variable products open this modal from their "Buy Now" button.
-				echo Shop_Engine::instance()->variation_modal_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				echo \HkdevShopElements\Includes\Core\ShopEngine::instance()->variation_modal_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			?>
 			<div class="hkdev-cat-overlay"></div>
@@ -914,10 +951,12 @@ class Catalog_Engine {
 	 * @param int       $columns  Columns.
 	 * @param bool      $append   Whether this is a load-more append.
 	 * @param bool      $hover    Reveal the second gallery image on hover.
+	 * @param array     $image    Normalized image attributes.
 	 * @return string
 	 */
-	private function grid_html( $query, $columns, $append, $hover = true ) {
-		$engine = Shop_Engine::instance();
+	private function grid_html( $query, $columns, $append, $hover = true, $image = [] ) {
+		$engine = \HkdevShopElements\Includes\Core\ShopEngine::instance();
+		$image  = \HkdevShopElements\Includes\Core\ShopEngine::normalize_image_atts( $image );
 
 		if ( ! $query->have_posts() ) {
 			return $append ? '' : '<div class="hkdev-no-product-msg">' . esc_html__( 'No products found.', 'hkdev-shop-elements' ) . '</div>';
@@ -926,7 +965,16 @@ class Catalog_Engine {
 		ob_start();
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$engine->render_single_product_card( get_the_ID(), 0, false, 'woocommerce_thumbnail', $hover );
+			$engine->render_single_product_card(
+				get_the_ID(),
+				0,
+				false,
+				$image['image_size'],
+				$hover,
+				$image['image_size_mode'],
+				$image['custom_img_w'],
+				$image['custom_img_h']
+			);
 		}
 		wp_reset_postdata();
 		return ob_get_clean();

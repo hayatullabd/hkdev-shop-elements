@@ -108,7 +108,7 @@ final class Header_Options {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'hkdev-shop-elements' ) );
 		}
 
-		$engine = Header_Engine::instance();
+		$engine = \HkdevShopElements\Includes\Core\HeaderEngine::instance();
 		$saved_notice = false;
 
 		if ( isset( $_POST['hkdev_header_submit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -237,7 +237,7 @@ final class Header_Options {
 				$config['logo_width'] = 150;
 			}
 
-			update_option( Header_Engine::CONFIG_OPTION, $config );
+			update_option( \HkdevShopElements\Includes\Core\HeaderEngine::CONFIG_OPTION, $config );
 			$saved_notice = true;
 		}
 
@@ -252,7 +252,7 @@ final class Header_Options {
 			'cart'    => [ 'dashicons-cart', esc_html__( 'Floating Cart', 'hkdev-shop-elements' ) ],
 			'appearance' => [ 'dashicons-art', esc_html__( 'Appearance', 'hkdev-shop-elements' ) ],
 		];
-		$nav_items = Admin_Menu::instance()->filter_header_builder_nav( $nav_items, $config );
+		$nav_items = \HkdevShopElements\Includes\Admin\AdminMenu::instance()->filter_header_builder_nav( $nav_items, $config );
 		?>
 		<div class="wrap hkdev-hd-wrap">
 
@@ -270,7 +270,7 @@ final class Header_Options {
 					</div>
 				</div>
 			</div>
-			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG, 'builder' ); ?>
+			<?php \HkdevShopElements\Includes\Admin\AdminMenu::instance()->render_module_nav( self::SETTINGS_SLUG, 'builder' ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible hd-notice"><p><?php esc_html_e( 'Header settings saved.', 'hkdev-shop-elements' ); ?></p></div>
@@ -531,7 +531,7 @@ final class Header_Options {
 									</div>
 								</div>
 
-								<?php if ( Admin_Menu::instance()->is_widget_enabled( 'hkdev_tracking' ) ) : ?>
+								<?php if ( \HkdevShopElements\Includes\Admin\AdminMenu::instance()->is_widget_enabled( 'hkdev_tracking' ) ) : ?>
 								<div class="hd-field">
 									<div class="hd-field-info">
 										<label class="hd-field-title" for="hkdev-hd-track-url"><?php esc_html_e( 'Track Order URL', 'hkdev-shop-elements' ); ?></label>

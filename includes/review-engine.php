@@ -508,7 +508,7 @@ class Review_Engine {
 								$thumb_fallback = '';
 
 								if ( '' === $thumb && ! empty( $config['video_thumb_fallback'] ) ) {
-									$youtube_id = Video_Engine::youtube_id( $video_url );
+									$youtube_id = \HkdevShopElements\Includes\Core\VideoEngine::youtube_id( $video_url );
 
 									if ( '' !== $youtube_id ) {
 										$thumb          = 'https://i.ytimg.com/vi/' . $youtube_id . '/maxresdefault.jpg';
@@ -741,11 +741,11 @@ class Review_Engine {
 			];
 		}
 
-		$youtube_id = Video_Engine::youtube_id( $url );
+		$youtube_id = \HkdevShopElements\Includes\Core\VideoEngine::youtube_id( $url );
 		if ( '' !== $youtube_id ) {
 			return [
 				'type' => 'iframe',
-				'url'  => Video_Engine::youtube_embed_url( $youtube_id ),
+				'url'  => \HkdevShopElements\Includes\Core\VideoEngine::youtube_embed_url( $youtube_id ),
 			];
 		}
 

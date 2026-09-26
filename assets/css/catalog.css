@@ -498,3 +498,35 @@
 	visibility: visible;
 }
 
+/* Theme tokens — match Shop Grid color themes. */
+.hkdev-catalog[data-card-theme="orange"]{
+	--hkcat-primary: #f06724;
+	--hkcat-primary-dark: #c45822;
+	--hkcat-soft: #fff6f0;
+	--hkcat-soft-2: #ffe8d9;
+	--hkcat-border: #f3d8c8;
+	--hkcat-border-strong: rgba(240, 103, 36, 0.35);
+	--hkcat-shadow: 0 10px 26px rgba(240, 103, 36, 0.10);
+}
+.hkdev-catalog[data-card-theme="monochrome"]{
+	--hkcat-primary: #222222;
+	--hkcat-primary-dark: #111111;
+	--hkcat-soft: #f3f3f3;
+	--hkcat-soft-2: #e8e8e8;
+	--hkcat-border: #d8d8d8;
+	--hkcat-border-strong: rgba(0, 0, 0, 0.22);
+	--hkcat-text: #1d1d1d;
+	--hkcat-muted: #666666;
+	--hkcat-shadow: 0 10px 26px rgba(0, 0, 0, 0.10);
+}
+
+/* Dual typography: prices, counts, and numbers use the Latin stack. */
+.hkdev-catalog[data-font-mode="dual"] .hkdev-cat-count,
+.hkdev-catalog[data-font-mode="dual"] .hkdev-cat-check em,
+.hkdev-catalog[data-font-mode="dual"] .hkdev-cat-price-fields input,
+.hkdev-catalog[data-font-mode="dual"] .hkdev-cat-price-display,
+.hkdev-catalog[data-font-mode="dual"] .hkdev-cat-drawer-count,
+.hkdev-catalog[data-font-mode="dual"] .hkdev-cat-rating-label{
+	font-family: var(--hkdev-font-en, var(--hkdev-font)) !important;
+}
+

@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Elementor\Controls_Manager;
 use Elementor\Repeater;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Review_Engine;
+use HkdevShopElements\Includes\Core\ReviewEngine;
 
 /**
  * Class Reviews_Widget
@@ -407,7 +407,7 @@ class Reviews_Widget extends Widget_Base {
 			[
 				'label'       => esc_html__( 'Top Pick Product', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::SELECT2,
-				'options'     => Review_Engine::product_options(),
+				'options'     => ReviewEngine::product_options(),
 				'label_block' => true,
 				'description' => esc_html__( 'Optional. Shows a product promo inside the review modal.', 'hkdev-shop-elements' ),
 			]
@@ -519,7 +519,7 @@ class Reviews_Widget extends Widget_Base {
 			[
 				'label'       => esc_html__( 'Featured Product', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::SELECT2,
-				'options'     => Review_Engine::product_options(),
+				'options'     => ReviewEngine::product_options(),
 				'label_block' => true,
 				'description' => esc_html__( 'Optional. Shows a product promo inside the review modal.', 'hkdev-shop-elements' ),
 			]
@@ -1058,12 +1058,12 @@ class Reviews_Widget extends Widget_Base {
 		$source   = isset( $settings['content_source'] ) ? $settings['content_source'] : 'custom';
 
 		if ( 'global' === $source ) {
-			$config = Review_Engine::instance()->get_global_render_config();
+			$config = ReviewEngine::instance()->get_global_render_config();
 		} else {
-			$config = Review_Engine::instance()->build_config_from_elementor( $settings );
+			$config = ReviewEngine::instance()->build_config_from_elementor( $settings );
 			// Legacy widgets: inherit modal button/ribbon text from admin when empty.
 			if ( empty( $config['view_button_text'] ) || empty( $config['top_pick_label'] ) ) {
-				$global = Review_Engine::instance()->get_stored_settings();
+				$global = ReviewEngine::instance()->get_stored_settings();
 				if ( empty( $config['view_button_text'] ) && ! empty( $global['view_button_text'] ) ) {
 					$config['view_button_text'] = (string) $global['view_button_text'];
 				}
@@ -1073,6 +1073,6 @@ class Reviews_Widget extends Widget_Base {
 			}
 		}
 
-		echo Review_Engine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo ReviewEngine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

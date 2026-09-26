@@ -421,7 +421,7 @@ class Footer_Engine {
 	 * @return string
 	 */
 	public function footer_shortcode( $atts = [] ) {
-		$is_editor = Header_Engine::instance()->is_elementor_edit();
+		$is_editor = \HkdevShopElements\Includes\Core\HeaderEngine::instance()->is_elementor_edit();
 
 		if ( is_admin() && ! $is_editor ) {
 			return '';

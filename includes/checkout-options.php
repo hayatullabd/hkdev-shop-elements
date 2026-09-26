@@ -107,7 +107,7 @@ final class Checkout_Options {
 
         register_setting(
             'hkdev_elements_checkout_fields_group',
-            Checkout_Engine::instance()->config_option_name(),
+            \HkdevShopElements\Includes\Core\CheckoutEngine::instance()->config_option_name(),
             [
                 'type'              => 'array',
                 'sanitize_callback' => [ $this, 'sanitize_fields' ],
@@ -292,7 +292,7 @@ final class Checkout_Options {
             wp_die( esc_html__( 'You do not have permission to access this page.', 'hkdev-shop-elements' ) );
         }
 
-        $engine = Checkout_Engine::instance();
+        $engine = \HkdevShopElements\Includes\Core\CheckoutEngine::instance();
 
         // Handle reset
         if ( isset( $_GET['reset'] ) && '1' === $_GET['reset'] ) {
@@ -335,7 +335,7 @@ final class Checkout_Options {
                     </a>
                 </div>
             </div>
-            <?php Admin_Menu::instance()->render_module_nav( self::MENU_SLUG ); ?>
+            <?php \HkdevShopElements\Includes\Admin\AdminMenu::instance()->render_module_nav( self::MENU_SLUG ); ?>
 
             <form method="post" action="options.php" id="hkdev-checkout-fields-form">
                 <?php settings_fields( 'hkdev_elements_checkout_fields_group' ); ?>

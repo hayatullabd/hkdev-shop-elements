@@ -23,6 +23,7 @@ use Elementor\Widget_Base;
  */
 class Single_Product_Widget extends Widget_Base {
 
+	use Product_Controls;
 	use Style_Controls;
 
 	/**
@@ -108,6 +109,164 @@ class Single_Product_Widget extends Widget_Base {
 				'type'        => Controls_Manager::NUMBER,
 				'default'     => '',
 				'description' => esc_html__( 'Leave empty to use the product from the current page. On a single product page just drop this widget anywhere.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_presentation',
+			[
+				'label' => esc_html__( 'Presentation', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->register_design_controls( esc_html__( 'Design Preset', 'hkdev-shop-elements' ) );
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_display',
+			[
+				'label' => esc_html__( 'Display', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'show_breadcrumb',
+			[
+				'label'        => esc_html__( 'Show Breadcrumb', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_sale_badge',
+			[
+				'label'        => esc_html__( 'Show Sale Badge', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_zoom',
+			[
+				'label'        => esc_html__( 'Image Zoom', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_qty',
+			[
+				'label'        => esc_html__( 'Show Quantity', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_sku',
+			[
+				'label'        => esc_html__( 'Show SKU', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_stock',
+			[
+				'label'        => esc_html__( 'Show Stock Status', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_tabs',
+			[
+				'label'        => esc_html__( 'Show Description / Reviews Tabs', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'show_faq',
+			[
+				'label'        => esc_html__( 'Show Product FAQ', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'gallery_sticky',
+			[
+				'label'        => esc_html__( 'Sticky Gallery', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'On', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Off', 'hkdev-shop-elements' ),
+				'return_value' => 'yes',
+				'default'      => '',
+				'description'  => esc_html__( 'Keeps the gallery in view while the customer scrolls the product info.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'section_gallery',
+			[
+				'label' => esc_html__( 'Gallery Images', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'gallery_image_size',
+			[
+				'label'   => esc_html__( 'Main Image Size', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'large',
+				'options' => $this->hkdev_image_size_options(),
+			]
+		);
+
+		$this->add_control(
+			'thumb_image_size',
+			[
+				'label'   => esc_html__( 'Thumbnail Size', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'thumbnail',
+				'options' => $this->hkdev_image_size_options(),
 			]
 		);
 
@@ -237,6 +396,22 @@ class Single_Product_Widget extends Widget_Base {
 		$this->hkdev_slider( 'sp_thumb_size', esc_html__( 'Thumbnail Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-thumb', 'width', 40, 140 );
 		$this->hkdev_color( 'sp_badge_bg', esc_html__( 'Sale Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-sale-badge', 'background-color' );
 		$this->hkdev_color( 'sp_badge_color', esc_html__( 'Sale Badge Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-sale-badge', 'color' );
+		$this->hkdev_slider( 'sp_gallery_width', esc_html__( 'Gallery Max Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-gallery', 'max-width', 220, 720 );
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'sp_style_breadcrumb',
+			[
+				'label'     => esc_html__( 'Breadcrumb', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'show_breadcrumb' => 'yes' ],
+			]
+		);
+
+		$this->hkdev_typography( 'sp_crumb', esc_html__( 'Breadcrumb Typography', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-breadcrumb' );
+		$this->hkdev_color( 'sp_crumb_color', esc_html__( 'Link Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-breadcrumb a', 'color' );
+		$this->hkdev_color( 'sp_crumb_current', esc_html__( 'Current Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-breadcrumb .current-crumb', 'color' );
 
 		$this->end_controls_section();
 
@@ -305,7 +480,24 @@ class Single_Product_Widget extends Widget_Base {
 
 		$this->hkdev_typography( 'sp_tab', esc_html__( 'Tab Label', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-tab-link' );
 		$this->hkdev_color( 'sp_tab_active', esc_html__( 'Active Tab Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-tab-link.active', 'color' );
+		$this->hkdev_typography( 'sp_tab_body', esc_html__( 'Tab Content', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-tab-content' );
 		$this->hkdev_typography( 'sp_meta', esc_html__( 'SKU / Stock Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-product-meta' );
+
+		$this->end_controls_section();
+
+		$this->start_controls_section(
+			'sp_style_qty',
+			[
+				'label'     => esc_html__( 'Quantity', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'show_qty' => 'yes' ],
+			]
+		);
+
+		$this->hkdev_color( 'sp_qty_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-qty-control', 'background-color' );
+		$this->hkdev_color( 'sp_qty_color', esc_html__( 'Text Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-qty-input', 'color' );
+		$this->hkdev_color( 'sp_qty_border', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-qty-control', 'border-color' );
+		$this->hkdev_dimensions( 'sp_qty_radius', esc_html__( 'Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-sp-qty-control', 'border-radius' );
 
 		$this->end_controls_section();
 	}
@@ -321,20 +513,40 @@ class Single_Product_Widget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		$yes_no   = static function ( $key, $default = 'yes' ) use ( $settings ) {
+			if ( ! isset( $settings[ $key ] ) ) {
+				return $default;
+			}
+			return ( 'yes' === $settings[ $key ] ) ? 'yes' : 'no';
+		};
 
-		$atts = [
-			'phone'         => isset( $settings['phone'] ) ? $settings['phone'] : '',
-			'whatsapp'      => isset( $settings['whatsapp'] ) ? $settings['whatsapp'] : '',
-			'show_whatsapp' => ( isset( $settings['show_whatsapp'] ) && 'yes' === $settings['show_whatsapp'] ) ? 'yes' : 'no',
-			'show_call'     => ( isset( $settings['show_call'] ) && 'yes' === $settings['show_call'] ) ? 'yes' : 'no',
-			'show_brand'    => ( isset( $settings['show_brand'] ) && 'yes' === $settings['show_brand'] ) ? 'yes' : 'no',
-			'show_category' => ( isset( $settings['show_category'] ) && 'yes' === $settings['show_category'] ) ? 'yes' : 'no',
-		];
+		$atts = array_merge(
+			$this->get_design_atts( $settings ),
+			[
+				'phone'              => isset( $settings['phone'] ) ? $settings['phone'] : '',
+				'whatsapp'           => isset( $settings['whatsapp'] ) ? $settings['whatsapp'] : '',
+				'show_whatsapp'      => $yes_no( 'show_whatsapp' ),
+				'show_call'          => $yes_no( 'show_call' ),
+				'show_brand'         => $yes_no( 'show_brand' ),
+				'show_category'      => $yes_no( 'show_category' ),
+				'show_breadcrumb'    => $yes_no( 'show_breadcrumb' ),
+				'show_sale_badge'    => $yes_no( 'show_sale_badge' ),
+				'show_zoom'          => $yes_no( 'show_zoom' ),
+				'show_qty'           => $yes_no( 'show_qty' ),
+				'show_sku'           => $yes_no( 'show_sku' ),
+				'show_stock'         => $yes_no( 'show_stock' ),
+				'show_tabs'          => $yes_no( 'show_tabs' ),
+				'show_faq'           => $yes_no( 'show_faq' ),
+				'gallery_sticky'     => $yes_no( 'gallery_sticky', 'no' ),
+				'gallery_image_size' => isset( $settings['gallery_image_size'] ) ? sanitize_key( $settings['gallery_image_size'] ) : 'large',
+				'thumb_image_size'   => isset( $settings['thumb_image_size'] ) ? sanitize_key( $settings['thumb_image_size'] ) : 'thumbnail',
+			]
+		);
 
 		if ( isset( $settings['id'] ) && ! empty( $settings['id'] ) ) {
 			$atts['id'] = absint( $settings['id'] );
 		}
 
-		echo \HkdevShopElements\Includes\Single_Product_Engine::instance()->custom_single_product_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\SingleProductEngine::instance()->custom_single_product_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

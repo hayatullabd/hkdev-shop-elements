@@ -111,7 +111,11 @@ final class Widget_Options {
 			return true;
 		}
 
-		return isset( $saved[ $slug ] ) && 'yes' === $saved[ $slug ];
+		if ( ! array_key_exists( $slug, $saved ) ) {
+			return true;
+		}
+
+		return 'yes' === $saved[ $slug ];
 	}
 
 	/**
@@ -120,16 +124,16 @@ final class Widget_Options {
 	 * @return array<string,bool> slug => enabled
 	 */
 	public function get_widget_states() {
-		$registry = Widget_Manager::get_widget_registry();
+		$registry = \HkdevShopElements\Includes\Admin\WidgetManager::get_widget_registry();
 		$saved    = get_option( self::OPTION_NAME, null );
 		$states   = [];
 
 		foreach ( $registry as $group ) {
 			foreach ( $group['widgets'] as $slug => $widget ) {
-				if ( null === $saved || false === $saved ) {
+				if ( null === $saved || false === $saved || ! is_array( $saved ) || ! array_key_exists( $slug, $saved ) ) {
 					$states[ $slug ] = true;
 				} else {
-					$states[ $slug ] = isset( $saved[ $slug ] ) && 'yes' === $saved[ $slug ];
+					$states[ $slug ] = 'yes' === $saved[ $slug ];
 				}
 			}
 		}
@@ -173,7 +177,7 @@ final class Widget_Options {
 		if ( isset( $_POST['hkdev_widgets_submit'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( self::NONCE_ACTION );
 
-			$registry = Widget_Manager::get_widget_registry();
+			$registry = \HkdevShopElements\Includes\Admin\WidgetManager::get_widget_registry();
 			$posted   = isset( $_POST['hkdev_widget'] ) && is_array( $_POST['hkdev_widget'] ) ? wp_unslash( $_POST['hkdev_widget'] ) : []; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			$states   = [];
 
@@ -187,7 +191,7 @@ final class Widget_Options {
 			$saved_notice = true;
 		}
 
-		$registry = Widget_Manager::get_widget_registry();
+		$registry = \HkdevShopElements\Includes\Admin\WidgetManager::get_widget_registry();
 		$states   = $this->get_widget_states();
 		$counts   = $this->count_enabled_widgets();
 		?>
@@ -213,7 +217,7 @@ final class Widget_Options {
 					</span>
 				</div>
 			</div>
-			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
+			<?php \HkdevShopElements\Includes\Admin\AdminMenu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Widget settings saved.', 'hkdev-shop-elements' ); ?></p></div>

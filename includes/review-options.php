@@ -320,7 +320,7 @@ final class Review_Options {
 	 * @return array
 	 */
 	private function stored() {
-		return Review_Engine::instance()->get_stored_settings();
+		return \HkdevShopElements\Includes\Core\ReviewEngine::instance()->get_stored_settings();
 	}
 
 	/**
@@ -467,7 +467,7 @@ final class Review_Options {
 				return isset( $_POST[ $key ] ) && '1' === $_POST[ $key ] ? 'yes' : 'no'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			};
 
-			$existing_settings = Review_Engine::instance()->get_stored_settings();
+			$existing_settings = \HkdevShopElements\Includes\Core\ReviewEngine::instance()->get_stored_settings();
 
 			$videos = $this->parse_video_rows_from_post();
 			if ( null === $videos ) {
@@ -519,13 +519,13 @@ final class Review_Options {
 				'proofs'               => $proofs,
 			];
 
-			update_option( Review_Engine::OPTION_NAME, $settings );
+			update_option( \HkdevShopElements\Includes\Core\ReviewEngine::OPTION_NAME, $settings );
 			$saved_notice  = true;
 			$save_warnings   = $this->last_save_warnings;
 		}
 
 		$s        = $this->stored();
-		$defaults = Review_Engine::instance()->admin_settings_defaults();
+		$defaults = \HkdevShopElements\Includes\Core\ReviewEngine::instance()->admin_settings_defaults();
 
 		$val = static function ( $key ) use ( $s, $defaults ) {
 			return $s[ $key ] ?? ( $defaults[ $key ] ?? '' );
@@ -554,7 +554,7 @@ final class Review_Options {
 					<span class="hkdev-rv-shortcode-hint" title="<?php esc_attr_e( 'Shortcode', 'hkdev-shop-elements' ); ?>"><span class="hkdev-rv-shortcode-label"><?php esc_html_e( 'Shortcode', 'hkdev-shop-elements' ); ?></span><code>[hkdev_customer_reviews]</code></span>
 				</div>
 			</div>
-			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
+			<?php \HkdevShopElements\Includes\Admin\AdminMenu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Customer review settings saved.', 'hkdev-shop-elements' ); ?></p></div>

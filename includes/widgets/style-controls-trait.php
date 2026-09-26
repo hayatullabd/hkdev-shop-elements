@@ -141,6 +141,113 @@ trait Style_Controls {
 	}
 
 	/**
+	 * Slider control producing a transform: scale(...) declaration.
+	 *
+	 * @param string $id          Control id.
+	 * @param string $label       Label.
+	 * @param string $selector    CSS selector.
+	 * @param float  $min         Minimum scale.
+	 * @param float  $max         Maximum scale.
+	 * @param float  $step        Step.
+	 * @param float  $default     Default scale.
+	 * @param array  $condition   Elementor condition.
+	 * @param string $description Optional help text.
+	 * @return void
+	 */
+	protected function hkdev_scale( $id, $label, $selector, $min, $max, $step = 0.01, $default = 1, $condition = [], $description = '' ) {
+		$args = [
+			'label'     => $label,
+			'type'      => Controls_Manager::SLIDER,
+			'range'     => [
+				'px' => [
+					'min'  => $min,
+					'max'  => $max,
+					'step' => $step,
+				],
+			],
+			'default'   => [ 'size' => $default ],
+			'selectors' => [ $selector => 'transform: scale({{SIZE}}) !important;' ],
+		];
+
+		if ( '' !== $description ) {
+			$args['description'] = $description;
+		}
+
+		$this->add_control( $id, $this->hkdev_args( $args, $condition ) );
+	}
+
+	/**
+	 * Slider control producing a transform: translateY(...) declaration.
+	 *
+	 * @param string $id          Control id.
+	 * @param string $label       Label.
+	 * @param string $selector    CSS selector.
+	 * @param int    $min         Minimum translate in px.
+	 * @param int    $max         Maximum translate in px.
+	 * @param int    $default     Default translate in px.
+	 * @param array  $condition   Elementor condition.
+	 * @param string $description Optional help text.
+	 * @return void
+	 */
+	protected function hkdev_translate_y( $id, $label, $selector, $min, $max, $default = 0, $condition = [], $description = '' ) {
+		$args = [
+			'label'     => $label,
+			'type'      => Controls_Manager::SLIDER,
+			'range'     => [
+				'px' => [
+					'min'  => $min,
+					'max'  => $max,
+					'step' => 1,
+				],
+			],
+			'default'   => [ 'size' => $default ],
+			'selectors' => [ $selector => 'transform: translateY({{SIZE}}px) !important;' ],
+		];
+
+		if ( '' !== $description ) {
+			$args['description'] = $description;
+		}
+
+		$this->add_control( $id, $this->hkdev_args( $args, $condition ) );
+	}
+
+	/**
+	 * Slider control producing a transition-duration value in seconds.
+	 *
+	 * @param string $id          Control id.
+	 * @param string $label       Label.
+	 * @param string $selector    CSS selector.
+	 * @param float  $min         Minimum seconds.
+	 * @param float  $max         Maximum seconds.
+	 * @param float  $step        Step.
+	 * @param float  $default     Default seconds.
+	 * @param array  $condition   Elementor condition.
+	 * @param string $description Optional help text.
+	 * @return void
+	 */
+	protected function hkdev_transition_seconds( $id, $label, $selector, $min, $max, $step = 0.05, $default = 0.3, $condition = [], $description = '' ) {
+		$args = [
+			'label'     => $label,
+			'type'      => Controls_Manager::SLIDER,
+			'range'     => [
+				'px' => [
+					'min'  => $min,
+					'max'  => $max,
+					'step' => $step,
+				],
+			],
+			'default'   => [ 'size' => $default ],
+			'selectors' => [ $selector => 'transition-duration: {{SIZE}}s !important;' ],
+		];
+
+		if ( '' !== $description ) {
+			$args['description'] = $description;
+		}
+
+		$this->add_control( $id, $this->hkdev_args( $args, $condition ) );
+	}
+
+	/**
 	 * Select control writing the chosen value directly.
 	 *
 	 * @param string $id        Control id.
@@ -356,11 +463,44 @@ trait Style_Controls {
 			]
 		);
 
+		$this->start_controls_tabs( 'sk_card_state_tabs' );
+
+		$this->start_controls_tab(
+			'sk_card_tab_normal',
+			[
+				'label' => esc_html__( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'sk_card_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'background-color' );
 		$this->hkdev_color( 'sk_card_border', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'border-color' );
 		$this->hkdev_slider( 'sk_card_border_w', esc_html__( 'Border Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'border-width', 0, 8 );
 		$this->hkdev_dimensions( 'sk_card_radius', esc_html__( 'Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 'border-radius' );
 		$this->hkdev_shadow( 'sk_card_shadow', esc_html__( 'Box Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card' );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'sk_card_tab_hover',
+			[
+				'label' => esc_html__( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_transition_seconds( 'sk_card_transition', esc_html__( 'Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card', 0, 1.5, 0.05, 0.3 );
+		$this->hkdev_color( 'sk_card_bg_hover', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card:hover', 'background-color' );
+		$this->hkdev_color( 'sk_card_border_hover', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card:hover', 'border-color' );
+		$this->hkdev_shadow( 'sk_card_shadow_hover', esc_html__( 'Box Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card:hover' );
+		$this->hkdev_translate_y(
+			'sk_card_hover_lift',
+			esc_html__( 'Lift (px)', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-product-card:hover',
+			-30,
+			0,
+			-6,
+			[],
+			esc_html__( 'Negative values move the card upward on hover.', 'hkdev-shop-elements' )
+		);
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();
 		$this->hkdev_dimensions( 'sk_card_content_pad', esc_html__( 'Content Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-content-box', 'padding' );
 
 		$this->end_controls_section();
@@ -402,7 +542,18 @@ trait Style_Controls {
 			]
 		);
 
-		$this->hkdev_slider( 'sk_img_zoom', esc_html__( 'Hover Zoom', 'hkdev-shop-elements' ), $scope . ' .hkdev-product-card:hover .hkdev-img-box img', 'transform', 1, 1.3 );
+		$this->hkdev_scale(
+			'sk_img_zoom',
+			esc_html__( 'Hover Zoom', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-product-card:hover .hkdev-img-box img',
+			1,
+			1.4,
+			0.01,
+			1.08,
+			[],
+			esc_html__( '1 = no zoom, 1.08-1.15 gives a smooth premium hover effect.', 'hkdev-shop-elements' )
+		);
+		$this->hkdev_transition_seconds( 'sk_img_zoom_speed', esc_html__( 'Zoom Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-img-box img', 0, 1.5, 0.05, 0.35 );
 		$this->hkdev_dimensions( 'sk_img_radius', esc_html__( 'Image Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-img-box img', 'border-radius' );
 		$this->hkdev_color( 'sk_img_box_bg', esc_html__( 'Image Area Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-img-box', 'background-color' );
 
@@ -431,6 +582,8 @@ trait Style_Controls {
 		);
 
 		$this->hkdev_typography( 'sk_title', esc_html__( 'Title Typography', 'hkdev-shop-elements' ), $scope . ' .hkdev-title' );
+		$this->hkdev_color( 'sk_title_hover', esc_html__( 'Title Hover Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-title:hover', 'color' );
+		$this->hkdev_slider_raw( 'sk_title_gap', esc_html__( 'Title Bottom Spacing (px)', 'hkdev-shop-elements' ), $scope . ' .hkdev-title', 'margin-bottom', 0, 30, 1 );
 
 		$this->end_controls_section();
 
@@ -458,10 +611,33 @@ trait Style_Controls {
 		);
 
 		$this->hkdev_typography( 'sk_btn', esc_html__( 'Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn' );
+		$this->start_controls_tabs( 'sk_btn_state_tabs' );
+
+		$this->start_controls_tab(
+			'sk_btn_tab_normal',
+			[
+				'label' => esc_html__( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'sk_btn_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'background-color' );
 		$this->hkdev_color( 'sk_btn_border', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'border-color' );
-		$this->hkdev_color( 'sk_btn_bg_hover', esc_html__( 'Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'background-color' );
-		$this->hkdev_color( 'sk_btn_color_hover', esc_html__( 'Hover Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'color' );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'sk_btn_tab_hover',
+			[
+				'label' => esc_html__( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'sk_btn_bg_hover', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'background-color' );
+		$this->hkdev_color( 'sk_btn_color_hover', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'color' );
+		$this->hkdev_color( 'sk_btn_border_hover', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover', 'border-color' );
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();
+		$this->hkdev_transition_seconds( 'sk_btn_transition', esc_html__( 'Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 0, 1.5, 0.05, 0.25 );
+		$this->hkdev_shadow( 'sk_btn_shadow', esc_html__( 'Normal Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn' );
+		$this->hkdev_shadow( 'sk_btn_shadow_hover', esc_html__( 'Hover Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn:hover' );
 		$this->hkdev_slider( 'sk_btn_height', esc_html__( 'Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'height', 30, 70 );
 		$this->hkdev_dimensions( 'sk_btn_radius', esc_html__( 'Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'border-radius' );
 		$this->hkdev_dimensions( 'sk_btn_padding', esc_html__( 'Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-order-btn', 'padding' );
@@ -481,6 +657,62 @@ trait Style_Controls {
 		$this->hkdev_color( 'sk_sale_color', esc_html__( 'Sale Badge Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-sale-badge', 'color' );
 		$this->hkdev_color( 'sk_trend_bg', esc_html__( 'Trending Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-trending-badge', 'background-color' );
 		$this->hkdev_color( 'sk_best_bg', esc_html__( 'Best Seller Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-best-seller-badge', 'background-color' );
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Style controls for carousel navigation and dots.
+	 *
+	 * @param string $scope CSS scope of the widget wrapper.
+	 * @return void
+	 */
+	protected function register_carousel_style_controls( $scope = '{{WRAPPER}} .hkdev-shop-wrapper' ) {
+		$this->start_controls_section(
+			'hkdev_style_carousel_nav',
+			[
+				'label'     => esc_html__( 'Carousel Navigation', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'style' => 'carousel' ],
+			]
+		);
+
+		$this->hkdev_slider( 'sk_car_nav_size', esc_html__( 'Arrow Button Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'width', 28, 72 );
+		$this->hkdev_slider( 'sk_car_nav_height', esc_html__( 'Arrow Button Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'height', 28, 72 );
+		$this->hkdev_slider( 'sk_car_nav_icon_size', esc_html__( 'Arrow Icon Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn svg', 'width', 10, 36 );
+		$this->hkdev_dimensions( 'sk_car_nav_radius', esc_html__( 'Arrow Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'border-radius' );
+		$this->hkdev_color( 'sk_car_nav_bg', esc_html__( 'Arrow Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'background-color' );
+		$this->hkdev_color( 'sk_car_nav_color', esc_html__( 'Arrow Icon Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'color' );
+		$this->hkdev_color( 'sk_car_nav_border', esc_html__( 'Arrow Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'border-color' );
+		$this->hkdev_shadow( 'sk_car_nav_shadow', esc_html__( 'Arrow Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn' );
+
+		$this->add_control(
+			'sk_car_nav_hover_heading',
+			[
+				'label'     => esc_html__( 'Arrow Hover', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->hkdev_color( 'sk_car_nav_bg_hover', esc_html__( 'Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn:hover', 'background-color' );
+		$this->hkdev_color( 'sk_car_nav_color_hover', esc_html__( 'Hover Icon Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn:hover', 'color' );
+		$this->hkdev_color( 'sk_car_nav_border_hover', esc_html__( 'Hover Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn:hover', 'border-color' );
+
+		$this->add_control(
+			'sk_car_dots_heading',
+			[
+				'label'     => esc_html__( 'Pagination Dots', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->hkdev_color( 'sk_car_dots_wrap_bg', esc_html__( 'Dots Wrapper Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots', 'background-color' );
+		$this->hkdev_shadow( 'sk_car_dots_wrap_shadow', esc_html__( 'Dots Wrapper Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots' );
+		$this->hkdev_color( 'sk_car_dot_bg', esc_html__( 'Dot Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet', 'background-color' );
+		$this->hkdev_color( 'sk_car_dot_active_bg', esc_html__( 'Active Dot Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet-active', 'background-color' );
+		$this->hkdev_slider( 'sk_car_dot_size', esc_html__( 'Dot Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet', 'width', 4, 18 );
+		$this->hkdev_slider( 'sk_car_dot_size_h', esc_html__( 'Dot Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet', 'height', 4, 18 );
+		$this->hkdev_slider( 'sk_car_dot_active_w', esc_html__( 'Active Dot Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet-active', 'width', 8, 40 );
 
 		$this->end_controls_section();
 	}

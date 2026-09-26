@@ -1,0 +1,121 @@
+#hkdev-deactivate-dialog.hkdev-deactivate-dialog {
+	display: none;
+	padding: 8px 4px 4px;
+}
+
+.hkdev-deactivate-ui-dialog.ui-dialog {
+	border: 1px solid #d0d5dd;
+	border-radius: 10px;
+	box-shadow: 0 12px 40px rgba(16, 24, 40, 0.2);
+}
+
+.hkdev-deactivate-ui-dialog .ui-dialog-titlebar {
+	background: linear-gradient(135deg, #03924a 0%, #027a3f 100%);
+	border: 0;
+	color: #fff;
+	padding: 12px 16px;
+}
+
+.hkdev-deactivate-ui-dialog .ui-dialog-title {
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.hkdev-deactivate-ui-dialog .ui-dialog-titlebar-close {
+	filter: brightness(0) invert(1);
+}
+
+.hkdev-deactivate-intro {
+	margin: 0 0 12px;
+	color: #344054;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.hkdev-deactivate-reasons {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.hkdev-deactivate-reason {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border: 1px solid #e4e7ec;
+	border-radius: 8px;
+	padding: 10px 12px;
+	background: #fff;
+	color: #1d2939;
+	font-size: 13px;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.hkdev-deactivate-reason:hover {
+	border-color: #03a550;
+	background: #f5fdf8;
+}
+
+.hkdev-deactivate-reason input[type="radio"] {
+	margin: 0;
+	accent-color: #03a550;
+}
+
+.hkdev-deactivate-help {
+	margin: 0 0 10px;
+	font-size: 12px;
+}
+
+.hkdev-deactivate-help a {
+	color: #027a3f;
+	text-decoration: none;
+}
+
+.hkdev-deactivate-help a:hover {
+	text-decoration: underline;
+}
+
+.hkdev-deactivate-feedback-label {
+	display: block;
+	margin-bottom: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #344054;
+}
+
+#hkdev-deactivate-feedback {
+	width: 100%;
+	min-height: 70px;
+	border: 1px solid #d0d5dd;
+	border-radius: 7px;
+	padding: 8px 10px;
+	font-size: 13px;
+	line-height: 1.35;
+}
+
+#hkdev-deactivate-feedback:focus {
+	outline: none;
+	border-color: #03a550;
+	box-shadow: 0 0 0 2px rgba(3, 165, 80, 0.14);
+}
+
+.hkdev-deactivate-validation {
+	min-height: 18px;
+	margin: 8px 0 0;
+	color: #b42318;
+	font-size: 12px;
+	font-weight: 500;
+}
+
+.hkdev-deactivate-ui-dialog .ui-dialog-buttonpane {
+	border-top: 1px solid #eef1f4;
+	padding: 12px 16px;
+}
+
+.hkdev-deactivate-ui-dialog .ui-dialog-buttonset {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}

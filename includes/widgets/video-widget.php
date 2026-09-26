@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Video_Engine;
+use HkdevShopElements\Includes\Core\VideoEngine;
 
 /**
  * Class Video_Widget
@@ -295,6 +295,6 @@ class Video_Widget extends Widget_Base {
 			'show_separator'   => ( isset( $settings['show_separator'] ) && 'yes' === $settings['show_separator'] ),
 		];
 
-		echo Video_Engine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo VideoEngine::instance()->render( $config ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

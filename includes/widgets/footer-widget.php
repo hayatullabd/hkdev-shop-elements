@@ -464,8 +464,26 @@ class Footer_Widget extends Widget_Base {
 		);
 
 		$this->hkdev_typography( 'ft_link', esc_html__( 'Link', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a, ' . $scope . ' .hkdev-footer-links li a' );
-		$this->hkdev_color( 'ft_link_hover', esc_html__( 'Link Hover Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a:hover, ' . $scope . ' .hkdev-footer-links li a:hover', 'color' );
+		$this->start_controls_tabs( 'ft_link_state_tabs' );
+		$this->start_controls_tab(
+			'ft_link_tab_normal',
+			[
+				'label' => esc_html__( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'ft_link_color', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a, ' . $scope . ' .hkdev-footer-links li a', 'color' );
+		$this->end_controls_tab();
+		$this->start_controls_tab(
+			'ft_link_tab_hover',
+			[
+				'label' => esc_html__( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'ft_link_hover', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a:hover, ' . $scope . ' .hkdev-footer-links li a:hover', 'color' );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
 		$this->hkdev_dimensions( 'ft_link_gap', esc_html__( 'Link Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a, ' . $scope . ' .hkdev-footer-links li a', 'padding' );
+		$this->hkdev_transition_seconds( 'ft_link_transition', esc_html__( 'Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-menu li a, ' . $scope . ' .hkdev-footer-links li a', 0, 1.5, 0.05, 0.2 );
 
 		$this->end_controls_section();
 
@@ -478,15 +496,57 @@ class Footer_Widget extends Widget_Base {
 			]
 		);
 
-		$this->hkdev_color( 'ft_news_bg', esc_html__( 'Field Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'background-color' );
-		$this->hkdev_color( 'ft_news_border', esc_html__( 'Field Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'border-color' );
-		$this->hkdev_color( 'ft_news_color', esc_html__( 'Field Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'color' );
-		$this->hkdev_dimensions( 'ft_news_radius', esc_html__( 'Field Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'border-radius' );
-		$this->hkdev_typography( 'ft_news_btn', esc_html__( 'Button Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn' );
-		$this->hkdev_color( 'ft_news_btn_bg', esc_html__( 'Button Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'background-color' );
-		$this->hkdev_color( 'ft_news_btn_color', esc_html__( 'Button Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'color' );
-		$this->hkdev_color( 'ft_news_btn_hover', esc_html__( 'Button Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn:hover', 'background-color' );
-		$this->hkdev_dimensions( 'ft_news_btn_radius', esc_html__( 'Button Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'border-radius' );
+		$this->start_controls_tabs( 'ft_news_state_tabs' );
+		$this->start_controls_tab(
+			'ft_news_input_tab',
+			[
+				'label' => esc_html__( 'Input', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'ft_news_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'background-color' );
+		$this->hkdev_color( 'ft_news_border', esc_html__( 'Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'border-color' );
+		$this->hkdev_color( 'ft_news_color', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'color' );
+		$this->hkdev_color( 'ft_news_placeholder', esc_html__( 'Placeholder Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input::placeholder', 'color' );
+		$this->hkdev_dimensions( 'ft_news_radius', esc_html__( 'Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 'border-radius' );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'ft_news_input_focus_tab',
+			[
+				'label' => esc_html__( 'Input Focus', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'ft_news_bg_focus', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input:focus', 'background-color' );
+		$this->hkdev_color( 'ft_news_border_focus', esc_html__( 'Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input:focus', 'border-color' );
+		$this->hkdev_shadow( 'ft_news_shadow_focus', esc_html__( 'Focus Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input:focus' );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'ft_news_btn_tab',
+			[
+				'label' => esc_html__( 'Button', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_typography( 'ft_news_btn', esc_html__( 'Text', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn' );
+		$this->hkdev_color( 'ft_news_btn_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'background-color' );
+		$this->hkdev_color( 'ft_news_btn_color', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'color' );
+		$this->hkdev_color( 'ft_news_btn_border', esc_html__( 'Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'border-color' );
+		$this->hkdev_dimensions( 'ft_news_btn_radius', esc_html__( 'Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 'border-radius' );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'ft_news_btn_hover_tab',
+			[
+				'label' => esc_html__( 'Button Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'ft_news_btn_hover', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn:hover', 'background-color' );
+		$this->hkdev_color( 'ft_news_btn_color_hover', esc_html__( 'Text Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn:hover', 'color' );
+		$this->hkdev_color( 'ft_news_btn_border_hover', esc_html__( 'Border', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn:hover', 'border-color' );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+		$this->hkdev_transition_seconds( 'ft_news_input_transition', esc_html__( 'Input Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-input', 0, 1.5, 0.05, 0.25 );
+		$this->hkdev_transition_seconds( 'ft_news_btn_transition', esc_html__( 'Button Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-news-btn', 0, 1.5, 0.05, 0.25 );
 
 		$this->end_controls_section();
 
@@ -499,9 +559,28 @@ class Footer_Widget extends Widget_Base {
 			]
 		);
 
+		$this->start_controls_tabs( 'ft_social_state_tabs' );
+		$this->start_controls_tab(
+			'ft_social_tab_normal',
+			[
+				'label' => esc_html__( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'ft_social_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 'background-color' );
 		$this->hkdev_color( 'ft_social_color', esc_html__( 'Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 'color' );
+		$this->end_controls_tab();
+		$this->start_controls_tab(
+			'ft_social_tab_hover',
+			[
+				'label' => esc_html__( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'ft_social_bg_hover', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link:hover', 'background-color' );
+		$this->hkdev_color( 'ft_social_color_hover', esc_html__( 'Icon Colour', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link:hover', 'color' );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
 		$this->hkdev_dimensions( 'ft_social_radius', esc_html__( 'Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 'border-radius' );
+		$this->hkdev_transition_seconds( 'ft_social_transition', esc_html__( 'Transition (s)', 'hkdev-shop-elements' ), $scope . ' .hkdev-footer-social-link', 0, 1.5, 0.05, 0.25 );
 
 		$this->end_controls_section();
 
@@ -601,6 +680,6 @@ class Footer_Widget extends Widget_Base {
 			'show_backtotop'    => ( isset( $settings['show_backtotop'] ) && 'yes' === $settings['show_backtotop'] ) ? 'yes' : 'no',
 		];
 
-		echo \HkdevShopElements\Includes\Footer_Engine::instance()->footer_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\FooterEngine::instance()->footer_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

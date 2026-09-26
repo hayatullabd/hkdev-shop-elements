@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Blog_Engine;
-use HkdevShopElements\Includes\Shop_Engine;
+use HkdevShopElements\Includes\Core\BlogEngine;
+use HkdevShopElements\Includes\Core\ShopEngine;
 
 class Blog_Widget extends Widget_Base {
 
@@ -315,7 +315,7 @@ class Blog_Widget extends Widget_Base {
 						'name'        => 'category',
 						'label'       => __( 'Category', 'hkdev-shop-elements' ),
 						'type'        => Controls_Manager::SELECT2,
-						'options'     => Shop_Engine::term_options( 'category' ),
+						'options'     => ShopEngine::term_options( 'category' ),
 						'label_block' => true,
 					],
 				],
@@ -366,14 +366,32 @@ class Blog_Widget extends Widget_Base {
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);
-
+		$this->start_controls_tabs( 'blog_card_state_tabs' );
+		$this->start_controls_tab(
+			'blog_card_tab_normal',
+			[
+				'label' => __( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'card_bg', __( 'Card Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 'background-color' );
-
 		$this->hkdev_color( 'card_border', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 'border-color' );
-
 		$this->hkdev_slider( 'card_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 'border-radius', 0, 40 );
-
 		$this->hkdev_shadow( 'card_shadow', __( 'Box Shadow', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card' );
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'blog_card_tab_hover',
+			[
+				'label' => __( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'card_bg_hover', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card:hover', 'background-color' );
+		$this->hkdev_color( 'card_border_hover', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card:hover', 'border-color' );
+		$this->hkdev_shadow( 'card_shadow_hover', __( 'Box Shadow', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card:hover' );
+		$this->hkdev_translate_y( 'card_lift_hover', __( 'Lift (px)', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card:hover', -30, 0, -5 );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+		$this->hkdev_transition_seconds( 'card_transition', __( 'Transition (s)', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card', 0, 1.5, 0.05, 0.25 );
 
 		$this->hkdev_dimensions( 'card_content_padding', __( 'Content Padding', 'hkdev-shop-elements' ), $w . '.hkdev-blog-card-body', 'padding' );
 
@@ -453,14 +471,30 @@ class Blog_Widget extends Widget_Base {
 		);
 
 		$this->hkdev_typography( 'button_typography', __( 'Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore' );
-
+		$this->start_controls_tabs( 'blog_btn_state_tabs' );
+		$this->start_controls_tab(
+			'blog_btn_tab_normal',
+			[
+				'label' => __( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'button_bg_color', __( 'Background Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'background-color' );
-
 		$this->hkdev_color( 'button_text_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore' );
-
-		$this->hkdev_color( 'button_bg_hover', __( 'Hover Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover', 'background-color' );
-
-		$this->hkdev_color( 'button_text_hover', __( 'Hover Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover' );
+		$this->hkdev_color( 'button_border_color', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'border-color' );
+		$this->end_controls_tab();
+		$this->start_controls_tab(
+			'blog_btn_tab_hover',
+			[
+				'label' => __( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'button_bg_hover', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover', 'background-color' );
+		$this->hkdev_color( 'button_text_hover', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover' );
+		$this->hkdev_color( 'button_border_hover', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover', 'border-color' );
+		$this->hkdev_shadow( 'button_shadow_hover', __( 'Shadow', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore:hover' );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+		$this->hkdev_transition_seconds( 'button_transition', __( 'Transition (s)', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 0, 1.5, 0.05, 0.25 );
 
 		$this->hkdev_slider( 'button_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-readmore', 'border-radius', 0, 30 );
 
@@ -479,14 +513,29 @@ class Blog_Widget extends Widget_Base {
 		);
 
 		$this->hkdev_typography( 'loadmore_typography', __( 'Typography', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore' );
-
+		$this->start_controls_tabs( 'blog_loadmore_state_tabs' );
+		$this->start_controls_tab(
+			'blog_loadmore_tab_normal',
+			[
+				'label' => __( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'loadmore_bg_color', __( 'Background Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 'background-color' );
-
 		$this->hkdev_color( 'loadmore_text_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore' );
-
+		$this->hkdev_color( 'loadmore_border_color', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 'border-color' );
+		$this->end_controls_tab();
+		$this->start_controls_tab(
+			'blog_loadmore_tab_hover',
+			[
+				'label' => __( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'loadmore_bg_hover', __( 'Hover Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore:hover', 'background-color' );
-
 		$this->hkdev_color( 'loadmore_text_hover', __( 'Hover Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore:hover' );
+		$this->hkdev_color( 'loadmore_border_hover', __( 'Hover Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore:hover', 'border-color' );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+		$this->hkdev_transition_seconds( 'loadmore_transition', __( 'Transition (s)', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 0, 1.5, 0.05, 0.25 );
 
 		$this->hkdev_slider( 'loadmore_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-loadmore', 'border-radius', 0, 60 );
 
@@ -514,11 +563,39 @@ class Blog_Widget extends Widget_Base {
 
 		$this->hkdev_slider( 'tab_radius', __( 'Border Radius', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'border-radius', 0, 40 );
 
+		$this->start_controls_tabs( 'blog_tab_state_tabs' );
+		$this->start_controls_tab(
+			'blog_tab_normal',
+			[
+				'label' => __( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
 		$this->hkdev_color( 'tab_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'background-color' );
-
 		$this->hkdev_color( 'tab_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item' );
-
 		$this->hkdev_color( 'tab_border', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 'border-color' );
+		$this->end_controls_tab();
+		$this->start_controls_tab(
+			'blog_tab_hover',
+			[
+				'label' => __( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'tab_hover_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item:hover', 'background-color' );
+		$this->hkdev_color( 'tab_hover_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item:hover' );
+		$this->hkdev_color( 'tab_hover_border', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item:hover', 'border-color' );
+		$this->end_controls_tab();
+		$this->start_controls_tab(
+			'blog_tab_active',
+			[
+				'label' => __( 'Active', 'hkdev-shop-elements' ),
+			]
+		);
+		$this->hkdev_color( 'tab_active_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active', 'background-color' );
+		$this->hkdev_color( 'tab_active_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active' );
+		$this->hkdev_color( 'tab_active_border', __( 'Border Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active', 'border-color' );
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+		$this->hkdev_transition_seconds( 'tab_transition', __( 'Tab Transition (s)', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item', 0, 1.5, 0.05, 0.2 );
 
 		$this->add_control(
 			'tab_active_heading',
@@ -528,10 +605,6 @@ class Blog_Widget extends Widget_Base {
 				'separator' => 'before',
 			]
 		);
-
-		$this->hkdev_color( 'tab_active_bg', __( 'Background', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active', 'background-color' );
-
-		$this->hkdev_color( 'tab_active_color', __( 'Text Color', 'hkdev-shop-elements' ), $w . '.hkdev-blog-tab-item.is-active' );
 
 		$this->add_control(
 			'tab_count_heading',
@@ -553,7 +626,7 @@ class Blog_Widget extends Widget_Base {
 	 * Render the widget output.
 	 */
 	protected function render() {
-		if ( ! class_exists( 'HkdevShopElements\Includes\Blog_Engine' ) ) {
+		if ( ! class_exists( 'HkdevShopElements\Includes\Core\BlogEngine' ) ) {
 			return;
 		}
 
@@ -579,7 +652,7 @@ class Blog_Widget extends Widget_Base {
 			'heading'        => $this->get_heading_config( $settings ),
 		];
 
-		echo Blog_Engine::instance()->render( $atts, false );
+		echo BlogEngine::instance()->render( $atts, false );
 	}
 
 	/**

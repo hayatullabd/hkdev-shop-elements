@@ -1,0 +1,42 @@
+{
+  "legacy_tokens": [
+    "Shop_Engine",
+    "Single_Product_Engine",
+    "Header_Engine",
+    "Footer_Engine",
+    "Cart_Engine",
+    "Checkout_Engine",
+    "Contact_Form_Engine",
+    "Catalog_Engine",
+    "Review_Engine",
+    "Video_Engine",
+    "Auth_Engine",
+    "Account_Engine",
+    "Tracking_Engine",
+    "Page404_Engine",
+    "Blog_Engine",
+    "Admin_Menu",
+    "Checkout_Options",
+    "Header_Options",
+    "Footer_Options",
+    "Contact_Form_Options",
+    "Review_Options",
+    "Widget_Options",
+    "Widget_Manager",
+    "Plugin_Row"
+  ],
+  "skip_paths": [
+    "/includes/Core/",
+    "/includes/Admin/",
+    "/includes/admin/",
+    "/docs/"
+  ],
+  "file_extensions": [
+    "php"
+  ],
+  "allow_line_patterns": [],
+  "strict_block_patterns": [
+    "/\\\\HkdevShopElements\\\\Includes\\\\[A-Za-z0-9]+_[A-Za-z0-9_]+::/",
+    "/\\b[A-Za-z0-9]+_[A-Za-z0-9_]+::instance\\s*\\(/"
+  ]
+}

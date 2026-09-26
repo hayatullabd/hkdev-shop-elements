@@ -1146,3 +1146,75 @@ a.added_to_cart.wc-forward {
         height: 42px !important;
     }
 }
+
+/* ==========================================================
+   DESIGN PRESETS / THEMES / TYPOGRAPHY
+========================================================== */
+.hkdev-sp-wrapper[data-font-mode="dual"] {
+    font-family: var(--sp-font-bn, var(--sp-font)) !important;
+}
+.hkdev-sp-wrapper[data-font-mode="dual"] .woocommerce-Price-amount,
+.hkdev-sp-wrapper[data-font-mode="dual"] .woocommerce-Price-currencySymbol,
+.hkdev-sp-wrapper[data-font-mode="dual"] .hkdev-sp-qty-input,
+.hkdev-sp-wrapper[data-font-mode="dual"] .sku-val,
+.hkdev-sp-wrapper[data-font-mode="dual"] .hkdev-sp-tab-link {
+    font-family: var(--sp-font-en, var(--sp-font)) !important;
+}
+
+@media (min-width: 1025px) {
+    .hkdev-sp-wrapper[data-gallery-sticky="yes"] .hkdev-sp-gallery {
+        position: sticky !important;
+        top: 24px !important;
+    }
+}
+
+.hkdev-sp-wrapper[data-card-preset="compact"] .hkdev-sp-main-container {
+    gap: 24px !important;
+}
+.hkdev-sp-wrapper[data-card-preset="compact"] .hkdev-sp-title {
+    font-size: 22px !important;
+}
+.hkdev-sp-wrapper[data-card-preset="compact"] .hkdev-sp-gallery {
+    gap: 10px !important;
+}
+.hkdev-sp-wrapper[data-card-preset="compact"] .hkdev-sp-btn {
+    height: 44px !important;
+}
+
+.hkdev-sp-wrapper[data-card-preset="premium"] .hkdev-sp-viewport {
+    box-shadow: var(--sp-hover-shadow) !important;
+}
+.hkdev-sp-wrapper[data-card-preset="premium"] .hkdev-sp-title {
+    letter-spacing: -0.4px !important;
+}
+.hkdev-sp-wrapper[data-card-preset="premium"] .hkdev-sp-btn {
+    border-radius: 14px !important;
+}
+
+.hkdev-sp-wrapper[data-card-preset="minimal"] .hkdev-sp-viewport {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.hkdev-sp-wrapper[data-card-preset="minimal"] .hkdev-sp-btn {
+    box-shadow: none !important;
+}
+.hkdev-sp-wrapper[data-card-preset="minimal"] .hkdev-sp-tabs-section {
+    box-shadow: none !important;
+}
+
+.hkdev-sp-wrapper[data-card-preset="bold"] .hkdev-sp-title {
+    font-weight: 800 !important;
+    font-size: 32px !important;
+}
+.hkdev-sp-wrapper[data-card-preset="bold"] .hkdev-sp-btn {
+    font-weight: 800 !important;
+    letter-spacing: 0.2px !important;
+}
+
+.hkdev-sp-wrapper[data-card-preset="classic"] .hkdev-sp-viewport,
+.hkdev-sp-wrapper[data-card-preset="classic"] .hkdev-sp-thumb {
+    border-radius: 6px !important;
+}
+.hkdev-sp-wrapper[data-card-preset="classic"] .hkdev-sp-btn {
+    border-radius: 6px !important;
+}

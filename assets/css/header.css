@@ -32,6 +32,26 @@
     box-sizing: border-box !important;
 }
 
+/* Standalone Elementor rows: Upper / Main / Bottom keep their own bar
+   colours instead of sharing one full-header white shell. */
+.hkdev-header-wrap[data-header-part="upper"],
+.hkdev-header-wrap[data-header-part="main"],
+.hkdev-header-wrap[data-header-part="bottom"] {
+    background: transparent !important;
+}
+
+.hkdev-header-wrap[data-header-part="upper"] {
+    z-index: 9992 !important;
+}
+
+.hkdev-header-wrap[data-header-part="main"] {
+    z-index: 9991 !important;
+}
+
+.hkdev-header-wrap[data-header-part="bottom"] {
+    z-index: 9990 !important;
+}
+
 .hkdev-mini-cart,
 .hkdev-mini-cart-overlay {
     font-family: var(--hd-font) !important;

@@ -172,9 +172,9 @@ require __DIR__ . '/../hkdev-shop-elements.php';
 
 \HkdevShopElements\hkdev_elements_boot();
 
-if ( class_exists( '\HkdevShopElements\Includes\Widget_Options' ) ) {
-	$states   = \HkdevShopElements\Includes\Widget_Options::instance()->get_widget_states();
-	$registry = \HkdevShopElements\Includes\Widget_Manager::get_widget_registry();
+if ( class_exists( '\HkdevShopElements\Includes\Admin\WidgetOptions' ) ) {
+	$states   = \HkdevShopElements\Includes\Admin\WidgetOptions::instance()->get_widget_states();
+	$registry = \HkdevShopElements\Includes\Admin\WidgetManager::get_widget_registry();
 	echo 'Boot OK. Widgets: ' . count( $states ) . ' registry groups: ' . count( $registry ) . PHP_EOL;
 } else {
 	echo 'Boot aborted safely (incomplete install simulation).' . PHP_EOL;

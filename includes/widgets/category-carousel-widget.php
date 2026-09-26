@@ -1,10 +1,10 @@
 <?php
 /**
- * HKDEV Category Grid / Carousel Widget (HKDEV Shop Elements plugin).
+ * HKDEV Category Carousel Widget (HKDEV Shop Elements plugin).
  *
- * Renders WooCommerce product categories either as a static grid or as a
- * responsive Swiper carousel: image + name (+ product count) per card. Columns
- * / slides per view, spacing, autoplay, arrows and dots are configurable.
+ * Renders WooCommerce product categories as a responsive Swiper carousel:
+ * image + name (+ product count) per card. Columns / slides per view, spacing,
+ * autoplay, arrows and dots are configurable.
  *
  * The markup reuses the shop wrapper contract (.hkdev-shop-wrapper with
  * data-style="grid" or "carousel") so the shop.css grid rules and the shop.js
@@ -46,7 +46,7 @@ class Category_Carousel_Widget extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return esc_html__( 'HKDEV Category Grid / Carousel', 'hkdev-shop-elements' );
+		return esc_html__( 'HKDEV Category Carousel', 'hkdev-shop-elements' );
 	}
 
 	/**
@@ -73,7 +73,18 @@ class Category_Carousel_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_keywords() {
-		return [ 'category', 'categories', 'carousel', 'slider', 'grid', 'product cat', 'responsive' ];
+		return [ 'category', 'categories', 'carousel', 'slider', 'product cat', 'responsive' ];
+	}
+
+	/**
+	 * Widget layout style used by the renderer.
+	 *
+	 * Child widgets can override this to force a different mode.
+	 *
+	 * @return string
+	 */
+	protected function get_widget_layout_style() {
+		return 'carousel';
 	}
 
 	/**
@@ -159,6 +170,8 @@ class Category_Carousel_Widget extends Widget_Base {
 		);
 
 		$this->register_cc_extra_style_controls();
+		$this->register_cc_carousel_style_controls();
+		$this->register_cc_grid_style_controls();
 	}
 
 	/**
@@ -179,7 +192,7 @@ class Category_Carousel_Widget extends Widget_Base {
 
 		$this->hkdev_shadow( 'cc_card_shadow', esc_html__( 'Card Box Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-card' );
 		$this->hkdev_slider( 'cc_card_border_w', esc_html__( 'Card Border Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-cat-card', 'border-width', 0, 6 );
-		$this->hkdev_slider( 'cc_gap', esc_html__( 'Gap Between Cards', 'hkdev-shop-elements' ), $scope . ' .hkdev-shop-grid', 'gap', 0, 60 );
+		$this->hkdev_slider( 'cc_gap', esc_html__( 'Gap Between Cards', 'hkdev-shop-elements' ), $scope . ' .hkdev-shop-grid', 'gap', 0, 60, [ 'style' => 'grid' ] );
 
 		$this->hkdev_select(
 			'cc_img_fit',
@@ -222,6 +235,153 @@ class Category_Carousel_Widget extends Widget_Base {
 				'500' => '500',
 				'600' => '600',
 				'700' => '700',
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Carousel-only style controls (arrows + dots).
+	 *
+	 * @return void
+	 */
+	protected function register_cc_carousel_style_controls() {
+		$scope = '{{WRAPPER}} .hkdev-cat-carousel';
+
+		$this->start_controls_section(
+			'cc_style_carousel_nav',
+			[
+				'label'     => esc_html__( 'Carousel Navigation', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'style' => 'carousel' ],
+			]
+		);
+
+		$this->hkdev_slider( 'cc_car_nav_size', esc_html__( 'Arrow Button Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'width', 28, 72 );
+		$this->hkdev_slider( 'cc_car_nav_height', esc_html__( 'Arrow Button Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'height', 28, 72 );
+		$this->hkdev_slider( 'cc_car_nav_icon_size', esc_html__( 'Arrow Icon Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn svg', 'width', 10, 36 );
+		$this->hkdev_dimensions( 'cc_car_nav_radius', esc_html__( 'Arrow Border Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'border-radius' );
+		$this->hkdev_color( 'cc_car_nav_bg', esc_html__( 'Arrow Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'background-color' );
+		$this->hkdev_color( 'cc_car_nav_color', esc_html__( 'Arrow Icon Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'color' );
+		$this->hkdev_color( 'cc_car_nav_border', esc_html__( 'Arrow Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn', 'border-color' );
+		$this->hkdev_shadow( 'cc_car_nav_shadow', esc_html__( 'Arrow Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn' );
+
+		$this->add_control(
+			'cc_car_nav_hover_heading',
+			[
+				'label'     => esc_html__( 'Arrow Hover', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->hkdev_color( 'cc_car_nav_bg_hover', esc_html__( 'Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn:hover', 'background-color' );
+		$this->hkdev_color( 'cc_car_nav_color_hover', esc_html__( 'Hover Icon Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn:hover', 'color' );
+		$this->hkdev_color( 'cc_car_nav_border_hover', esc_html__( 'Hover Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-nav-btn:hover', 'border-color' );
+
+		$this->add_control(
+			'cc_car_dots_heading',
+			[
+				'label'     => esc_html__( 'Pagination Dots', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->hkdev_color( 'cc_car_dots_wrap_bg', esc_html__( 'Dots Wrapper Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots', 'background-color' );
+		$this->hkdev_shadow( 'cc_car_dots_wrap_shadow', esc_html__( 'Dots Wrapper Shadow', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots' );
+		$this->hkdev_color( 'cc_car_dot_bg', esc_html__( 'Dot Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet', 'background-color' );
+		$this->hkdev_color( 'cc_car_dot_active_bg', esc_html__( 'Active Dot Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet-active', 'background-color' );
+		$this->hkdev_slider( 'cc_car_dot_size', esc_html__( 'Dot Size', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet', 'width', 4, 18 );
+		$this->hkdev_slider( 'cc_car_dot_size_h', esc_html__( 'Dot Height', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet', 'height', 4, 18 );
+		$this->hkdev_slider( 'cc_car_dot_active_w', esc_html__( 'Active Dot Width', 'hkdev-shop-elements' ), $scope . ' .hkdev-carousel-dots .swiper-pagination-bullet-active', 'width', 8, 40 );
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Grid-only advanced style controls.
+	 *
+	 * @return void
+	 */
+	protected function register_cc_grid_style_controls() {
+		$scope = '{{WRAPPER}} .hkdev-cat-carousel';
+
+		$this->start_controls_section(
+			'cc_style_grid_advanced',
+			[
+				'label'     => esc_html__( 'Grid Advanced', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'style' => 'grid' ],
+			]
+		);
+
+		$this->hkdev_slider(
+			'cc_grid_min_h',
+			esc_html__( 'Card Minimum Height', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-cat-card',
+			'min-height',
+			120,
+			520
+		);
+
+		$this->hkdev_select(
+			'cc_grid_cols_mobile_force',
+			esc_html__( 'Force Mobile Columns', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-cols-mobile',
+			[
+				''  => esc_html__( 'Use Content Setting', 'hkdev-shop-elements' ),
+				'1' => '1',
+				'2' => '2',
+				'3' => '3',
+			]
+		);
+
+		$this->hkdev_select(
+			'cc_grid_cols_tablet_force',
+			esc_html__( 'Force Tablet Columns', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-cols-tablet',
+			[
+				''  => esc_html__( 'Use Content Setting', 'hkdev-shop-elements' ),
+				'1' => '1',
+				'2' => '2',
+				'3' => '3',
+				'4' => '4',
+				'5' => '5',
+				'6' => '6',
+			]
+		);
+
+		$this->hkdev_select(
+			'cc_grid_cols_desktop_force',
+			esc_html__( 'Force Desktop Columns', 'hkdev-shop-elements' ),
+			$scope,
+			'--hkdev-cols-desktop',
+			[
+				''  => esc_html__( 'Use Content Setting', 'hkdev-shop-elements' ),
+				'1' => '1',
+				'2' => '2',
+				'3' => '3',
+				'4' => '4',
+				'5' => '5',
+				'6' => '6',
+				'7' => '7',
+				'8' => '8',
+			]
+		);
+
+		$this->hkdev_select(
+			'cc_grid_hover_motion',
+			esc_html__( 'Hover Motion', 'hkdev-shop-elements' ),
+			$scope . ' .hkdev-cat-card:hover',
+			'transform',
+			[
+				''                 => esc_html__( 'Default Lift', 'hkdev-shop-elements' ),
+				'none'             => esc_html__( 'None', 'hkdev-shop-elements' ),
+				'translateY(-2px)' => esc_html__( 'Soft', 'hkdev-shop-elements' ),
+				'translateY(-6px)' => esc_html__( 'Medium', 'hkdev-shop-elements' ),
+				'translateY(-10px)' => esc_html__( 'Strong', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -349,14 +509,8 @@ class Category_Carousel_Widget extends Widget_Base {
 		$this->add_control(
 			'style',
 			[
-				'label'   => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'carousel',
-				'options' => [
-					'carousel' => esc_html__( 'Carousel / Slider', 'hkdev-shop-elements' ),
-					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
-				],
-				'description' => esc_html__( 'Grid lays the categories out in a static grid; carousel shows the slide, autoplay, arrow and dot options below.', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::HIDDEN,
+				'default' => $this->get_widget_layout_style(),
 			]
 		);
 
@@ -445,6 +599,94 @@ class Category_Carousel_Widget extends Widget_Base {
 			[
 				'label' => esc_html__( 'Category Card', 'hkdev-shop-elements' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'card_preset',
+			[
+				'label'       => esc_html__( 'Design Preset', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'clean',
+				'options'     => [
+					'clean'   => esc_html__( 'Clean (Default)', 'hkdev-shop-elements' ),
+					'compact' => esc_html__( 'Compact', 'hkdev-shop-elements' ),
+					'premium' => esc_html__( 'Premium', 'hkdev-shop-elements' ),
+					'minimal' => esc_html__( 'Minimal', 'hkdev-shop-elements' ),
+					'bold'    => esc_html__( 'Bold', 'hkdev-shop-elements' ),
+					'classic' => esc_html__( 'Classic', 'hkdev-shop-elements' ),
+				],
+				'description' => esc_html__( 'Applies a ready-made visual base. You can still override every value below.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'card_theme',
+			[
+				'label'   => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'green',
+				'options' => [
+					'green'      => esc_html__( 'Green (Default)', 'hkdev-shop-elements' ),
+					'orange'     => esc_html__( 'Orange', 'hkdev-shop-elements' ),
+					'monochrome' => esc_html__( 'Monochrome', 'hkdev-shop-elements' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'font_family',
+			[
+				'label'   => esc_html__( 'Primary Font (Bangla)', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'hind_siliguri',
+				'options' => [
+					'hind_siliguri'      => esc_html__( 'Hind Siliguri', 'hkdev-shop-elements' ),
+					'noto_sans_bengali'  => esc_html__( 'Noto Sans Bengali', 'hkdev-shop-elements' ),
+					'noto_serif_bengali' => esc_html__( 'Noto Serif Bengali', 'hkdev-shop-elements' ),
+					'tiro_bangla'        => esc_html__( 'Tiro Bangla', 'hkdev-shop-elements' ),
+					'inter'              => esc_html__( 'Inter', 'hkdev-shop-elements' ),
+					'poppins'            => esc_html__( 'Poppins', 'hkdev-shop-elements' ),
+					'roboto'             => esc_html__( 'Roboto', 'hkdev-shop-elements' ),
+					'open_sans'          => esc_html__( 'Open Sans', 'hkdev-shop-elements' ),
+					'montserrat'         => esc_html__( 'Montserrat', 'hkdev-shop-elements' ),
+					'system_sans'        => esc_html__( 'System Sans', 'hkdev-shop-elements' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'font_mode',
+			[
+				'label'   => esc_html__( 'Typography Mode', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'single',
+				'options' => [
+					'single' => esc_html__( 'Single Font', 'hkdev-shop-elements' ),
+					'dual'   => esc_html__( 'Dual Font (Bangla + Latin)', 'hkdev-shop-elements' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'font_family_latin',
+			[
+				'label'     => esc_html__( 'Secondary Font (Latin/Numbers)', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::SELECT,
+				'default'   => 'system_sans',
+				'options'   => [
+					'system_sans'        => esc_html__( 'System Sans', 'hkdev-shop-elements' ),
+					'hind_siliguri'      => esc_html__( 'Hind Siliguri', 'hkdev-shop-elements' ),
+					'noto_sans_bengali'  => esc_html__( 'Noto Sans Bengali', 'hkdev-shop-elements' ),
+					'noto_serif_bengali' => esc_html__( 'Noto Serif Bengali', 'hkdev-shop-elements' ),
+					'tiro_bangla'        => esc_html__( 'Tiro Bangla', 'hkdev-shop-elements' ),
+					'inter'              => esc_html__( 'Inter', 'hkdev-shop-elements' ),
+					'poppins'            => esc_html__( 'Poppins', 'hkdev-shop-elements' ),
+					'roboto'             => esc_html__( 'Roboto', 'hkdev-shop-elements' ),
+					'open_sans'          => esc_html__( 'Open Sans', 'hkdev-shop-elements' ),
+					'montserrat'         => esc_html__( 'Montserrat', 'hkdev-shop-elements' ),
+				],
+				'condition' => [ 'font_mode' => 'dual' ],
 			]
 		);
 
@@ -684,6 +926,105 @@ class Category_Carousel_Widget extends Widget_Base {
 	 * @return string
 	 */
 	protected function get_card_style_vars( $settings ) {
+		$preset = isset( $settings['card_preset'] ) ? (string) $settings['card_preset'] : 'clean';
+		if ( ! in_array( $preset, [ 'clean', 'compact', 'premium', 'minimal', 'bold', 'classic' ], true ) ) {
+			$preset = 'clean';
+		}
+
+		$preset_defaults = [
+			'clean' => [
+				'card_bg'          => '#ffffff',
+				'card_border'      => '',
+				'card_radius'      => '14px',
+				'card_padding'     => '12px',
+				'img_radius'       => '10px',
+				'name_size'        => '15px',
+				'name_weight'      => '700',
+				'count_size'       => '12.5px',
+				'hover_lift'       => '5px',
+				'name_color'       => '',
+				'name_hover_color' => '',
+				'count_color'      => '',
+				'hover_border'     => '',
+			],
+			'compact' => [
+				'card_bg'          => '#ffffff',
+				'card_border'      => 'rgba(0,0,0,.08)',
+				'card_radius'      => '10px',
+				'card_padding'     => '10px',
+				'img_radius'       => '8px',
+				'name_size'        => '14px',
+				'name_weight'      => '600',
+				'count_size'       => '12px',
+				'hover_lift'       => '3px',
+				'name_color'       => '',
+				'name_hover_color' => '#03a550',
+				'count_color'      => '#6f7d76',
+				'hover_border'     => 'rgba(3,165,80,.25)',
+			],
+			'premium' => [
+				'card_bg'          => '#ffffff',
+				'card_border'      => 'rgba(3,165,80,.18)',
+				'card_radius'      => '18px',
+				'card_padding'     => '14px',
+				'img_radius'       => '14px',
+				'name_size'        => '16px',
+				'name_weight'      => '700',
+				'count_size'       => '13px',
+				'hover_lift'       => '7px',
+				'name_color'       => '#1b2a22',
+				'name_hover_color' => '#03a550',
+				'count_color'      => '#5f6e66',
+				'hover_border'     => 'rgba(3,165,80,.32)',
+			],
+			'minimal' => [
+				'card_bg'          => '#ffffff',
+				'card_border'      => 'rgba(0,0,0,.06)',
+				'card_radius'      => '8px',
+				'card_padding'     => '10px',
+				'img_radius'       => '6px',
+				'name_size'        => '14px',
+				'name_weight'      => '600',
+				'count_size'       => '11.5px',
+				'hover_lift'       => '2px',
+				'name_color'       => '#243229',
+				'name_hover_color' => '#03a550',
+				'count_color'      => '#77867f',
+				'hover_border'     => 'rgba(3,165,80,.20)',
+			],
+			'bold' => [
+				'card_bg'          => '#ffffff',
+				'card_border'      => 'rgba(3,165,80,.24)',
+				'card_radius'      => '16px',
+				'card_padding'     => '14px',
+				'img_radius'       => '12px',
+				'name_size'        => '17px',
+				'name_weight'      => '800',
+				'count_size'       => '13.5px',
+				'hover_lift'       => '8px',
+				'name_color'       => '#132219',
+				'name_hover_color' => '#03a550',
+				'count_color'      => '#51625a',
+				'hover_border'     => 'rgba(3,165,80,.38)',
+			],
+			'classic' => [
+				'card_bg'          => '#fffdf8',
+				'card_border'      => 'rgba(240,103,36,.22)',
+				'card_radius'      => '12px',
+				'card_padding'     => '12px',
+				'img_radius'       => '9px',
+				'name_size'        => '15px',
+				'name_weight'      => '700',
+				'count_size'       => '12.5px',
+				'hover_lift'       => '4px',
+				'name_color'       => '#33271f',
+				'name_hover_color' => '#f06724',
+				'count_color'      => '#7a6457',
+				'hover_border'     => 'rgba(240,103,36,.34)',
+			],
+		];
+		$base = $preset_defaults[ $preset ];
+
 		$px = static function ( $key, $fallback ) use ( $settings ) {
 			if ( isset( $settings[ $key ]['size'] ) && '' !== $settings[ $key ]['size'] ) {
 				return round( (float) $settings[ $key ]['size'], 2 ) . 'px';
@@ -706,15 +1047,20 @@ class Category_Carousel_Widget extends Widget_Base {
 		}
 
 		$vars = [
-			'--hkdev-cat-bg'           => $color( 'card_bg', '#ffffff' ),
-			'--hkdev-cat-radius'       => $px( 'card_radius', '14px' ),
-			'--hkdev-cat-pad'          => $px( 'card_padding', '12px' ),
-			'--hkdev-cat-img-radius'   => $px( 'img_radius', '10px' ),
+			'--hkdev-cat-bg'           => $color( 'card_bg', $base['card_bg'] ),
+			'--hkdev-cat-radius'       => $px( 'card_radius', $base['card_radius'] ),
+			'--hkdev-cat-pad'          => $px( 'card_padding', $base['card_padding'] ),
+			'--hkdev-cat-img-radius'   => $px( 'img_radius', $base['img_radius'] ),
 			'--hkdev-cat-ratio'        => $ratio,
-			'--hkdev-cat-name-size'    => $px( 'name_size', '15px' ),
-			'--hkdev-cat-name-weight'  => $weight( 'name_weight', '700' ),
-			'--hkdev-cat-count-size'   => $px( 'count_size', '12.5px' ),
-			'--hkdev-cat-lift'         => $px( 'hover_lift', '5px' ),
+			'--hkdev-cat-name-size'    => $px( 'name_size', $base['name_size'] ),
+			'--hkdev-cat-name-weight'  => $weight( 'name_weight', $base['name_weight'] ),
+			'--hkdev-cat-count-size'   => $px( 'count_size', $base['count_size'] ),
+			'--hkdev-cat-lift'         => $px( 'hover_lift', $base['hover_lift'] ),
+			'--hkdev-cat-border'       => $base['card_border'],
+			'--hkdev-cat-name-color'   => $base['name_color'],
+			'--hkdev-cat-name-hover'   => $base['name_hover_color'],
+			'--hkdev-cat-count-color'  => $base['count_color'],
+			'--hkdev-cat-hover-border' => $base['hover_border'],
 		];
 
 		$colors = [
@@ -848,7 +1194,7 @@ class Category_Carousel_Widget extends Widget_Base {
 		$tax_query = [ 'relation' => 'AND' ];
 
 		if ( $hide_hidden ) {
-			$hidden = \HkdevShopElements\Includes\Shop_Engine::hidden_from_catalog_clause();
+			$hidden = \HkdevShopElements\Includes\Core\ShopEngine::hidden_from_catalog_clause();
 
 			if ( $hidden ) {
 				$tax_query[] = $hidden;
@@ -961,7 +1307,17 @@ class Category_Carousel_Widget extends Widget_Base {
 		$carousel    = $this->get_carousel_config( $settings );
 		$cols        = $this->get_cards_per_view( $settings );
 		$columns     = $cols['desktop'];
-		$grid_style  = \HkdevShopElements\Includes\Shop_Engine::instance()->grid_columns_style_attr( $cols['mobile'], $cols['tablet'], $cols['desktop'] );
+		$card_theme  = isset( $settings['card_theme'] ) ? sanitize_key( (string) $settings['card_theme'] ) : 'green';
+		$font_family = isset( $settings['font_family'] ) ? sanitize_key( (string) $settings['font_family'] ) : 'hind_siliguri';
+		$font_mode   = isset( $settings['font_mode'] ) ? sanitize_key( (string) $settings['font_mode'] ) : 'single';
+		$font_latin  = isset( $settings['font_family_latin'] ) ? sanitize_key( (string) $settings['font_family_latin'] ) : 'system_sans';
+		if ( ! in_array( $card_theme, [ 'green', 'orange', 'monochrome' ], true ) ) {
+			$card_theme = 'green';
+		}
+		$grid_style  = \HkdevShopElements\Includes\Core\ShopEngine::instance()->grid_columns_style_attr( $cols['mobile'], $cols['tablet'], $cols['desktop'] );
+		$grid_style .= '--hkdev-font:' . \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $font_family ) . ';';
+		$grid_style .= '--hkdev-font-bn:' . \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $font_family ) . ';';
+		$grid_style .= '--hkdev-font-en:' . \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $font_latin ) . ';';
 		$unique_id   = 'hkdev-cat-' . wp_rand( 1000, 9999 );
 		?>
 		<div class="hkdev-shop-wrapper hkdev-cat-carousel" id="<?php echo esc_attr( $unique_id ); ?>"
@@ -971,10 +1327,12 @@ class Category_Carousel_Widget extends Widget_Base {
 			 data-carousel="<?php echo esc_attr( wp_json_encode( $carousel ) ); ?>"
 			 data-car-arrows="<?php echo esc_attr( $carousel['arrows'] ? '1' : '0' ); ?>"
 			 data-car-dots="<?php echo esc_attr( $carousel['dots'] ? '1' : '0' ); ?>"
+			 data-card-theme="<?php echo esc_attr( $card_theme ); ?>"
+			 data-font-mode="<?php echo esc_attr( 'dual' === $font_mode ? 'dual' : 'single' ); ?>"
 			 data-title-lines="<?php echo absint( $this->get_title_lines( $settings ) ); ?>"
 			 data-hkdev-elements="1">
 
-			<?php echo \HkdevShopElements\Includes\Shop_Engine::instance()->shop_heading_html( $this->get_heading_config( $settings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php echo \HkdevShopElements\Includes\Core\ShopEngine::instance()->shop_heading_html( $this->get_heading_config( $settings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 
 			<div class="hkdev-cat-style" style="<?php echo esc_attr( $this->get_card_style_vars( $settings ) ); ?>">
 				<div class="hkdev-grid-container">

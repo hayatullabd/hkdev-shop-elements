@@ -168,6 +168,6 @@ class Tracking_Widget extends Widget_Base {
 			'show_status_legend' => isset( $settings['show_status_legend'] ) && 'yes' === $settings['show_status_legend'] ? 'yes' : 'no',
 		];
 
-		echo \HkdevShopElements\Includes\Tracking_Engine::instance()->tracking_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\TrackingEngine::instance()->tracking_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

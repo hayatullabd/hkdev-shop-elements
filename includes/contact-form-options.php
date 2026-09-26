@@ -158,7 +158,7 @@ final class Contact_Form_Options {
 	 * @return array<string, string>
 	 */
 	private function stored() {
-		$stored = get_option( Contact_Form_Engine::OPTION_NAME, [] );
+		$stored = get_option( \HkdevShopElements\Includes\Core\ContactFormEngine::OPTION_NAME, [] );
 
 		return is_array( $stored ) ? $stored : [];
 	}
@@ -210,7 +210,7 @@ final class Contact_Form_Options {
 				'primary_color'  => $color ? $color : '',
 			];
 
-			update_option( Contact_Form_Engine::OPTION_NAME, $settings );
+			update_option( \HkdevShopElements\Includes\Core\ContactFormEngine::OPTION_NAME, $settings );
 			$saved_notice = true;
 		}
 
@@ -239,7 +239,7 @@ final class Contact_Form_Options {
 					</a>
 				</div>
 			</div>
-			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
+			<?php \HkdevShopElements\Includes\Admin\AdminMenu::instance()->render_module_nav( self::SETTINGS_SLUG ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Contact form settings saved.', 'hkdev-shop-elements' ); ?></p></div>

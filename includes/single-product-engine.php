@@ -403,9 +403,9 @@ class Single_Product_Engine {
 			return [ 'type' => '', 'embed' => '', 'thumbnail' => '' ];
 		}
 
-		$youtube_id = Video_Engine::youtube_id( $url );
+		$youtube_id = \HkdevShopElements\Includes\Core\VideoEngine::youtube_id( $url );
 		if ( '' !== $youtube_id ) {
-			$embed     = Video_Engine::youtube_embed_url( $youtube_id, true );
+			$embed     = \HkdevShopElements\Includes\Core\VideoEngine::youtube_embed_url( $youtube_id, true );
 			$thumbnail = 'https://i.ytimg.com/vi/' . $youtube_id . '/hqdefault.jpg';
 			return [
 				'type'      => 'youtube',
@@ -463,7 +463,7 @@ class Single_Product_Engine {
 
 		if ( 'youtube' === $video['type'] ) {
 			$poster     = ! empty( $video['thumbnail'] ) ? $video['thumbnail'] : 'https://i.ytimg.com/vi/' . $video['id'] . '/maxresdefault.jpg';
-			$watch_url  = Video_Engine::youtube_watch_url( $video['id'] );
+			$watch_url  = \HkdevShopElements\Includes\Core\VideoEngine::youtube_watch_url( $video['id'] );
 			$play_label = __( 'Play video', 'hkdev-shop-elements' );
 			return '<a href="' . esc_url( $watch_url ) . '" class="hkdev-sp-vp-lite" data-youtube-id="' . esc_attr( $video['id'] ) . '" data-youtube-embed="' . esc_url( $video['embed'] ) . '" data-youtube-fallback="" aria-label="' . esc_attr( $play_label ) . '" target="_blank" rel="noopener">'
 				. '<img src="' . esc_url( $poster ) . '" alt="" loading="lazy" decoding="async" aria-hidden="true">'
@@ -488,7 +488,7 @@ class Single_Product_Engine {
 	 * @return bool
 	 */
 	public function is_elementor_edit() {
-		return Header_Engine::instance()->is_elementor_edit();
+		return \HkdevShopElements\Includes\Core\HeaderEngine::instance()->is_elementor_edit();
 	}
 
 	/**
@@ -565,6 +565,29 @@ class Single_Product_Engine {
 	}
 
 	/**
+	 * Inline CSS variables for fonts and color theme on the single product wrapper.
+	 *
+	 * @param array $design Normalized design attributes.
+	 * @return string
+	 */
+	private function design_style_attr( $design ) {
+		$font_stack = \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $design['font_family'] );
+		$font_latin = \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $design['font_family_latin'] );
+		$css        = '--sp-font:' . $font_stack . ';';
+		$css       .= '--sp-font-bn:' . $font_stack . ';';
+		$css       .= '--sp-font-en:' . $font_latin . ';';
+		$css       .= '--hkdev-font:' . $font_stack . ';';
+
+		if ( 'orange' === $design['card_theme'] ) {
+			$css .= '--sp-brand-primary:#f06724;--sp-brand-secondary:#03a550;--sp-brand-info:#c45822;--sp-brand-accent:#f06724;--sp-hover-border:rgba(240,103,36,0.28);';
+		} elseif ( 'monochrome' === $design['card_theme'] ) {
+			$css .= '--sp-brand-primary:#222222;--sp-brand-secondary:#4a4a4a;--sp-brand-info:#3a3a3a;--sp-brand-accent:#2f2f2f;--sp-page-bg:#f3f3f3;--sp-bg-soft:#f3f3f3;--sp-text-color:#1d1d1d;--sp-text-muted:#666666;';
+		}
+
+		return $css;
+	}
+
+	/**
 	 * Render the custom single product layout.
 	 *
 	 * @param array $atts Widget/shortcode attributes.
@@ -577,13 +600,29 @@ class Single_Product_Engine {
 
 		$atts = shortcode_atts(
 			[
-				'id'            => '',
-				'phone'         => '',
-				'whatsapp'      => '',
-				'show_whatsapp' => 'yes',
-				'show_call'     => 'yes',
-				'show_brand'    => 'yes',
-				'show_category' => 'yes',
+				'id'                 => '',
+				'phone'              => '',
+				'whatsapp'           => '',
+				'show_whatsapp'      => 'yes',
+				'show_call'          => 'yes',
+				'show_brand'         => 'yes',
+				'show_category'      => 'yes',
+				'show_breadcrumb'    => 'yes',
+				'show_sale_badge'    => 'yes',
+				'show_zoom'          => 'yes',
+				'show_qty'           => 'yes',
+				'show_sku'           => 'yes',
+				'show_stock'         => 'yes',
+				'show_tabs'          => 'yes',
+				'show_faq'           => 'yes',
+				'gallery_sticky'     => 'no',
+				'gallery_image_size' => 'large',
+				'thumb_image_size'   => 'thumbnail',
+				'font_mode'          => 'single',
+				'font_family'        => 'hind_siliguri',
+				'font_family_latin'  => 'system_sans',
+				'card_preset'        => 'clean',
+				'card_theme'         => 'green',
 			],
 			$atts,
 			'hkdev_single_product'
@@ -596,7 +635,7 @@ class Single_Product_Engine {
 
 		if ( ! $product instanceof \WC_Product ) {
 			$product = $previous_product;
-			return '<div style="text-align:center; padding: 60px; color: #e5533d; font-family: \'Hind Siliguri\', sans-serif; background: #fff; border-radius: 12px; border: 1px solid #eee;">' . esc_html__( 'Product not found.', 'hkdev-shop-elements' ) . '</div>';
+			return '<div style="text-align:center; padding: 60px; color: #e5533d; font-family: inherit; background: #fff; border-radius: 12px; border: 1px solid #eee;">' . esc_html__( 'Product not found.', 'hkdev-shop-elements' ) . '</div>';
 		}
 
 		$product_id = $product->get_id();
@@ -705,6 +744,22 @@ class Single_Product_Engine {
 			}
 		}
 
+		$design            = \HkdevShopElements\Includes\Core\ShopEngine::normalize_design_atts( $atts );
+		$gallery_size      = sanitize_key( (string) $atts['gallery_image_size'] );
+		$thumb_size        = sanitize_key( (string) $atts['thumb_image_size'] );
+		$gallery_size      = $gallery_size ? $gallery_size : 'large';
+		$thumb_size        = $thumb_size ? $thumb_size : 'thumbnail';
+		$show_breadcrumb   = ( 'yes' === $atts['show_breadcrumb'] );
+		$show_sale_badge   = ( 'yes' === $atts['show_sale_badge'] );
+		$show_zoom         = ( 'yes' === $atts['show_zoom'] );
+		$show_qty          = ( 'yes' === $atts['show_qty'] );
+		$show_sku          = ( 'yes' === $atts['show_sku'] );
+		$show_stock        = ( 'yes' === $atts['show_stock'] );
+		$show_tabs         = ( 'yes' === $atts['show_tabs'] );
+		$show_faq          = ( 'yes' === $atts['show_faq'] );
+		$gallery_sticky    = ( 'yes' === $atts['gallery_sticky'] );
+		$wrapper_style     = $this->design_style_attr( $design );
+
 		ob_start();
 		?>
 		<?php
@@ -716,17 +771,25 @@ class Single_Product_Engine {
 		}
 		?>
 		<div id="product-<?php echo esc_attr( $product_id ); ?>" <?php wc_product_class( 'hkdev-sp-wrapper', $product ); ?>
+			style="<?php echo esc_attr( $wrapper_style ); ?>"
 			data-product-type="<?php echo esc_attr( $is_variable ? 'variable' : 'simple' ); ?>"
 			data-in-stock="<?php echo $is_in_stock ? 'yes' : 'no'; ?>"
+			data-card-preset="<?php echo esc_attr( $design['card_preset'] ); ?>"
+			data-card-theme="<?php echo esc_attr( $design['card_theme'] ); ?>"
+			data-font-mode="<?php echo esc_attr( $design['font_mode'] ); ?>"
+			data-gallery-sticky="<?php echo $gallery_sticky ? 'yes' : 'no'; ?>"
+			data-zoom="<?php echo $show_zoom ? 'yes' : 'no'; ?>"
 			data-default-attributes="<?php echo esc_attr( wp_json_encode( $default_variation_attrs ) ); ?>">
 
 			<?php do_action( 'woocommerce_before_single_product' ); ?>
 
+			<?php if ( $show_breadcrumb ) : ?>
 			<nav class="hkdev-sp-breadcrumb">
 				<a href="<?php echo esc_url( home_url() ); ?>"><?php esc_html_e( 'Home', 'hkdev-shop-elements' ); ?></a> <i class="fa-solid fa-angle-right"></i>
 				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>"><?php esc_html_e( 'Shop', 'hkdev-shop-elements' ); ?></a> <i class="fa-solid fa-angle-right"></i>
 				<span class="current-crumb"><?php echo esc_html( $product->get_name() ); ?></span>
 			</nav>
+			<?php endif; ?>
 
 			<div class="hkdev-sp-main-container">
 
@@ -740,7 +803,7 @@ class Single_Product_Engine {
 						$off_text           = esc_html__( 'Off!', 'hkdev-shop-elements' );
 						// Only show the badge when we actually know the discount.
 						// Variable products show it after a variation with a discount is chosen (handled in JS).
-						$show_badge         = ( 'variable' !== $product->get_type() && $percentage > 0 );
+						$show_badge         = $show_sale_badge && ( 'variable' !== $product->get_type() && $percentage > 0 );
 						$display_percentage = $percentage > 0 ? $percentage . '% ' . $off_text : $off_text;
 						$badge_style        = $show_badge ? '' : 'display:none;';
 
@@ -753,11 +816,15 @@ class Single_Product_Engine {
 						// have nothing to switch to, so they are omitted.
 						$show_gallery_arrows = ! empty( $main_image_id ) && ( ! empty( $attachment_ids ) || ! empty( $video_urls ) );
 						?>
+						<?php if ( $show_sale_badge ) : ?>
 						<span class="hkdev-sp-sale-badge" style="<?php echo esc_attr( $badge_style ); ?>"><?php echo esc_html( $display_percentage ); ?></span>
+						<?php endif; ?>
 
+						<?php if ( $show_zoom ) : ?>
 						<button type="button" class="hkdev-sp-zoom-trigger" id="hkdev-sp-zoom-btn" title="<?php esc_attr_e( 'Zoom', 'hkdev-shop-elements' ); ?>">
 							<i class="fa-solid fa-magnifying-glass-plus"></i>
 						</button>
+						<?php endif; ?>
 
 						<?php if ( $show_gallery_arrows ) : ?>
 						<button type="button" class="hkdev-sp-arrow prev-arrow" id="hkdev-sp-prev-img"><i class="fa-solid fa-chevron-left"></i></button>
@@ -765,7 +832,7 @@ class Single_Product_Engine {
 						<?php endif; ?>
 
 						<div class="hkdev-sp-zoom-inner" id="hkdev-sp-zoom-container">
-							<img id="hkdev-sp-main-img" src="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>">
+							<img id="hkdev-sp-main-img" src="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, $gallery_size ) ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>">
 						</div>
 
 						<div class="hkdev-sp-video-player" id="hkdev-sp-video-player" style="display:none;"></div>
@@ -773,13 +840,13 @@ class Single_Product_Engine {
 
 					<div class="hkdev-sp-thumbnails">
 						<?php if ( $main_image_id ) : ?>
-							<div class="hkdev-sp-thumb active" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, 'large' ) ); ?>">
-								<?php echo wp_get_attachment_image( $main_image_id, 'thumbnail' ); ?>
+							<div class="hkdev-sp-thumb active" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, $gallery_size ) ); ?>">
+								<?php echo wp_get_attachment_image( $main_image_id, $thumb_size ); ?>
 							</div>
 						<?php endif; ?>
 						<?php foreach ( $attachment_ids as $attachment_id ) : ?>
-							<div class="hkdev-sp-thumb" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, 'large' ) ); ?>">
-								<?php echo wp_get_attachment_image( $attachment_id, 'thumbnail' ); ?>
+							<div class="hkdev-sp-thumb" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, $gallery_size ) ); ?>">
+								<?php echo wp_get_attachment_image( $attachment_id, $thumb_size ); ?>
 							</div>
 						<?php endforeach; ?>
 						<?php foreach ( $video_urls as $v_index => $v_url ) : ?>
@@ -871,11 +938,15 @@ class Single_Product_Engine {
 
 					<!-- Quantity & Buttons -->
 					<div class="hkdev-sp-action-row">
+						<?php if ( $show_qty ) : ?>
 						<div class="hkdev-sp-qty-control<?php echo esc_attr( $purchase_disabled_cls ); ?>">
 							<button type="button" class="hkdev-sp-qty-btn minus"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>&minus;</button>
 							<input type="number" id="hkdev-sp-qty-field" class="hkdev-sp-qty-input" value="1" min="1"<?php echo $disable_purchase_btns ? ' disabled' : ''; ?>>
 							<button type="button" class="hkdev-sp-qty-btn plus"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>+</button>
 						</div>
+						<?php else : ?>
+							<input type="hidden" id="hkdev-sp-qty-field" class="hkdev-sp-qty-input" value="1">
+						<?php endif; ?>
 
 						<div class="hkdev-sp-purchase-buttons">
 							<button type="button" class="hkdev-sp-btn atc-btn<?php echo esc_attr( $purchase_disabled_cls ); ?>" id="hkdev-sp-add-to-cart"
@@ -930,14 +1001,20 @@ class Single_Product_Engine {
 						</div>
 					<?php endif; ?>
 
+					<?php if ( $show_sku || $show_stock ) : ?>
 					<div class="hkdev-sp-product-meta">
+						<?php if ( $show_sku ) : ?>
 						<div class="meta-row"><strong><?php esc_html_e( 'SKU', 'hkdev-shop-elements' ); ?>:</strong> <span class="sku-val"><?php echo $product->get_sku() ? esc_html( $product->get_sku() ) : 'N/A'; ?></span></div>
+						<?php endif; ?>
+						<?php if ( $show_stock ) : ?>
 						<div class="meta-row"><strong><?php esc_html_e( 'Stock', 'hkdev-shop-elements' ); ?>:</strong> <span class="stock-val"><?php echo $product->is_in_stock() ? '<span class="in-stock-pill">' . esc_html__( 'In Stock', 'hkdev-shop-elements' ) . '</span>' : '<span class="out-stock-pill">' . esc_html__( 'Out of Stock', 'hkdev-shop-elements' ) . '</span>'; ?></span></div>
+						<?php endif; ?>
 					</div>
+					<?php endif; ?>
 				</div>
 			</div>
 
-			<!-- Tabs -->
+			<?php if ( $show_tabs ) : ?>
 			<div class="hkdev-sp-tabs-section">
 				<div class="hkdev-sp-tab-headers">
 					<button class="hkdev-sp-tab-link active" data-tab="desc"><?php esc_html_e( 'Description', 'hkdev-shop-elements' ); ?></button>
@@ -948,9 +1025,11 @@ class Single_Product_Engine {
 				</div>
 				<div id="reviews" class="hkdev-sp-tab-content"><?php comments_template(); ?></div>
 			</div>
+			<?php endif; ?>
 
-			<!-- Product FAQ -->
+			<?php if ( $show_faq ) : ?>
 			<?php echo self::render_product_faqs( $product_id ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<?php endif; ?>
 
 			<?php do_action( 'woocommerce_after_single_product_summary' ); ?>
 
@@ -959,7 +1038,7 @@ class Single_Product_Engine {
 				<div id="hkdev-size-chart-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999999; justify-content:center; align-items:center; backdrop-filter:blur(3px);">
 					<div style="background:#fff; border-radius:12px; max-width:600px; width:90%; position:relative; box-shadow:0 25px 50px rgba(0,0,0,0.15); animation: zoomIn 0.3s ease;">
 						<div style="display:flex; justify-content:space-between; align-items:center; padding:15px 25px; border-bottom:1px solid #eee;">
-							<h3 style="margin:0; font-size:18px; font-family:'Hind Siliguri', sans-serif;"><?php esc_html_e( 'Size Chart', 'hkdev-shop-elements' ); ?></h3>
+							<h3 style="margin:0; font-size:18px; font-family:inherit;"><?php esc_html_e( 'Size Chart', 'hkdev-shop-elements' ); ?></h3>
 							<button type="button" id="hkdev-size-chart-close" style="background:none; border:none; font-size:24px; cursor:pointer; color:#888;">&times;</button>
 						</div>
 						<div style="padding:20px; text-align:center; overflow-y:auto; max-height:70vh;">

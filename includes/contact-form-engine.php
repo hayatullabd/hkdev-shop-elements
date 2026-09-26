@@ -67,7 +67,7 @@ class Contact_Form_Engine {
 				'public'       => false,
 				'show_ui'      => true,
 				// Linked as a submenu of the HKDEV Shop plugin menu
-				// (see Contact_Form_Options::register_menu()) instead of
+				// (see ContactFormOptions::register_menu()) instead of
 				// creating its own top-level menu.
 				'show_in_menu' => false,
 				'menu_icon'    => 'dashicons-email-alt',

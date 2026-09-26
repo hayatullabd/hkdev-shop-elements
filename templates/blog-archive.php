@@ -2,7 +2,7 @@
 /**
  * Blog archive template.
  *
- * Loaded via Blog_Engine::blog_template() (template_include filter) when the
+ * Loaded via BlogEngine::blog_template() (template_include filter) when the
  * site's standard posts-page (is_home) or a post taxonomy archive is visited
  * and the page is not built with Elementor or marked with the [hkdev_blog]
  * shortcode.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 get_header();
 
-echo \HkdevShopElements\Includes\Blog_Engine::instance()->render(
+echo \HkdevShopElements\Includes\Core\BlogEngine::instance()->render(
 	[
 		'layout'         => 'grid',
 		'columns'        => 3,

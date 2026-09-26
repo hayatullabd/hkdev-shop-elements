@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Shop_Engine;
+use HkdevShopElements\Includes\Core\ShopEngine;
 
 /**
  * Class Shop_Widget
@@ -42,7 +42,7 @@ class Shop_Widget extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return esc_html__( 'HKDEV Shop Grid / Carousel', 'hkdev-shop-elements' );
+		return esc_html__( 'HKDEV Shop Grid', 'hkdev-shop-elements' );
 	}
 
 	/**
@@ -69,7 +69,18 @@ class Shop_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_keywords() {
-		return [ 'shop', 'grid', 'carousel', 'slider', 'products', 'product slider', 'product carousel', 'category', 'tabs', 'woocommerce' ];
+		return [ 'shop', 'grid', 'products', 'category', 'tabs', 'woocommerce' ];
+	}
+
+	/**
+	 * Widget layout style used by the shortcode render.
+	 *
+	 * Child widgets can override this to force a different mode.
+	 *
+	 * @return string
+	 */
+	protected function get_widget_layout_style() {
+		return 'grid';
 	}
 
 	/**
@@ -107,14 +118,8 @@ class Shop_Widget extends Widget_Base {
 		$this->add_control(
 			'style',
 			[
-				'label'       => esc_html__( 'Layout Style', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'grid',
-				'options'     => [
-					'grid'     => esc_html__( 'Grid', 'hkdev-shop-elements' ),
-					'carousel' => esc_html__( 'Carousel / Slider', 'hkdev-shop-elements' ),
-				],
-				'description' => esc_html__( 'Set mobile, tablet and desktop card counts below. Carousel motion options are under Carousel Settings.', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::HIDDEN,
+				'default' => $this->get_widget_layout_style(),
 			]
 		);
 
@@ -131,6 +136,8 @@ class Shop_Widget extends Widget_Base {
 				'description' => esc_html__( 'How many products load at once (Load More adds the next batch).', 'hkdev-shop-elements' ),
 			]
 		);
+
+		$this->register_design_controls();
 
 		$this->end_controls_section();
 
@@ -163,7 +170,7 @@ class Shop_Widget extends Widget_Base {
 				'type'        => Controls_Manager::SELECT2,
 				'multiple'    => true,
 				'label_block' => true,
-				'options'     => Shop_Engine::product_options(),
+				'options'     => ShopEngine::product_options(),
 				'description' => esc_html__( 'Manual picks for Best Selling / Trending. Order matches selection. Empty = automatic ranking.', 'hkdev-shop-elements' ),
 				'condition'   => [ 'type' => [ 'best_selling', 'trending' ] ],
 			]
@@ -204,7 +211,7 @@ class Shop_Widget extends Widget_Base {
 				'multiple'       => true,
 				'label_block'    => true,
 				'default'        => [],
-				'options'        => Shop_Engine::term_options( 'product_cat' ),
+				'options'        => ShopEngine::term_options( 'product_cat' ),
 				'description'    => esc_html__( 'Start typing to search. Leave empty for every category.', 'hkdev-shop-elements' ),
 			]
 		);
@@ -217,12 +224,12 @@ class Shop_Widget extends Widget_Base {
 				'multiple'       => true,
 				'label_block'    => true,
 				'default'        => [],
-				'options'        => Shop_Engine::term_options( 'product_cat' ),
+				'options'        => ShopEngine::term_options( 'product_cat' ),
 				'description'    => esc_html__( 'Products inside these categories are hidden.', 'hkdev-shop-elements' ),
 			]
 		);
 
-		$brand_options = Shop_Engine::term_options( 'product_brand' );
+		$brand_options = ShopEngine::term_options( 'product_brand' );
 		if ( ! empty( $brand_options ) ) {
 			$this->add_control(
 				'brands',
@@ -238,7 +245,7 @@ class Shop_Widget extends Widget_Base {
 			);
 		}
 
-		$tag_options = Shop_Engine::term_options( 'product_tag' );
+		$tag_options = ShopEngine::term_options( 'product_tag' );
 		if ( ! empty( $tag_options ) ) {
 			$this->add_control(
 				'tags',
@@ -338,7 +345,7 @@ class Shop_Widget extends Widget_Base {
 						'name'        => 'category',
 						'label'       => esc_html__( 'Category', 'hkdev-shop-elements' ),
 						'type'        => Controls_Manager::SELECT2,
-						'options'     => Shop_Engine::term_options( 'product_cat' ),
+						'options'     => ShopEngine::term_options( 'product_cat' ),
 						'label_block' => true,
 					],
 				],
@@ -369,6 +376,7 @@ class Shop_Widget extends Widget_Base {
 				'default'      => 'yes',
 				'return_value' => 'yes',
 				'description'  => esc_html__( 'Grid layout only: loads the next batch without reloading. Carousel ignores this setting.', 'hkdev-shop-elements' ),
+				'condition'    => [ 'style' => 'grid' ],
 			]
 		);
 
@@ -378,7 +386,10 @@ class Shop_Widget extends Widget_Base {
 				'label'       => esc_html__( 'Load More Text', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::TEXT,
 				'default'     => esc_html__( 'Load More', 'hkdev-shop-elements' ),
-				'condition'   => [ 'load_more' => 'yes' ],
+				'condition'   => [
+					'style'     => 'grid',
+					'load_more' => 'yes',
+				],
 				'description' => esc_html__( 'Used when Layout Style is Grid and Load More is enabled.', 'hkdev-shop-elements' ),
 			]
 		);
@@ -392,6 +403,63 @@ class Shop_Widget extends Widget_Base {
 		$this->register_product_image_controls( true );
 
 		$this->register_style_sections( '{{WRAPPER}} .hkdev-shop-wrapper' );
+		$this->register_tabs_style_controls();
+		$this->register_carousel_style_controls();
+	}
+
+	/**
+	 * Style controls for category tabs.
+	 *
+	 * @return void
+	 */
+	protected function register_tabs_style_controls() {
+		$scope = '{{WRAPPER}} .hkdev-shop-wrapper';
+
+		$this->start_controls_section(
+			'hkdev_style_tabs',
+			[
+				'label'     => esc_html__( 'Category Tabs', 'hkdev-shop-elements' ),
+				'tab'       => Controls_Manager::TAB_STYLE,
+				'condition' => [ 'show_tabs' => 'yes' ],
+			]
+		);
+
+		$this->hkdev_typography( 'sk_tabs', esc_html__( 'Tab Typography', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item' );
+		$this->hkdev_dimensions( 'sk_tabs_padding', esc_html__( 'Tab Padding', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item', 'padding' );
+		$this->hkdev_dimensions( 'sk_tabs_radius', esc_html__( 'Tab Radius', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item', 'border-radius' );
+		$this->hkdev_color( 'sk_tabs_bg', esc_html__( 'Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item', 'background-color' );
+		$this->hkdev_color( 'sk_tabs_text', esc_html__( 'Text Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item', 'color' );
+		$this->hkdev_color( 'sk_tabs_border', esc_html__( 'Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item', 'border-color' );
+		$this->hkdev_color( 'sk_tabs_bg_hover', esc_html__( 'Hover Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item:hover', 'background-color' );
+		$this->hkdev_color( 'sk_tabs_border_hover', esc_html__( 'Hover Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item:hover', 'border-color' );
+
+		$this->add_control(
+			'sk_tabs_active_heading',
+			[
+				'label'     => esc_html__( 'Active Tab', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->hkdev_color( 'sk_tabs_active_bg', esc_html__( 'Active Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item.active', 'background-color' );
+		$this->hkdev_color( 'sk_tabs_active_text', esc_html__( 'Active Text Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item.active', 'color' );
+		$this->hkdev_color( 'sk_tabs_active_border', esc_html__( 'Active Border Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item.active', 'border-color' );
+
+		$this->add_control(
+			'sk_tabs_count_heading',
+			[
+				'label'     => esc_html__( 'Count Badge', 'hkdev-shop-elements' ),
+				'type'      => Controls_Manager::HEADING,
+				'separator' => 'before',
+			]
+		);
+		$this->hkdev_typography( 'sk_tabs_count', esc_html__( 'Badge Typography', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-count' );
+		$this->hkdev_color( 'sk_tabs_count_bg', esc_html__( 'Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-count', 'background-color' );
+		$this->hkdev_color( 'sk_tabs_count_text', esc_html__( 'Badge Text Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-count', 'color' );
+		$this->hkdev_color( 'sk_tabs_count_active_bg', esc_html__( 'Active Badge Background', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item.active .hkdev-tab-count', 'background-color' );
+		$this->hkdev_color( 'sk_tabs_count_active_text', esc_html__( 'Active Badge Text Color', 'hkdev-shop-elements' ), $scope . ' .hkdev-tab-item.active .hkdev-tab-count', 'color' );
+
+		$this->end_controls_section();
 	}
 
 	/**
@@ -432,39 +500,43 @@ class Shop_Widget extends Widget_Base {
 		}
 
 		$cols = $this->get_cards_per_view( $settings );
+		$layout_style = ( isset( $settings['style'] ) && 'carousel' === $settings['style'] ) ? 'carousel' : 'grid';
 
-		$atts = [
-			'limit'            => isset( $settings['limit'] ) ? absint( $settings['limit'] ) : 12,
-			'columns'          => (string) $cols['desktop'],
-			'columns_tablet'   => (string) $cols['tablet'],
-			'columns_mobile'   => (string) $cols['mobile'],
-			'image_size'       => isset( $settings['image_size'] ) ? sanitize_key( $settings['image_size'] ) : 'woocommerce_thumbnail',
-			'category'         => $csv( 'category' ),
-			'exclude'          => $csv( 'exclude' ),
-			'tags'             => $csv( 'tags' ),
-			'brands'           => $csv( 'brands' ),
-			'on_sale'          => $yes_no( 'on_sale' ),
-			'featured'         => $yes_no( 'featured' ),
-			'stock_status'     => isset( $settings['stock_status'] ) ? sanitize_key( $settings['stock_status'] ) : '',
-			'type'             => isset( $settings['type'] ) ? $settings['type'] : 'recent',
-			'days'             => isset( $settings['days'] ) ? absint( $settings['days'] ) : 0,
-			'order_by'         => isset( $settings['order_by'] ) ? $settings['order_by'] : 'DESC',
-			'show_tabs'        => $yes_no( 'show_tabs' ),
-			'tabs'             => implode( ',', $tab_slugs ),
-			'include_children' => $yes_no( 'include_children' ),
-			'style'            => isset( $settings['style'] ) ? $settings['style'] : 'grid',
-			'load_more'        => isset( $settings['load_more'] ) ? $yes_no( 'load_more' ) : 'yes',
-			'load_more_text'   => isset( $settings['load_more_text'] ) && '' !== $settings['load_more_text'] ? sanitize_text_field( $settings['load_more_text'] ) : __( 'Load More', 'hkdev-shop-elements' ),
-			'hover_img'        => $this->get_hover_img( $settings ),
-			'heading'          => $this->get_heading_config( $settings ),
-			'carousel'         => $this->get_carousel_config( $settings ),
-			'title_lines'      => $this->get_title_lines( $settings ),
-		];
+		$atts = array_merge(
+			$this->get_design_atts( $settings ),
+			$this->get_image_atts( $settings ),
+			[
+				'limit'            => isset( $settings['limit'] ) ? absint( $settings['limit'] ) : 12,
+				'columns'          => (string) $cols['desktop'],
+				'columns_tablet'   => (string) $cols['tablet'],
+				'columns_mobile'   => (string) $cols['mobile'],
+				'category'         => $csv( 'category' ),
+				'exclude'          => $csv( 'exclude' ),
+				'tags'             => $csv( 'tags' ),
+				'brands'           => $csv( 'brands' ),
+				'on_sale'          => $yes_no( 'on_sale' ),
+				'featured'         => $yes_no( 'featured' ),
+				'stock_status'     => isset( $settings['stock_status'] ) ? sanitize_key( $settings['stock_status'] ) : '',
+				'type'             => isset( $settings['type'] ) ? $settings['type'] : 'recent',
+				'days'             => isset( $settings['days'] ) ? absint( $settings['days'] ) : 0,
+				'order_by'         => isset( $settings['order_by'] ) ? $settings['order_by'] : 'DESC',
+				'show_tabs'        => $yes_no( 'show_tabs' ),
+				'tabs'             => implode( ',', $tab_slugs ),
+				'include_children' => $yes_no( 'include_children' ),
+				'style'            => $layout_style,
+				'load_more'        => ( 'carousel' === $layout_style ) ? 'no' : ( isset( $settings['load_more'] ) ? $yes_no( 'load_more' ) : 'yes' ),
+				'load_more_text'   => isset( $settings['load_more_text'] ) && '' !== $settings['load_more_text'] ? sanitize_text_field( $settings['load_more_text'] ) : __( 'Load More', 'hkdev-shop-elements' ),
+				'hover_img'        => $this->get_hover_img( $settings ),
+				'heading'          => $this->get_heading_config( $settings ),
+				'carousel'         => $this->get_carousel_config( $settings ),
+				'title_lines'      => $this->get_title_lines( $settings ),
+			]
+		);
 
 		if ( ! empty( $custom_product_ids ) && in_array( $atts['type'], [ 'best_selling', 'trending' ], true ) ) {
 			$atts['product_ids'] = implode( ',', $custom_product_ids );
 		}
 
-		echo \HkdevShopElements\Includes\Shop_Engine::instance()->master_shop_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo ShopEngine::instance()->master_shop_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

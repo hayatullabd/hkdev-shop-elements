@@ -528,7 +528,7 @@ class Cart_Widget extends Widget_Base {
 		$style    = $this->get_style_vars( $settings );
 
 		echo '<div class="hkdev-cart-scope"' . ( '' !== $style ? ' style="' . esc_attr( $style ) . '"' : '' ) . '>';
-		echo \HkdevShopElements\Includes\Cart_Engine::instance()->custom_cart_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\CartEngine::instance()->custom_cart_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</div>';
 	}
 }

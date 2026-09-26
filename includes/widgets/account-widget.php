@@ -202,6 +202,6 @@ class Account_Widget extends Widget_Base {
 			'orders_per_page' => isset( $settings['orders_per_page'] ) ? absint( $settings['orders_per_page'] ) : 10,
 		];
 
-		echo \HkdevShopElements\Includes\Account_Engine::instance()->account_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\AccountEngine::instance()->account_shortcode( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

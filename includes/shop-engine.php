@@ -138,9 +138,12 @@ class Shop_Engine {
 	 * @param bool   $is_carousel   Whether inside a carousel slide.
 	 * @param string $image_size       WooCommerce image size for the card image.
 	 * @param bool   $show_hover_image Reveal the second gallery image on hover.
+	 * @param string $image_size_mode  preset|custom.
+	 * @param int    $custom_img_w     Custom image width.
+	 * @param int    $custom_img_h     Custom image height.
 	 * @return void
 	 */
-	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false, $image_size = 'woocommerce_thumbnail', $show_hover_image = false ) {
+	public function render_single_product_card( $post_id, $trending_days = 0, $is_carousel = false, $image_size = 'woocommerce_thumbnail', $show_hover_image = false, $image_size_mode = 'preset', $custom_img_w = 0, $custom_img_h = 0 ) {
 		global $product;
 		$previous_product = $product;
 		$product          = wc_get_product( $post_id );
@@ -179,6 +182,13 @@ class Shop_Engine {
 
 		$total_sales    = (int) $product->get_total_sales();
 		$trending_sales = ( $trending_days > 0 ) ? $this->get_sales_by_period( $post_id, $trending_days ) : 0;
+		$size_mode      = ( 'custom' === $image_size_mode ) ? 'custom' : 'preset';
+		$img_width      = max( 0, absint( $custom_img_w ) );
+		$img_height     = max( 0, absint( $custom_img_h ) );
+		$resolved_size  = $image_size ? sanitize_key( $image_size ) : 'woocommerce_thumbnail';
+		if ( 'custom' === $size_mode && ( $img_width > 0 || $img_height > 0 ) ) {
+			$resolved_size = [ max( 1, ( $img_width > 0 ? $img_width : $img_height ) ), max( 1, ( $img_height > 0 ? $img_height : $img_width ) ) ];
+		}
 
 		$card_class = $is_carousel ? 'hkdev-product-card swiper-slide' : 'hkdev-product-card';
 		?>
@@ -189,12 +199,12 @@ class Shop_Engine {
 				<?php do_action( 'woocommerce_before_shop_loop_item_title' ); ?>
 
 				<a href="<?php echo esc_url( $permalink ); ?>">
-					<?php echo $product->get_image( $image_size ? sanitize_key( $image_size ) : 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo $product->get_image( $resolved_size ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</a>
 
 				<?php if ( $hover_image_id ) : ?>
 					<span class="hkdev-hover-img" aria-hidden="true">
-						<?php echo wp_get_attachment_image( $hover_image_id, $image_size ? sanitize_key( $image_size ) : 'woocommerce_thumbnail' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo wp_get_attachment_image( $hover_image_id, $resolved_size ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</span>
 				<?php endif; ?>
 
@@ -811,10 +821,11 @@ class Shop_Engine {
 			'on_sale'          => ( isset( $_POST['on_sale'] ) && 'yes' === $_POST['on_sale'] ) ? 'yes' : 'no', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'featured'         => ( isset( $_POST['featured'] ) && 'yes' === $_POST['featured'] ) ? 'yes' : 'no', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'stock_status'     => isset( $_POST['stock_status'] ) ? sanitize_key( wp_unslash( $_POST['stock_status'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			'image_size'       => isset( $_POST['image_size'] ) ? sanitize_key( wp_unslash( $_POST['image_size'] ) ) : 'woocommerce_thumbnail', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'hover_img'        => ( isset( $_POST['hover_img'] ) && 'no' === sanitize_text_field( wp_unslash( $_POST['hover_img'] ) ) ) ? 'no' : 'yes', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			'product_ids'      => isset( $_POST['product_ids'] ) ? sanitize_text_field( wp_unslash( $_POST['product_ids'] ) ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		];
+
+		$params = array_merge( $params, self::normalize_image_atts( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $with_paged ) {
 			$params['paged'] = isset( $_POST['page'] ) ? max( 1, intval( wp_unslash( $_POST['page'] ) ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -839,7 +850,7 @@ class Shop_Engine {
 		if ( $query->have_posts() ) {
 			while ( $query->have_posts() ) {
 				$query->the_post();
-				$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['hover_img'] );
+				$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['hover_img'], $params['image_size_mode'], $params['custom_img_w'], $params['custom_img_h'] );
 			}
 			wp_reset_postdata();
 		} else {
@@ -866,7 +877,7 @@ class Shop_Engine {
 		ob_start();
 		while ( $query->have_posts() ) {
 			$query->the_post();
-			$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['hover_img'] );
+			$this->render_single_product_card( get_the_ID(), $params['days'], ( 'carousel' === $style ), $params['image_size'], 'yes' === $params['hover_img'], $params['image_size_mode'], $params['custom_img_w'], $params['custom_img_h'] );
 		}
 		wp_reset_postdata();
 		$html = ob_get_clean();
@@ -1081,6 +1092,124 @@ class Shop_Engine {
 	}
 
 	/**
+	 * Resolve local widget font stack from a font key.
+	 *
+	 * @param string $font_key Selected widget font key.
+	 * @return string
+	 */
+	public static function widget_font_stack( $font_key ) {
+		$font_key = sanitize_key( (string) $font_key );
+		$map      = [
+			'hind_siliguri'      => "'Hind Siliguri', sans-serif",
+			'noto_sans_bengali'  => "'Noto Sans Bengali', 'Hind Siliguri', sans-serif",
+			'noto_serif_bengali' => "'Noto Serif Bengali', 'Tiro Bangla', serif",
+			'tiro_bangla'        => "'Tiro Bangla', 'Noto Serif Bengali', serif",
+			'inter'              => "'Inter', 'Segoe UI', sans-serif",
+			'poppins'            => "'Poppins', 'Segoe UI', sans-serif",
+			'roboto'             => "'Roboto', 'Segoe UI', sans-serif",
+			'open_sans'          => "'Open Sans', 'Segoe UI', sans-serif",
+			'montserrat'         => "'Montserrat', 'Segoe UI', sans-serif",
+			'system_sans'        => "system-ui, -apple-system, 'Segoe UI', sans-serif",
+		];
+		$stack    = isset( $map[ $font_key ] ) ? $map[ $font_key ] : $map['hind_siliguri'];
+		$safe     = \HkdevShopElements\hkdev_elements_sanitize_font_stack( $stack );
+
+		return '' !== $safe ? $safe : $map['hind_siliguri'];
+	}
+
+	/**
+	 * Normalize card preset / theme / font attributes shared by product widgets.
+	 *
+	 * @param array $atts Raw widget or request attributes.
+	 * @return array{card_preset:string,card_theme:string,font_mode:string,font_family:string,font_family_latin:string}
+	 */
+	public static function normalize_design_atts( $atts ) {
+		$atts   = is_array( $atts ) ? $atts : [];
+		$preset = sanitize_key( isset( $atts['card_preset'] ) ? (string) $atts['card_preset'] : 'clean' );
+		$theme  = sanitize_key( isset( $atts['card_theme'] ) ? (string) $atts['card_theme'] : 'green' );
+		$mode   = sanitize_key( isset( $atts['font_mode'] ) ? (string) $atts['font_mode'] : 'single' );
+		$font   = sanitize_key( isset( $atts['font_family'] ) ? (string) $atts['font_family'] : 'hind_siliguri' );
+		$latin  = sanitize_key( isset( $atts['font_family_latin'] ) ? (string) $atts['font_family_latin'] : 'system_sans' );
+
+		if ( ! in_array( $preset, [ 'clean', 'compact', 'premium', 'minimal', 'bold', 'classic' ], true ) ) {
+			$preset = 'clean';
+		}
+		if ( ! in_array( $theme, [ 'green', 'orange', 'monochrome' ], true ) ) {
+			$theme = 'green';
+		}
+
+		return [
+			'card_preset'       => $preset,
+			'card_theme'        => $theme,
+			'font_mode'         => ( 'dual' === $mode ) ? 'dual' : 'single',
+			'font_family'       => $font,
+			'font_family_latin' => $latin,
+		];
+	}
+
+	/**
+	 * Normalize product image size attributes shared by product widgets.
+	 *
+	 * @param array $atts Raw widget or request attributes.
+	 * @return array<string,int|string>
+	 */
+	public static function normalize_image_atts( $atts ) {
+		$atts = is_array( $atts ) ? $atts : [];
+		$fit  = sanitize_key( isset( $atts['custom_img_fit'] ) ? (string) $atts['custom_img_fit'] : 'cover' );
+
+		return [
+			'image_size'          => isset( $atts['image_size'] ) ? sanitize_key( (string) $atts['image_size'] ) : 'woocommerce_thumbnail',
+			'image_size_mode'     => ( isset( $atts['image_size_mode'] ) && 'custom' === sanitize_key( (string) $atts['image_size_mode'] ) ) ? 'custom' : 'preset',
+			'custom_img_w'        => isset( $atts['custom_img_w'] ) ? max( 0, absint( $atts['custom_img_w'] ) ) : 0,
+			'custom_img_h'        => isset( $atts['custom_img_h'] ) ? max( 0, absint( $atts['custom_img_h'] ) ) : 0,
+			'custom_img_w_tablet' => isset( $atts['custom_img_w_tablet'] ) ? max( 0, absint( $atts['custom_img_w_tablet'] ) ) : 0,
+			'custom_img_h_tablet' => isset( $atts['custom_img_h_tablet'] ) ? max( 0, absint( $atts['custom_img_h_tablet'] ) ) : 0,
+			'custom_img_w_mobile' => isset( $atts['custom_img_w_mobile'] ) ? max( 0, absint( $atts['custom_img_w_mobile'] ) ) : 0,
+			'custom_img_h_mobile' => isset( $atts['custom_img_h_mobile'] ) ? max( 0, absint( $atts['custom_img_h_mobile'] ) ) : 0,
+			'custom_img_fit'      => in_array( $fit, [ 'cover', 'contain' ], true ) ? $fit : 'cover',
+			'custom_img_pos_x'    => isset( $atts['custom_img_pos_x'] ) ? max( 0, min( 100, (int) $atts['custom_img_pos_x'] ) ) : 50,
+			'custom_img_pos_y'    => isset( $atts['custom_img_pos_y'] ) ? max( 0, min( 100, (int) $atts['custom_img_pos_y'] ) ) : 50,
+		];
+	}
+
+	/**
+	 * Inline CSS variables for fonts, color theme, and custom image sizing.
+	 *
+	 * @param array $atts Widget or request attributes.
+	 * @return string
+	 */
+	public static function design_style_attr( $atts ) {
+		$design = self::normalize_design_atts( $atts );
+		$image  = self::normalize_image_atts( $atts );
+		$css    = '';
+
+		$font_stack = self::widget_font_stack( $design['font_family'] );
+		$font_latin = self::widget_font_stack( $design['font_family_latin'] );
+		$css       .= '--hkdev-font:' . $font_stack . ';';
+		$css       .= '--hkdev-font-bn:' . $font_stack . ';';
+		$css       .= '--hkdev-font-en:' . $font_latin . ';';
+
+		if ( 'orange' === $design['card_theme'] ) {
+			$css .= '--hkdev-brand-primary:#f06724;--hkdev-brand-secondary:#03a550;--hkdev-brand-info:#c45822;--hkdev-brand-accent:#f06724;';
+		} elseif ( 'monochrome' === $design['card_theme'] ) {
+			$css .= '--hkdev-brand-primary:#222222;--hkdev-brand-secondary:#4a4a4a;--hkdev-brand-info:#3a3a3a;--hkdev-brand-accent:#2f2f2f;--hkdev-text-color:#1d1d1d;--hkdev-text-muted:#666666;';
+		}
+
+		if ( 'custom' === $image['image_size_mode'] ) {
+			$css .= '--hkdev-custom-img-w:' . ( $image['custom_img_w'] > 0 ? $image['custom_img_w'] . 'px' : '100%' ) . ';';
+			$css .= '--hkdev-custom-img-h:' . ( $image['custom_img_h'] > 0 ? $image['custom_img_h'] . 'px' : 'auto' ) . ';';
+			$css .= '--hkdev-custom-img-w-tablet:' . ( $image['custom_img_w_tablet'] > 0 ? $image['custom_img_w_tablet'] . 'px' : ( $image['custom_img_w'] > 0 ? $image['custom_img_w'] . 'px' : '100%' ) ) . ';';
+			$css .= '--hkdev-custom-img-h-tablet:' . ( $image['custom_img_h_tablet'] > 0 ? $image['custom_img_h_tablet'] . 'px' : ( $image['custom_img_h'] > 0 ? $image['custom_img_h'] . 'px' : 'auto' ) ) . ';';
+			$css .= '--hkdev-custom-img-w-mobile:' . ( $image['custom_img_w_mobile'] > 0 ? $image['custom_img_w_mobile'] . 'px' : ( $image['custom_img_w'] > 0 ? $image['custom_img_w'] . 'px' : '100%' ) ) . ';';
+			$css .= '--hkdev-custom-img-h-mobile:' . ( $image['custom_img_h_mobile'] > 0 ? $image['custom_img_h_mobile'] . 'px' : ( $image['custom_img_h'] > 0 ? $image['custom_img_h'] . 'px' : 'auto' ) ) . ';';
+			$css .= '--hkdev-custom-img-fit:' . $image['custom_img_fit'] . ';';
+			$css .= '--hkdev-custom-img-pos:' . $image['custom_img_pos_x'] . '% ' . $image['custom_img_pos_y'] . '%;';
+		}
+
+		return $css;
+	}
+
+	/**
 	 * Master shop renderer (grid + carousel + optional category tabs).
 	 *
 	 * @param array $atts Shortcode/widget attributes.
@@ -1094,6 +1223,16 @@ class Shop_Engine {
 				'columns_tablet'   => 3,
 				'columns_mobile'   => 2,
 				'image_size'       => 'woocommerce_thumbnail',
+				'image_size_mode'  => 'preset',
+				'custom_img_w'     => 0,
+				'custom_img_h'     => 0,
+				'custom_img_w_tablet' => 0,
+				'custom_img_h_tablet' => 0,
+				'custom_img_w_mobile' => 0,
+				'custom_img_h_mobile' => 0,
+				'custom_img_fit'   => 'cover',
+				'custom_img_pos_x' => 50,
+				'custom_img_pos_y' => 50,
 				'category'         => '',
 				'exclude'          => '',
 				'tags'             => '',
@@ -1115,6 +1254,11 @@ class Shop_Engine {
 				'carousel'         => [],
 				'title_lines'      => 0,
 				'hover_img'        => 'yes',
+				'font_mode'        => 'single',
+				'font_family'      => 'hind_siliguri',
+				'font_family_latin' => 'system_sans',
+				'card_preset'      => 'clean',
+				'card_theme'       => 'green',
 				'load_more'        => 'no',
 				'load_more_text'   => __( 'Load More', 'hkdev-shop-elements' ),
 			],
@@ -1124,7 +1268,20 @@ class Shop_Engine {
 		$cols_mobile  = max( 1, min( 3, (int) $atts['columns_mobile'] ) );
 		$cols_tablet  = max( 1, min( 8, (int) $atts['columns_tablet'] ) );
 		$cols_desktop = max( 1, min( 8, (int) $atts['columns'] ) );
-		$grid_style   = $this->grid_columns_style_attr( $cols_mobile, $cols_tablet, $cols_desktop );
+		$design       = self::normalize_design_atts( $atts );
+		$image        = self::normalize_image_atts( $atts );
+		$grid_style   = $this->grid_columns_style_attr( $cols_mobile, $cols_tablet, $cols_desktop ) . self::design_style_attr( $atts );
+		$img_size_mode = $image['image_size_mode'];
+		$custom_img_w  = $image['custom_img_w'];
+		$custom_img_h  = $image['custom_img_h'];
+		$custom_img_w_tablet = $image['custom_img_w_tablet'];
+		$custom_img_h_tablet = $image['custom_img_h_tablet'];
+		$custom_img_w_mobile = $image['custom_img_w_mobile'];
+		$custom_img_h_mobile = $image['custom_img_h_mobile'];
+		$custom_img_fit = $image['custom_img_fit'];
+		$custom_img_pos_x = $image['custom_img_pos_x'];
+		$custom_img_pos_y = $image['custom_img_pos_y'];
+		$font_mode    = $design['font_mode'];
 
 		$carousel = wp_parse_args(
 			is_array( $atts['carousel'] ) ? $atts['carousel'] : [],
@@ -1149,6 +1306,8 @@ class Shop_Engine {
 		$include_children_val = ( 'no' === $atts['include_children'] ) ? false : true;
 
 		$wrapper_class = 'hkdev-shop-wrapper';
+		$card_preset   = $design['card_preset'];
+		$card_theme    = $design['card_theme'];
 
 		// Second gallery image on hover (grid, carousel and related listings).
 		$show_hover = ( 'yes' === $atts['hover_img'] );
@@ -1227,6 +1386,16 @@ class Shop_Engine {
 			 data-limit="<?php echo esc_attr( $atts['limit'] ); ?>"
 			 data-columns="<?php echo esc_attr( $cols_desktop ); ?>"
 			 data-image_size="<?php echo esc_attr( $atts['image_size'] ); ?>"
+			 data-image_size_mode="<?php echo esc_attr( $img_size_mode ); ?>"
+			 data-custom_img_w="<?php echo esc_attr( $custom_img_w ); ?>"
+			 data-custom_img_h="<?php echo esc_attr( $custom_img_h ); ?>"
+			 data-custom_img_w_tablet="<?php echo esc_attr( $custom_img_w_tablet ); ?>"
+			 data-custom_img_h_tablet="<?php echo esc_attr( $custom_img_h_tablet ); ?>"
+			 data-custom_img_w_mobile="<?php echo esc_attr( $custom_img_w_mobile ); ?>"
+			 data-custom_img_h_mobile="<?php echo esc_attr( $custom_img_h_mobile ); ?>"
+			 data-custom_img_fit="<?php echo esc_attr( $custom_img_fit ); ?>"
+			 data-custom_img_pos_x="<?php echo esc_attr( $custom_img_pos_x ); ?>"
+			 data-custom_img_pos_y="<?php echo esc_attr( $custom_img_pos_y ); ?>"
 			 data-type="<?php echo esc_attr( $atts['type'] ); ?>"
 			 data-days="<?php echo esc_attr( $atts['days'] ); ?>"
 			 data-order_by="<?php echo esc_attr( $atts['order_by'] ); ?>"
@@ -1245,6 +1414,9 @@ class Shop_Engine {
 			 data-stock_status="<?php echo esc_attr( $atts['stock_status'] ); ?>"
 			 data-product_ids="<?php echo esc_attr( implode( ',', $product_ids ) ); ?>"
 			 data-hover-img="<?php echo esc_attr( $atts['hover_img'] ); ?>"
+			 data-card-preset="<?php echo esc_attr( $card_preset ); ?>"
+			 data-card-theme="<?php echo esc_attr( $card_theme ); ?>"
+			 data-font-mode="<?php echo esc_attr( $font_mode ); ?>"
 			 data-hkdev-elements="1">
 
 			<?php echo $this->shop_heading_html( is_array( $atts['heading'] ) ? $atts['heading'] : [] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
@@ -1324,7 +1496,7 @@ class Shop_Engine {
 								<?php
 								while ( $query->have_posts() ) {
 									$query->the_post();
-									$this->render_single_product_card( get_the_ID(), (int) $atts['days'], true, $atts['image_size'], $show_hover );
+									$this->render_single_product_card( get_the_ID(), (int) $atts['days'], true, $atts['image_size'], $show_hover, $img_size_mode, $custom_img_w, $custom_img_h );
 								}
 								wp_reset_postdata();
 								?>
@@ -1344,7 +1516,7 @@ class Shop_Engine {
 							<?php
 							while ( $query->have_posts() ) {
 								$query->the_post();
-								$this->render_single_product_card( get_the_ID(), (int) $atts['days'], false, $atts['image_size'], $show_hover );
+								$this->render_single_product_card( get_the_ID(), (int) $atts['days'], false, $atts['image_size'], $show_hover, $img_size_mode, $custom_img_w, $custom_img_h );
 							}
 							wp_reset_postdata();
 							?>

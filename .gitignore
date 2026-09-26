@@ -6,9 +6,30 @@ desktop.ini
 *.bak
 *.orig
 *.tmp
+*.swp
+*~
+
+# Local IDE / agent folders
 .idea/
 .vscode/
+.cursor/
+.commandcode/
+
+# Dependencies
 node_modules/
-.commandcode/
-# Tooling metadata (not part of the plugin)
-.commandcode/
+vendor/
+composer.phar
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Build artifacts (CI builds the plugin zip)
+dist/
+*.zip
+
+# Test / cache
+.phpunit.result.cache
+.phpunit.cache/
+coverage/

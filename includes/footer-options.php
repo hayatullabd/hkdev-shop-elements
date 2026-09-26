@@ -115,7 +115,7 @@ final class Footer_Options {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'hkdev-shop-elements' ) );
 		}
 
-		$engine       = Footer_Engine::instance();
+		$engine       = \HkdevShopElements\Includes\Core\FooterEngine::instance();
 		$saved_notice = false;
 		$cleared      = false;
 
@@ -225,13 +225,13 @@ final class Footer_Options {
 			if ( $config['logo_width'] < 1 ) {
 				$config['logo_width'] = 150;
 			}
-			update_option( Footer_Engine::CONFIG_OPTION, $config );
+			update_option( \HkdevShopElements\Includes\Core\FooterEngine::CONFIG_OPTION, $config );
 			$saved_notice = true;
 		}
 
 		if ( isset( $_POST['hkdev_footer_clear_subs'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( self::CLEAR_NONCE_ACTION );
-			delete_option( Footer_Engine::SUBSCRIBERS_OPTION );
+			delete_option( \HkdevShopElements\Includes\Core\FooterEngine::SUBSCRIBERS_OPTION );
 			$cleared = true;
 		}
 
@@ -248,7 +248,7 @@ final class Footer_Options {
 			'bottom'     => [ 'dashicons-money-alt', esc_html__( 'Payments & Copyright', 'hkdev-shop-elements' ) ],
 			'appearance' => [ 'dashicons-art', esc_html__( 'Appearance', 'hkdev-shop-elements' ) ],
 		];
-		$nav_items = Admin_Menu::instance()->filter_footer_builder_nav( $nav_items, $config );
+		$nav_items = \HkdevShopElements\Includes\Admin\AdminMenu::instance()->filter_footer_builder_nav( $nav_items, $config );
 		?>
 		<div class="wrap hkdev-hd-wrap">
 
@@ -266,7 +266,7 @@ final class Footer_Options {
 					</div>
 				</div>
 			</div>
-			<?php Admin_Menu::instance()->render_module_nav( self::SETTINGS_SLUG, 'builder' ); ?>
+			<?php \HkdevShopElements\Includes\Admin\AdminMenu::instance()->render_module_nav( self::SETTINGS_SLUG, 'builder' ); ?>
 
 			<?php if ( $saved_notice ) : ?>
 				<div class="notice notice-success is-dismissible hd-notice"><p><?php esc_html_e( 'Footer settings saved.', 'hkdev-shop-elements' ); ?></p></div>

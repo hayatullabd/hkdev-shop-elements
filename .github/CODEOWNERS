@@ -1,0 +1,22 @@
+# Default owner for all files.
+* @hayatullabd
+
+# Architecture and migration governance.
+/docs/ARCHITECTURE-MIGRATION.md @hayatullabd
+/docs/LEGACY-CLEANUP-CANDIDATES.md @hayatullabd
+/scripts/migration-audit.php @hayatullabd
+/scripts/migration-audit.config.json @hayatullabd
+/scripts/audit-migration.sh @hayatullabd
+/scripts/audit-migration.ps1 @hayatullabd
+
+# Workflow and release governance.
+/.github/workflows/migration-audit.yml @hayatullabd
+/.github/workflows/release.yml @hayatullabd
+/docs/RELEASE-CHECKLIST.md @hayatullabd
+/.github/RELEASE_NOTES_TEMPLATE.md @hayatullabd
+/.github/PULL_REQUEST_TEMPLATE.md @hayatullabd
+
+# Bootstrap and module loading.
+/hkdev-shop-elements.php @hayatullabd
+/includes/Core/ @hayatullabd
+/includes/Admin/ @hayatullabd

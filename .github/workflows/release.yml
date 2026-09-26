@@ -15,6 +15,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Verify release governance files
+        run: |
+          test -f docs/RELEASE-CHECKLIST.md
+          test -f .github/RELEASE_NOTES_TEMPLATE.md
+
+      - name: Release notes reminder
+        run: |
+          echo "Release checklist: docs/RELEASE-CHECKLIST.md"
+          echo "Release notes template: .github/RELEASE_NOTES_TEMPLATE.md"
+          echo "Please ensure GitHub release notes follow the template sections."
+
+      - name: Publish release reminder to job summary
+        run: |
+          {
+            echo "## Release Governance Reminder"
+            echo ""
+            echo "- Follow checklist: \`docs/RELEASE-CHECKLIST.md\`"
+            echo "- Use notes template: \`.github/RELEASE_NOTES_TEMPLATE.md\`"
+            echo "- Migration gate runs in strict mode in this workflow."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Run migration audit gate (strict)
+        run: php scripts/migration-audit.php --strict
+
       - name: Build release zip
         run: |
           chmod +x scripts/build-release-zip.sh

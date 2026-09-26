@@ -263,7 +263,7 @@ class Blog_Engine {
 		// Section heading (same markup renderer as the Section Heading widget and
 		// the Shop Grid, so all three stay visually identical).
 		$heading_html = ( ! empty( $atts['heading'] ) && is_array( $atts['heading'] ) )
-			? Shop_Engine::instance()->shop_heading_html( $atts['heading'] )
+			? \HkdevShopElements\Includes\Core\ShopEngine::instance()->shop_heading_html( $atts['heading'] )
 			: '';
 
 		// Category tabs (widget context only — archives keep their pill links).
@@ -399,7 +399,7 @@ class Blog_Engine {
 			'show_tabs'      => ( isset( $atts['show_tabs'] ) && 'yes' === $atts['show_tabs'] ) ? 'yes' : 'no',
 			'tabs'           => isset( $atts['tabs'] ) ? $atts['tabs'] : [],
 			// Heading config is opaque here: it is passed straight to
-			// Shop_Engine::shop_heading_html().
+			// ShopEngine::shop_heading_html().
 			'heading'        => ( isset( $atts['heading'] ) && is_array( $atts['heading'] ) ) ? $atts['heading'] : [],
 		];
 	}

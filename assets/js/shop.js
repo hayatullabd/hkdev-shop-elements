@@ -115,7 +115,10 @@ jQuery(function($) {
         speed: 600,
         autoplay: false,
         delay: 5000,
+        pause_on_hover: true,
         loop: false,
+        drag: true,
+        centered: false,
         arrows: true,
         dots: true
     };
@@ -254,7 +257,10 @@ jQuery(function($) {
             slidesPerView: cfg.mobile,
             spaceBetween: cfg.gap,
             speed: cfg.speed,
-            grabCursor: true,
+            grabCursor: !!cfg.drag,
+            allowTouchMove: !!cfg.drag,
+            simulateTouch: !!cfg.drag,
+            centeredSlides: !!cfg.centered,
             watchSlidesProgress: true,
             roundLengths: true,
             keyboard: { enabled: true, onlyInViewport: true },
@@ -262,7 +268,7 @@ jQuery(function($) {
             observeParents: true,
             loop: !!cfg.loop,
             autoplay: cfg.autoplay
-                ? { delay: cfg.delay, disableOnInteraction: false, pauseOnMouseEnter: true }
+                ? { delay: cfg.delay, disableOnInteraction: false, pauseOnMouseEnter: !!cfg.pause_on_hover }
                 : false,
             breakpoints: {
                 768: { slidesPerView: cfg.tablet, spaceBetween: cfg.gap },
@@ -346,7 +352,7 @@ jQuery(function($) {
             return;
         }
 
-        ['hkdev_shop_grid', 'hkdev_related_products', 'hkdev_category_carousel'].forEach(function (widget) {
+        ['hkdev_shop_grid', 'hkdev_shop_carousel', 'hkdev_related_products', 'hkdev_category_grid', 'hkdev_category_carousel'].forEach(function (widget) {
             window.elementorFrontend.hooks.addAction(
                 'frontend/element_ready/' + widget + '.default',
                 function ($scope) {
@@ -390,6 +396,15 @@ jQuery(function($) {
                 stock_status: $wrapper.data('stock_status'),
                 product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
                 image_size: $wrapper.data('image_size'),
+                image_size_mode: $wrapper.attr('data-image_size_mode') || 'preset',
+                custom_img_w: $wrapper.attr('data-custom_img_w') || 0,
+                custom_img_h: $wrapper.attr('data-custom_img_h') || 0,
+                custom_img_w_tablet: $wrapper.attr('data-custom_img_w_tablet') || 0,
+                custom_img_h_tablet: $wrapper.attr('data-custom_img_h_tablet') || 0,
+                custom_img_w_mobile: $wrapper.attr('data-custom_img_w_mobile') || 0,
+                custom_img_h_mobile: $wrapper.attr('data-custom_img_h_mobile') || 0,
+                custom_img_pos_x: $wrapper.attr('data-custom_img_pos_x') || 50,
+                custom_img_pos_y: $wrapper.attr('data-custom_img_pos_y') || 50,
                 hover_img: $wrapper.attr('data-hover-img'),
                 style: $wrapper.data('style')
             },
@@ -598,6 +613,15 @@ jQuery(function($) {
                 stock_status: $wrapper.data('stock_status'),
                 product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
                 image_size: $wrapper.data('image_size'),
+                image_size_mode: $wrapper.attr('data-image_size_mode') || 'preset',
+                custom_img_w: $wrapper.attr('data-custom_img_w') || 0,
+                custom_img_h: $wrapper.attr('data-custom_img_h') || 0,
+                custom_img_w_tablet: $wrapper.attr('data-custom_img_w_tablet') || 0,
+                custom_img_h_tablet: $wrapper.attr('data-custom_img_h_tablet') || 0,
+                custom_img_w_mobile: $wrapper.attr('data-custom_img_w_mobile') || 0,
+                custom_img_h_mobile: $wrapper.attr('data-custom_img_h_mobile') || 0,
+                custom_img_pos_x: $wrapper.attr('data-custom_img_pos_x') || 50,
+                custom_img_pos_y: $wrapper.attr('data-custom_img_pos_y') || 50,
                 hover_img: $wrapper.attr('data-hover-img'),
                 style: $wrapper.data('style')
             },

@@ -53,11 +53,11 @@ final class Admin_Menu {
 	 * @return bool
 	 */
 	public function is_widget_enabled( $widget_slug ) {
-		if ( ! class_exists( __NAMESPACE__ . '\\Widget_Options' ) ) {
+		if ( ! class_exists( '\HkdevShopElements\Includes\Admin\WidgetOptions' ) ) {
 			return true;
 		}
 
-		return Widget_Options::instance()->is_widget_enabled( $widget_slug );
+		return \HkdevShopElements\Includes\Admin\WidgetOptions::instance()->is_widget_enabled( $widget_slug );
 	}
 
 	/**
@@ -67,12 +67,12 @@ final class Admin_Menu {
 	 */
 	public function get_admin_page_slugs() {
 		return [
-			Checkout_Options::MENU_SLUG,
-			Header_Options::SETTINGS_SLUG,
-			Footer_Options::SETTINGS_SLUG,
-			Contact_Form_Options::SETTINGS_SLUG,
-			Review_Options::SETTINGS_SLUG,
-			Widget_Options::SETTINGS_SLUG,
+			\HkdevShopElements\Includes\Admin\CheckoutOptions::MENU_SLUG,
+			\HkdevShopElements\Includes\Admin\HeaderOptions::SETTINGS_SLUG,
+			\HkdevShopElements\Includes\Admin\FooterOptions::SETTINGS_SLUG,
+			\HkdevShopElements\Includes\Admin\ContactFormOptions::SETTINGS_SLUG,
+			\HkdevShopElements\Includes\Admin\ReviewOptions::SETTINGS_SLUG,
+			\HkdevShopElements\Includes\Admin\WidgetOptions::SETTINGS_SLUG,
 		];
 	}
 
@@ -86,37 +86,37 @@ final class Admin_Menu {
 			'checkout' => [
 				'label' => esc_html__( 'Checkout Fields', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-cart',
-				'page'  => Checkout_Options::MENU_SLUG,
+				'page'  => \HkdevShopElements\Includes\Admin\CheckoutOptions::MENU_SLUG,
 				'gate'  => [],
 			],
 			'header'   => [
 				'label' => esc_html__( 'Header', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-admin-home',
-				'page'  => Header_Options::SETTINGS_SLUG,
+				'page'  => \HkdevShopElements\Includes\Admin\HeaderOptions::SETTINGS_SLUG,
 				'gate'  => [],
 			],
 			'footer'   => [
 				'label' => esc_html__( 'Footer', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-admin-multisite',
-				'page'  => Footer_Options::SETTINGS_SLUG,
+				'page'  => \HkdevShopElements\Includes\Admin\FooterOptions::SETTINGS_SLUG,
 				'gate'  => [],
 			],
 			'contact'  => [
 				'label' => esc_html__( 'Contact Form', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-email-alt',
-				'page'  => Contact_Form_Options::SETTINGS_SLUG,
+				'page'  => \HkdevShopElements\Includes\Admin\ContactFormOptions::SETTINGS_SLUG,
 				'gate'  => [ 'hkdev_contact_form' ],
 			],
 			'reviews'  => [
 				'label' => esc_html__( 'Customer Reviews', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-star-filled',
-				'page'  => Review_Options::SETTINGS_SLUG,
+				'page'  => \HkdevShopElements\Includes\Admin\ReviewOptions::SETTINGS_SLUG,
 				'gate'  => [ 'hkdev_customer_reviews' ],
 			],
 			'widgets'  => [
 				'label' => esc_html__( 'Widget Manager', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-screenoptions',
-				'page'  => Widget_Options::SETTINGS_SLUG,
+				'page'  => \HkdevShopElements\Includes\Admin\WidgetOptions::SETTINGS_SLUG,
 				'gate'  => [],
 			],
 		];
@@ -157,8 +157,8 @@ final class Admin_Menu {
 	 */
 	public function prune_disabled_submenus() {
 		if ( ! $this->is_module_visible( [ 'hkdev_contact_form' ] ) ) {
-			remove_submenu_page( self::PARENT_SLUG, Contact_Form_Options::SETTINGS_SLUG );
-			remove_submenu_page( self::PARENT_SLUG, 'edit.php?post_type=' . Contact_Form_Options::POST_TYPE );
+			remove_submenu_page( self::PARENT_SLUG, \HkdevShopElements\Includes\Admin\ContactFormOptions::SETTINGS_SLUG );
+			remove_submenu_page( self::PARENT_SLUG, 'edit.php?post_type=' . \HkdevShopElements\Includes\Admin\ContactFormOptions::POST_TYPE );
 		}
 	}
 

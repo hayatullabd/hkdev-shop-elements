@@ -131,6 +131,6 @@ class Section_Heading_Widget extends Widget_Base {
 	protected function render() {
 		$settings = $this->get_settings_for_display();
 
-		echo \HkdevShopElements\Includes\Shop_Engine::instance()->shop_heading_html( $this->get_heading_config( $settings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\ShopEngine::instance()->shop_heading_html( $this->get_heading_config( $settings ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.136
+ * Version:           0.5.137
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.136' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.137' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -62,9 +62,17 @@ require_once HKDEV_ELEMENTS_PATH . 'includes/error-logger.php';
 function hkdev_elements_asset_path( $relative_path ) {
 	$relative_path = ltrim( $relative_path, '/' );
 	$min_path      = preg_replace( '/\.(css|js)$/', '.min.$1', $relative_path );
-	if ( $min_path !== $relative_path && file_exists( HKDEV_ELEMENTS_PATH . $min_path ) ) {
+	$source_file   = HKDEV_ELEMENTS_PATH . $relative_path;
+	$min_file      = HKDEV_ELEMENTS_PATH . $min_path;
+
+	if ( $min_path !== $relative_path && file_exists( $min_file ) ) {
+		// Prefer the source file when it was edited after the last minify.
+		if ( file_exists( $source_file ) && filemtime( $source_file ) > filemtime( $min_file ) ) {
+			return $relative_path;
+		}
 		return $min_path;
 	}
+
 	return $relative_path;
 }
 
@@ -223,6 +231,27 @@ function hkdev_elements_handle_incomplete_install( $missing_path ) {
 }
 
 /**
+ * Load and initialize a list of modules.
+ *
+ * Each item must be [ 'relative/path.php', callable ].
+ *
+ * @param array<int,array{0:string,1:callable}> $modules Module map.
+ * @return bool True when all modules are loaded.
+ */
+function hkdev_elements_bootstrap_modules( array $modules ) {
+	foreach ( $modules as $module ) {
+		if ( ! hkdev_elements_require_file( $module[0] ) ) {
+			hkdev_elements_handle_incomplete_install( $module[0] );
+			return false;
+		}
+
+		$module[1]();
+	}
+
+	return true;
+}
+
+/**
  * Bootstrap.
  *
  * The engine only needs WooCommerce, so it loads at plugins_loaded. Elementor
@@ -239,93 +268,97 @@ function hkdev_elements_boot() {
 	// Whole-number pricing across every WooCommerce price output.
 	add_filter( 'wc_price_args', __NAMESPACE__ . '\\hkdev_elements_price_args' );
 
-	$modules = [
-		[ 'includes/shop-engine.php', static function () {
-			Includes\Shop_Engine::instance();
+	$core_modules = [
+		[ 'includes/Core/ShopEngine.php', static function () {
+			Includes\Core\ShopEngine::instance();
 		} ],
-		[ 'includes/single-product-engine.php', static function () {
-			Includes\Single_Product_Engine::instance();
+		[ 'includes/Core/SingleProductEngine.php', static function () {
+			Includes\Core\SingleProductEngine::instance();
 		} ],
-		[ 'includes/header-engine.php', static function () {
-			Includes\Header_Engine::instance();
+		[ 'includes/Core/HeaderEngine.php', static function () {
+			Includes\Core\HeaderEngine::instance();
 		} ],
-		[ 'includes/footer-engine.php', static function () {
-			Includes\Footer_Engine::instance();
+		[ 'includes/Core/FooterEngine.php', static function () {
+			Includes\Core\FooterEngine::instance();
 		} ],
-		[ 'includes/cart-engine.php', static function () {
-			Includes\Cart_Engine::instance();
+		[ 'includes/Core/CartEngine.php', static function () {
+			Includes\Core\CartEngine::instance();
 		} ],
-		[ 'includes/checkout-engine.php', static function () {
-			Includes\Checkout_Engine::instance();
+		[ 'includes/Core/CheckoutEngine.php', static function () {
+			Includes\Core\CheckoutEngine::instance();
 		} ],
-		[ 'includes/contact-form-engine.php', static function () {
-			Includes\Contact_Form_Engine::instance();
+		[ 'includes/Core/ContactFormEngine.php', static function () {
+			Includes\Core\ContactFormEngine::instance();
 		} ],
-		[ 'includes/catalog-engine.php', static function () {
-			Includes\Catalog_Engine::instance();
+		[ 'includes/Core/CatalogEngine.php', static function () {
+			Includes\Core\CatalogEngine::instance();
 		} ],
-		[ 'includes/review-engine.php', static function () {
-			Includes\Review_Engine::instance()->register_shortcode();
+		[ 'includes/Core/ReviewEngine.php', static function () {
+			Includes\Core\ReviewEngine::instance()->register_shortcode();
 		} ],
-		[ 'includes/review-options.php', static function () {
-			Includes\Review_Options::instance()->init();
+		[ 'includes/Core/VideoEngine.php', static function () {
+			Includes\Core\VideoEngine::instance();
 		} ],
-		[ 'includes/video-engine.php', static function () {
-			Includes\Video_Engine::instance();
+		[ 'includes/Core/AuthEngine.php', static function () {
+			Includes\Core\AuthEngine::instance();
 		} ],
-		[ 'includes/checkout-options.php', static function () {
-			Includes\Checkout_Options::instance()->init();
+		[ 'includes/Core/AccountEngine.php', static function () {
+			Includes\Core\AccountEngine::instance();
 		} ],
-		[ 'includes/header-options.php', static function () {
-			Includes\Header_Options::instance()->init();
+		[ 'includes/Core/TrackingEngine.php', static function () {
+			Includes\Core\TrackingEngine::instance();
 		} ],
-		[ 'includes/footer-options.php', static function () {
-			Includes\Footer_Options::instance()->init();
+		[ 'includes/Core/Page404Engine.php', static function () {
+			Includes\Core\Page404Engine::instance();
 		} ],
-		[ 'includes/contact-form-options.php', static function () {
-			Includes\Contact_Form_Options::instance()->init();
-		} ],
-		[ 'includes/widget-options.php', static function () {
-			Includes\Widget_Options::instance()->init();
-		} ],
-		[ 'includes/admin-menu.php', static function () {
-			Includes\Admin_Menu::instance()->init();
-		} ],
-		[ 'includes/widget-manager.php', static function () {
-			Includes\Widget_Manager::instance()->init();
-		} ],
-		[ 'includes/auth-engine.php', static function () {
-			Includes\Auth_Engine::instance();
-		} ],
-		[ 'includes/account-engine.php', static function () {
-			Includes\Account_Engine::instance();
-		} ],
-		[ 'includes/tracking-engine.php', static function () {
-			Includes\Tracking_Engine::instance();
-		} ],
-		[ 'includes/404-engine.php', static function () {
-			Includes\Page404_Engine::instance();
-		} ],
-		[ 'includes/blog-engine.php', static function () {
-			Includes\Blog_Engine::instance();
+		[ 'includes/Core/BlogEngine.php', static function () {
+			Includes\Core\BlogEngine::instance();
 		} ],
 	];
 
-	foreach ( $modules as $module ) {
-		if ( ! hkdev_elements_require_file( $module[0] ) ) {
-			hkdev_elements_handle_incomplete_install( $module[0] );
-			return;
-		}
+	$admin_modules = [
+		[ 'includes/Admin/ReviewOptions.php', static function () {
+			Includes\Admin\ReviewOptions::instance()->init();
+		} ],
+		[ 'includes/Admin/CheckoutOptions.php', static function () {
+			Includes\Admin\CheckoutOptions::instance()->init();
+		} ],
+		[ 'includes/Admin/HeaderOptions.php', static function () {
+			Includes\Admin\HeaderOptions::instance()->init();
+		} ],
+		[ 'includes/Admin/FooterOptions.php', static function () {
+			Includes\Admin\FooterOptions::instance()->init();
+		} ],
+		[ 'includes/Admin/ContactFormOptions.php', static function () {
+			Includes\Admin\ContactFormOptions::instance()->init();
+		} ],
+		[ 'includes/Admin/WidgetOptions.php', static function () {
+			Includes\Admin\WidgetOptions::instance()->init();
+		} ],
+		[ 'includes/Admin/AdminMenu.php', static function () {
+			Includes\Admin\AdminMenu::instance()->init();
+		} ],
+		[ 'includes/Admin/PluginRow.php', static function () {
+			Includes\Admin\PluginRow::instance()->init();
+		} ],
+		[ 'includes/Admin/WidgetManager.php', static function () {
+			Includes\Admin\WidgetManager::instance()->init();
+		} ],
+	];
 
-		$module[1]();
+	if ( ! hkdev_elements_bootstrap_modules( $core_modules ) ) {
+		return;
+	}
+	if ( ! hkdev_elements_bootstrap_modules( $admin_modules ) ) {
+		return;
 	}
 
 	// Register shortcodes for the new systems.
-	add_shortcode( 'hkdev_login', [ Includes\Auth_Engine::instance(), 'render_auth_modal' ] );
-	add_shortcode( 'hkdev_my_account', [ Includes\Account_Engine::instance(), 'account_shortcode' ] );
-	add_shortcode( 'hkdev_track_order', [ Includes\Tracking_Engine::instance(), 'tracking_shortcode' ] );
-	add_shortcode( 'hkdev_404', [ Includes\Page404_Engine::instance(), 'page404_shortcode' ] );
-	add_shortcode( 'hkdev_contact_form', [ Includes\Contact_Form_Engine::instance(), 'contact_form_shortcode' ] );
+	add_shortcode( 'hkdev_login', [ Includes\Core\AuthEngine::instance(), 'render_auth_modal' ] );
+	add_shortcode( 'hkdev_my_account', [ Includes\Core\AccountEngine::instance(), 'account_shortcode' ] );
+	add_shortcode( 'hkdev_track_order', [ Includes\Core\TrackingEngine::instance(), 'tracking_shortcode' ] );
+	add_shortcode( 'hkdev_404', [ Includes\Core\Page404Engine::instance(), 'page404_shortcode' ] );
+	add_shortcode( 'hkdev_contact_form', [ Includes\Core\ContactFormEngine::instance(), 'contact_form_shortcode' ] );
 }
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\hkdev_elements_boot', 20 );
 
@@ -367,15 +400,14 @@ function hkdev_elements_register_assets() {
 		hkdev_elements_asset_ver( 'assets/css/fontawesome.min.css' )
 	);
 
-	// Google Fonts — Hind Siliguri brand font, now vendored locally
-	// (assets/css/hind-siliguri.css + assets/fonts/*.woff2) so there are no
-	// render-blocking @import font requests. Enqueued as a dependency of the
-	// widget stylesheets that use the font.
+	// Local Bangla font pack (Hind Siliguri, Noto Sans Bengali, Noto Serif
+	// Bengali, Tiro Bangla). Enqueued as a dependency of widget styles so every
+	// widget can switch fonts without external requests.
 	wp_register_style(
 		'hkdev-elements-font',
-		hkdev_elements_asset_url( 'assets/css/hind-siliguri.css' ),
+		hkdev_elements_asset_url( 'assets/css/hkdev-bangla-fonts.css' ),
 		[],
-		hkdev_elements_asset_ver( 'assets/css/hind-siliguri.css' )
+		hkdev_elements_asset_ver( 'assets/css/hkdev-bangla-fonts.css' )
 	);
 	wp_register_style(
 		'hkdev-elements-swiper-css',
@@ -738,8 +770,8 @@ function hkdev_elements_preload_primary_font() {
 	}
 
 	printf(
-		'<link rel="preload" href="%s" as="font" type="font/woff2" crossorigin />' . "\n",
-		esc_url( hkdev_elements_asset_url( 'assets/fonts/hind-siliguri-400-latin.woff2' ) )
+		'<link rel="preload" href="%s" as="font" type="font/ttf" crossorigin />' . "\n",
+		esc_url( hkdev_elements_asset_url( 'assets/fonts/hind-siliguri-400.ttf' ) )
 	);
 }
 add_action( 'wp_head', __NAMESPACE__ . '\\hkdev_elements_preload_primary_font', 1 );

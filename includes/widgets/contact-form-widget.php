@@ -183,6 +183,6 @@ class Contact_Form_Widget extends Widget_Base {
 			return;
 		}
 
-		echo \HkdevShopElements\Includes\Contact_Form_Engine::instance()->contact_form_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo \HkdevShopElements\Includes\Core\ContactFormEngine::instance()->contact_form_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

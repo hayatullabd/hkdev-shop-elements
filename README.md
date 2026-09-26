@@ -54,8 +54,19 @@ feature.
 1. Bump the version in **both** places at the top of `hkdev-shop-elements.php`:
    - the `Version:` header
    - `define( 'HKDEV_ELEMENTS_VERSION', '...' )`
-2. Commit and push.
-3. Create a tag (optionally a full GitHub Release with notes):
+2. Run migration safety checks:
+
+   ```sh
+   php scripts/migration-audit.php --strict
+   ```
+
+   If `php` is not available in your shell, use:
+
+   - `./scripts/audit-migration.sh --strict` (Bash)
+   - `.\scripts\audit-migration.ps1 -Strict` (PowerShell)
+
+3. Commit and push.
+4. Create a tag (optionally a full GitHub Release with notes):
 
    ```sh
    git tag v0.2.1
@@ -70,6 +81,9 @@ the "View version details" popup.
 > archive contents; otherwise GitHub's auto-generated source ZIP is used and the
 > updater renames the folder for you.
 
+Use `docs/RELEASE-CHECKLIST.md` before tagging, and
+`.github/RELEASE_NOTES_TEMPLATE.md` for consistent release notes.
+
 If an update does not appear immediately, open **Dashboard → Updates** and
 click **Check again** (the GitHub API response is cached for 6 hours).
 
@@ -81,3 +95,8 @@ includes/                 Engines, admin screens, GitHub updater
 includes/widgets/         Elementor widgets
 assets/css|js/            Front-end assets (a .min.* next to a file is served first)
 ```
+
+## Contributing
+
+See `CONTRIBUTING.md` for PR flow, migration audit requirements, and release
+governance rules.

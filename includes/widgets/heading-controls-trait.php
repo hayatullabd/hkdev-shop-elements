@@ -7,7 +7,7 @@
  * controls: show/hide, box chrome, accent bar, typography for heading /
  * subtitle / link, link hover colour and hover background.
  *
- * The markup is rendered by Shop_Engine::shop_heading_html() so the Shop Grid,
+ * The markup is rendered by ShopEngine::shop_heading_html() so the Shop Grid,
  * Trending and Section Heading widgets all stay visually identical.
  *
  * @package HkdevShopElements
@@ -602,31 +602,21 @@ trait Heading_Controls {
 			]
 		);
 
+		$this->start_controls_tabs( 'heading_link_state_tabs' );
+
+		$this->start_controls_tab(
+			'heading_link_tab_normal',
+			[
+				'label' => esc_html__( 'Normal', 'hkdev-shop-elements' ),
+			]
+		);
+
 		$this->add_control(
 			'heading_link_color',
 			[
 				'label'   => esc_html__( 'Link Color', 'hkdev-shop-elements' ),
 				'type'    => Controls_Manager::COLOR,
 				'default' => '#f06724',
-			]
-		);
-
-		$this->add_control(
-			'heading_link_hover_color',
-			[
-				'label'       => esc_html__( 'Link Hover Color', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::COLOR,
-				'default'     => '',
-				'description' => esc_html__( 'Leave empty to keep the link color on hover.', 'hkdev-shop-elements' ),
-			]
-		);
-
-		$this->add_control(
-			'heading_link_hover',
-			[
-				'label'   => esc_html__( 'Link Hover Background', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::COLOR,
-				'default' => 'rgba(240, 103, 36, 0.10)',
 			]
 		);
 
@@ -646,7 +636,6 @@ trait Heading_Controls {
 					'unit' => 'px',
 					'size' => 13,
 				],
-				'separator'  => 'before',
 			]
 		);
 
@@ -729,7 +718,6 @@ trait Heading_Controls {
 					'left'   => 10,
 					'unit'   => 'px',
 				],
-				'separator'  => 'before',
 			]
 		);
 
@@ -771,6 +759,37 @@ trait Heading_Controls {
 			]
 		);
 
+		$this->end_controls_tab();
+
+		$this->start_controls_tab(
+			'heading_link_tab_hover',
+			[
+				'label' => esc_html__( 'Hover', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'heading_link_hover_color',
+			[
+				'label'       => esc_html__( 'Link Hover Color', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::COLOR,
+				'default'     => '',
+				'description' => esc_html__( 'Leave empty to keep the link color on hover.', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'heading_link_hover',
+			[
+				'label'   => esc_html__( 'Link Hover Background', 'hkdev-shop-elements' ),
+				'type'    => Controls_Manager::COLOR,
+				'default' => 'rgba(240, 103, 36, 0.10)',
+			]
+		);
+
+		$this->end_controls_tab();
+		$this->end_controls_tabs();
+
 		$this->add_control(
 			'heading_link_gap',
 			[
@@ -794,7 +813,7 @@ trait Heading_Controls {
 	}
 
 	/**
-	 * Build the heading config passed to Shop_Engine::shop_heading_html().
+	 * Build the heading config passed to ShopEngine::shop_heading_html().
 	 *
 	 * @param array $settings Widget settings.
 	 * @return array

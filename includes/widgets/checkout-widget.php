@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
-use HkdevShopElements\Includes\Checkout_Engine;
+use HkdevShopElements\Includes\Core\CheckoutEngine;
 
 /**
  * Class Checkout_Widget
@@ -334,6 +334,6 @@ class Checkout_Widget extends Widget_Base {
 			echo '<style id="hkdev-co-style-preset">' . $css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 
-		echo Checkout_Engine::instance()->custom_checkout_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo CheckoutEngine::instance()->custom_checkout_shortcode(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 }

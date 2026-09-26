@@ -119,6 +119,7 @@ class Header_Engine {
 			'show_account'     => 'yes',
 			'show_cart'        => 'yes',
 			'mini_cart'        => 'yes',
+			'header_part'      => 'full',
 			'float_cart'       => 'yes',
 			'float_cart_empty' => 'no',
 			'float_cart_pos'   => 'middle',
@@ -564,6 +565,48 @@ class Header_Engine {
 		wp_enqueue_style( 'hkdev-elements-header-style' );
 		wp_enqueue_style( 'hkdev-elements-fontawesome' );
 		wp_enqueue_script( 'hkdev-elements-header-js' );
+		wp_add_inline_style( 'hkdev-elements-header-style', $this->mobile_panel_inline_css() );
+	}
+
+	/**
+	 * Mobile off-canvas panel overrides (kept inline so it works even when
+	 * minified CSS has not been regenerated yet).
+	 *
+	 * @return string
+	 */
+	private function mobile_panel_inline_css() {
+		return '
+.hkdev-header-panel{background:#fafafa!important}
+.hkdev-header-panel-head{padding:14px 16px!important}
+.hkdev-header-panel-shell{display:flex!important;flex-direction:column!important;gap:14px!important;padding:14px 14px 0!important}
+.hkdev-header-panel-account-card{display:flex!important;align-items:center!important;gap:12px!important;padding:14px 16px!important;border-radius:12px!important;background:var(--hd-secondary)!important;color:#fff!important;text-decoration:none!important;box-shadow:0 8px 18px rgba(0,0,0,.08)!important}
+.hkdev-header-panel-account-icon{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:42px!important;height:42px!important;border-radius:50%!important;background:rgba(255,255,255,.22)!important;font-size:22px!important;flex-shrink:0!important}
+.hkdev-header-panel-account-text{display:flex!important;flex-direction:column!important;line-height:1.2!important}
+.hkdev-header-panel-account-title{font-size:21px!important;font-weight:700!important;color:#fff!important}
+.hkdev-header-panel-account-subtitle{font-size:14px!important;font-weight:500!important;color:rgba(255,255,255,.95)!important}
+.hkdev-header-panel-menu-card{background:#f2f2f2!important;border-radius:10px!important;padding:6px 14px!important}
+.hkdev-header-panel-nav{padding:0!important}
+.hkdev-header-panel-nav .hkdev-header-menu>li{border-bottom:1px solid #ddd!important}
+.hkdev-header-panel-nav .hkdev-header-menu>li:last-child{border-bottom:none!important}
+.hkdev-header-panel-nav .hkdev-header-menu>li>a{padding:13px 0!important;font-size:15px!important;font-weight:500!important;color:#333!important}
+.hkdev-header-panel-nav .hkdev-header-menu .sub-menu{padding:0 0 8px 10px!important}
+.hkdev-header-panel-nav .hkdev-header-menu .sub-menu li a{font-size:15px!important;color:#444!important}
+.hkdev-submenu-toggle{width:26px!important;height:26px!important;border:none!important;background:transparent!important;color:#8a8a8a!important}
+.hkdev-submenu-toggle.is-open{transform:rotate(180deg)!important;background:transparent!important;color:var(--hd-secondary)!important}
+.hkdev-header-panel-links-wrap{display:flex!important;flex-direction:column!important;gap:10px!important}
+.hkdev-header-panel-links-title{margin:0!important;font-size:30px!important;font-weight:700!important;line-height:1.1!important;color:#333!important}
+.hkdev-header-panel-links-underline{width:32px!important;height:3px!important;border-radius:999px!important;background:var(--hd-secondary)!important}
+.hkdev-header-panel-links{padding:0!important;background:#f2f2f2!important;border-radius:10px!important;overflow:hidden!important}
+.hkdev-header-panel-link{padding:12px 14px!important;border:none!important;border-bottom:1px solid #ddd!important;border-radius:0!important;background:transparent!important;font-size:14px!important;font-weight:500!important;color:#333!important}
+.hkdev-header-panel-link:last-child{border-bottom:none!important}
+.hkdev-header-panel-link i{color:#1f5f82!important;width:22px!important;text-align:center!important}
+.hkdev-header-panel-link:hover{background:#ececec!important;color:#222!important}
+@media (max-width:480px){
+	.hkdev-header-panel-shell{padding:12px 12px 0!important}
+	.hkdev-header-panel-account-title{font-size:18px!important}
+	.hkdev-header-panel-links-title{font-size:26px!important}
+}
+';
 	}
 
 	/**
@@ -989,6 +1032,19 @@ class Header_Engine {
 		// Site-wide settings first, then the widget's own attributes on top.
 		$atts = array_merge( $this->get_config(), (array) $atts );
 
+		$header_part = isset( $atts['header_part'] ) ? sanitize_key( (string) $atts['header_part'] ) : 'full';
+		if ( ! in_array( $header_part, [ 'full', 'upper', 'main', 'bottom' ], true ) ) {
+			$header_part = 'full';
+		}
+		$atts['header_part'] = $header_part;
+
+		if ( 'upper' === $header_part ) {
+			$atts['show_topbar'] = 'yes';
+		}
+		if ( in_array( $header_part, [ 'main', 'bottom' ], true ) ) {
+			$atts['show_menu'] = 'yes';
+		}
+
 		$uid = 'hkdev-hd-' . wp_rand( 1000, 9999 );
 
 		// ---- Logo -------------------------------------------------------
@@ -1036,8 +1092,13 @@ class Header_Engine {
 		// ---- Account / auth ---------------------------------------------
 		$is_logged_in = is_user_logged_in();
 
-		$show_navbar  = (bool) $menu_html;
-		$show_mini    = ( 'yes' === $atts['mini_cart'] && 'yes' === $atts['show_cart'] );
+		$render_upper  = in_array( $header_part, [ 'full', 'upper' ], true );
+		$render_main   = in_array( $header_part, [ 'full', 'main' ], true );
+		$render_bottom = in_array( $header_part, [ 'full', 'bottom' ], true );
+		$render_chrome = in_array( $header_part, [ 'full', 'main' ], true );
+
+		$show_navbar  = $render_bottom && (bool) $menu_html;
+		$show_mini    = $render_chrome && ( 'yes' === $atts['mini_cart'] && 'yes' === $atts['show_cart'] );
 		$sticky_class = ( 'yes' === $atts['sticky'] ) ? ' hkdev-header-sticky' : '';
 
 		// Auto-hide modes: full (slide the whole header), top (collapse the top
@@ -1059,11 +1120,11 @@ class Header_Engine {
 
 		ob_start();
 		?>
-		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> data-mobile-preset="<?php echo esc_attr( $atts['st_mobile_preset'] ); ?>" id="<?php echo esc_attr( $uid ); ?>">
+		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> data-header-part="<?php echo esc_attr( $header_part ); ?>" data-mobile-preset="<?php echo esc_attr( $atts['st_mobile_preset'] ); ?>" id="<?php echo esc_attr( $uid ); ?>">
 
 			<?php echo $this->style_css( $uid, $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- colours/fonts sanitised in style_css() ?>
 
-			<?php if ( 'yes' === $atts['show_topbar'] ) : ?>
+			<?php if ( $render_upper && 'yes' === $atts['show_topbar'] ) : ?>
 				<div class="hkdev-header-topbar">
 					<div class="hkdev-header-container">
 						<div class="hkdev-header-topbar-left">
@@ -1101,6 +1162,7 @@ class Header_Engine {
 				</div>
 			<?php endif; ?>
 
+			<?php if ( $render_main ) : ?>
 			<div class="hkdev-header-main">
 				<div class="hkdev-header-container">
 
@@ -1165,6 +1227,7 @@ class Header_Engine {
 					</div>
 				</div>
 			</div>
+			<?php endif; ?>
 
 			<?php if ( $show_navbar ) : ?>
 				<div class="hkdev-header-navbar">
@@ -1188,6 +1251,7 @@ class Header_Engine {
 			<?php endif; ?>
 		</div>
 
+		<?php if ( $render_chrome ) : ?>
 		<div class="hkdev-header-overlay"></div>
 
 		<?php
@@ -1204,39 +1268,58 @@ class Header_Engine {
 				</button>
 			</div>
 
-			<?php if ( 'yes' === $atts['show_search'] ) : ?>
-				<div class="hkdev-header-panel-search">
-					<?php echo $this->search_form( 'is-panel' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				</div>
-			<?php endif; ?>
-
-			<?php if ( $panel_menu_html ) : ?>
-				<nav class="hkdev-header-panel-nav" aria-label="<?php esc_attr_e( 'Mobile menu', 'hkdev-shop-elements' ); ?>">
-					<?php echo $panel_menu_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				</nav>
-			<?php endif; ?>
-
-			<div class="hkdev-header-panel-links">
-				<?php if ( $track_url ) : ?>
-					<a class="hkdev-header-panel-link" href="<?php echo esc_url( $track_url ); ?>">
-						<i class="fa-solid fa-truck-fast"></i> <?php esc_html_e( 'Track Your Order', 'hkdev-shop-elements' ); ?>
+			<div class="hkdev-header-panel-shell">
+				<?php if ( 'yes' === $atts['show_account'] ) : ?>
+					<a class="hkdev-header-panel-account-card" href="<?php echo esc_url( $account_url ); ?>">
+						<span class="hkdev-header-panel-account-icon"><i class="fa-regular fa-user"></i></span>
+						<span class="hkdev-header-panel-account-text">
+							<strong class="hkdev-header-panel-account-title"><?php esc_html_e( 'Hello there!', 'hkdev-shop-elements' ); ?></strong>
+							<span class="hkdev-header-panel-account-subtitle"><?php echo $is_logged_in ? esc_html__( 'My Account', 'hkdev-shop-elements' ) : esc_html__( 'Signin', 'hkdev-shop-elements' ); ?></span>
+						</span>
 					</a>
 				<?php endif; ?>
-				<?php if ( 'yes' === $atts['show_account'] ) : ?>
-					<a class="hkdev-header-panel-link" href="<?php echo esc_url( $account_url ); ?>">
-						<i class="fa-regular fa-user"></i> <?php echo $is_logged_in ? esc_html__( 'My Account', 'hkdev-shop-elements' ) : esc_html__( 'Log In / Register', 'hkdev-shop-elements' ); ?>
-					</a>
+
+				<?php if ( 'yes' === $atts['show_search'] ) : ?>
+					<div class="hkdev-header-panel-search">
+						<?php echo $this->search_form( 'is-panel' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( $panel_menu_html ) : ?>
+					<div class="hkdev-header-panel-menu-card">
+						<nav class="hkdev-header-panel-nav" aria-label="<?php esc_attr_e( 'Mobile menu', 'hkdev-shop-elements' ); ?>">
+							<?php echo $panel_menu_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</nav>
+					</div>
+				<?php endif; ?>
+
+				<?php if ( $track_url || 'yes' === $atts['show_account'] || $call_link ) : ?>
+					<div class="hkdev-header-panel-links-wrap">
+						<h3 class="hkdev-header-panel-links-title"><?php esc_html_e( 'Quick Links', 'hkdev-shop-elements' ); ?></h3>
+						<span class="hkdev-header-panel-links-underline" aria-hidden="true"></span>
+						<div class="hkdev-header-panel-links">
+							<?php if ( $track_url ) : ?>
+								<a class="hkdev-header-panel-link" href="<?php echo esc_url( $track_url ); ?>">
+									<i class="fa-solid fa-truck-fast"></i> <?php esc_html_e( 'Track Your Order', 'hkdev-shop-elements' ); ?>
+								</a>
+							<?php endif; ?>
+							<?php if ( 'yes' === $atts['show_account'] ) : ?>
+								<a class="hkdev-header-panel-link" href="<?php echo esc_url( $account_url ); ?>">
+									<i class="fa-regular fa-user"></i> <?php echo $is_logged_in ? esc_html__( 'My Account', 'hkdev-shop-elements' ) : esc_html__( 'Log In / Register', 'hkdev-shop-elements' ); ?>
+								</a>
+							<?php endif; ?>
+							<?php if ( $call_link ) : ?>
+								<a class="hkdev-header-panel-link" href="<?php echo esc_url( $call_link ); ?>">
+									<i class="fa-solid fa-phone"></i> <?php esc_html_e( 'Call For Order', 'hkdev-shop-elements' ); ?>
+								</a>
+							<?php endif; ?>
+						</div>
+					</div>
 				<?php endif; ?>
 			</div>
 
-			<?php if ( $call_link ) : ?>
-				<div class="hkdev-header-panel-contact">
-					<a class="hkdev-header-contact-btn call" href="<?php echo esc_url( $call_link ); ?>">
-						<i class="fa-solid fa-phone"></i> <?php esc_html_e( 'Call For Order', 'hkdev-shop-elements' ); ?>
-					</a>
-				</div>
-			<?php endif; ?>
 		</aside>
+		<?php endif; ?>
 		<?php
 		return ob_get_clean();
 	}
