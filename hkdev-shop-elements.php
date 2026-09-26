@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '1.0.0' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.0.1' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -740,58 +740,36 @@ function hkdev_elements_force_style_order() {
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_force_style_order', 999 );
 
 /**
- * Load Font Awesome asynchronously.
+ * Load Font Awesome and the font pack asynchronously.
  *
- * Font Awesome is a large icon stylesheet (~100 KB) that does not define the
- * page layout, so it must not block the first paint. The stylesheet is turned
- * into a high-priority <link rel="preload"> that promotes itself to a real
- * stylesheet the moment it loads — keeping the icon flash as short as possible
- * — with a <noscript> copy for visitors without JavaScript. Layout-critical
- * stylesheets are deliberately left render-blocking.
+ * Neither stylesheet defines page layout, so they must not block first paint.
+ * Each tag becomes a <link rel="preload"> that promotes itself to a stylesheet
+ * on load, with a <noscript> copy. Layout-critical CSS stays render-blocking.
  *
  * @param string $tag    Full <link> markup.
  * @param string $handle Style handle.
  * @return string
  */
 function hkdev_elements_async_fontawesome( $tag, $handle ) {
-	if ( is_admin() || 'hkdev-elements-fontawesome' !== $handle ) {
+	if ( is_admin() || ! in_array( $handle, [ 'hkdev-elements-fontawesome', 'hkdev-elements-font' ], true ) ) {
 		return $tag;
 	}
-	if ( false === strpos( $tag, "rel='stylesheet'" ) ) {
+	if ( false === strpos( $tag, 'rel=' ) || false === strpos( $tag, 'stylesheet' ) ) {
 		return $tag;
 	}
 
 	$async = str_replace(
-		"rel='stylesheet'",
-		"rel='preload' as='style' onload=\"this.onload=null;this.rel='stylesheet';\"",
+		[ "rel='stylesheet'", 'rel="stylesheet"' ],
+		[
+			"rel='preload' as='style' onload=\"this.onload=null;this.rel='stylesheet';\"",
+			'rel="preload" as="style" onload="this.onload=null;this.rel=\'stylesheet\';"',
+		],
 		$tag
 	);
 
 	return $async . '<noscript>' . $tag . '</noscript>';
 }
 add_filter( 'style_loader_tag', __NAMESPACE__ . '\\hkdev_elements_async_fontawesome', 10, 2 );
-
-/**
- * Preload the primary body font.
- *
- * The brand font is requested from inside a render-blocking stylesheet, which
- * gives it a low fetch priority. Hinting it high lets the largest text paint
- * with the real font sooner. Only emitted when the font stylesheet is actually
- * enqueued, so pages that do not use it pay nothing.
- *
- * @return void
- */
-function hkdev_elements_preload_primary_font() {
-	if ( is_admin() || ! wp_style_is( 'hkdev-elements-font', 'enqueued' ) ) {
-		return;
-	}
-
-	printf(
-		'<link rel="preload" href="%s" as="font" type="font/ttf" crossorigin />' . "\n",
-		esc_url( hkdev_elements_asset_url( 'assets/fonts/hind-siliguri-400.ttf' ) )
-	);
-}
-add_action( 'wp_head', __NAMESPACE__ . '\\hkdev_elements_preload_primary_font', 1 );
 
 /**
  * Enqueue plugin shop assets when no other provider (theme/plugin) already
@@ -826,19 +804,33 @@ function hkdev_elements_enqueue_assets() {
 		return;
 	}
 
+	// Shop / category / tag archives may render the catalog or a shop
+	// shortcode without an Elementor widget. Product pages, home, and
+	// content pages load assets only via widget `get_*_depends()`.
+	$needs_shop_stack = function_exists( 'is_shop' )
+		&& ( is_shop() || is_product_category() || is_product_tag() );
+
+	if ( ! $needs_shop_stack ) {
+		return;
+	}
+
 	wp_enqueue_style( 'hkdev-elements-shop-style' );
 	wp_enqueue_script( 'hkdev-elements-shop-js' );
 	wp_enqueue_style( 'hkdev-elements-swiper-css' );
 	wp_enqueue_script( 'hkdev-elements-swiper-js' );
 	wp_enqueue_style( 'hkdev-elements-fontawesome' );
+	hkdev_elements_enqueue_buy_now_checkout_assets();
+}
+add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_assets', 30 );
 
-	// The shop widget's "Buy Now" opens the checkout form inside a modal, so
-	// the checkout runtime must be available on shop pages too. Skip the JS
-	// when another provider already ships the hkdev-shop checkout script.
+/**
+ * Checkout CSS/JS for the Buy Now modal (shop grid / carousel / catalog).
+ *
+ * @return void
+ */
+function hkdev_elements_enqueue_buy_now_checkout_assets() {
 	wp_enqueue_style( 'hkdev-elements-checkout-style' );
 
-	// Select2 powers the searchable state / country dropdowns. WooCommerce
-	// registers it as "wc-select2" (script) and "select2" (style).
 	if ( wp_script_is( 'wc-select2', 'registered' ) ) {
 		wp_enqueue_script( 'wc-select2' );
 	} elseif ( wp_script_is( 'select2', 'registered' ) ) {
@@ -852,7 +844,20 @@ function hkdev_elements_enqueue_assets() {
 		wp_enqueue_script( 'hkdev-elements-checkout-js' );
 	}
 }
-add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_assets', 30 );
+
+/**
+ * Load Buy Now checkout assets whenever a shop listing script is present.
+ *
+ * @return void
+ */
+function hkdev_elements_enqueue_buy_now_when_shop_js() {
+	if ( is_admin() || ! wp_script_is( 'hkdev-elements-shop-js', 'enqueued' ) ) {
+		return;
+	}
+
+	hkdev_elements_enqueue_buy_now_checkout_assets();
+}
+add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_buy_now_when_shop_js', 40 );
 
 /**
  * Whether a post contains a given shortcode in post_content or Elementor data.

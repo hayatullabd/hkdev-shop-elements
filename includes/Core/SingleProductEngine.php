@@ -832,7 +832,20 @@ class SingleProductEngine {
 						<?php endif; ?>
 
 						<div class="hkdev-sp-zoom-inner" id="hkdev-sp-zoom-container">
-							<img id="hkdev-sp-main-img" src="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, $gallery_size ) ); ?>" alt="<?php echo esc_attr( $product->get_name() ); ?>">
+							<?php
+							echo wp_get_attachment_image( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								$main_image_id,
+								$gallery_size,
+								false,
+								[
+									'id'             => 'hkdev-sp-main-img',
+									'alt'            => $product->get_name(),
+									'loading'        => 'eager',
+									'fetchpriority'  => 'high',
+									'decoding'       => 'async',
+								]
+							);
+							?>
 						</div>
 
 						<div class="hkdev-sp-video-player" id="hkdev-sp-video-player" style="display:none;"></div>
@@ -841,12 +854,12 @@ class SingleProductEngine {
 					<div class="hkdev-sp-thumbnails">
 						<?php if ( $main_image_id ) : ?>
 							<div class="hkdev-sp-thumb active" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $main_image_id, $gallery_size ) ); ?>">
-								<?php echo wp_get_attachment_image( $main_image_id, $thumb_size ); ?>
+								<?php echo wp_get_attachment_image( $main_image_id, $thumb_size, false, [ 'loading' => 'lazy', 'decoding' => 'async' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php endif; ?>
 						<?php foreach ( $attachment_ids as $attachment_id ) : ?>
 							<div class="hkdev-sp-thumb" data-type="image" data-full="<?php echo esc_url( wp_get_attachment_image_url( $attachment_id, $gallery_size ) ); ?>">
-								<?php echo wp_get_attachment_image( $attachment_id, $thumb_size ); ?>
+								<?php echo wp_get_attachment_image( $attachment_id, $thumb_size, false, [ 'loading' => 'lazy', 'decoding' => 'async' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						<?php endforeach; ?>
 						<?php foreach ( $video_urls as $v_index => $v_url ) : ?>

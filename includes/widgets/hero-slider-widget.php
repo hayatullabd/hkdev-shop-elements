@@ -973,7 +973,7 @@ class HeroSliderWidget extends Widget_Base {
 						}
 					}
 
-					$img = '<img class="hkdev-hero-img hkdev-hero-img-desktop" src="' . esc_url( $slide['image'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="' . ( $active ? 'eager' : 'lazy' ) . '" decoding="async" />';
+					$img = '<img class="hkdev-hero-img hkdev-hero-img-desktop" src="' . esc_url( $slide['image'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="' . ( $active ? 'eager' : 'lazy' ) . '" decoding="async"' . ( $active ? ' fetchpriority="high"' : '' ) . ' />';
 
 					if ( '' !== $slide['image_mobile'] ) {
 						$img .= '<img class="hkdev-hero-img hkdev-hero-img-mobile" src="' . esc_url( $slide['image_mobile'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="lazy" decoding="async" />';
