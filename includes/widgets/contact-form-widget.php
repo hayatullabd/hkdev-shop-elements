@@ -18,9 +18,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Contact_Form_Widget
+ * Class ContactFormWidget
  */
-class Contact_Form_Widget extends Widget_Base {
+class ContactFormWidget extends Widget_Base {
 
 	use Style_Controls;
 

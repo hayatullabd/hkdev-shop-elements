@@ -3,12 +3,13 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.139
+ * Version:           1.0.0
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
  * Requires at least: 6.0
  * Requires PHP:      7.4
+ * Requires Plugins:  woocommerce, elementor
  * WC requires at least: 7.0
  * Update URI:        https://github.com/hayatullabd/hkdev-shop-elements
  */
@@ -19,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.139' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.0.0' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -48,7 +49,7 @@ if ( ! defined( 'HKDEV_ELEMENTS_SAFE_MODE' ) ) {
 // Fatal-error log (diagnostics). Loaded first so it also captures a crash in the
 // engine / widget bootstrap below. Written to
 // wp-content/uploads/hkdev-elements-error.log
-require_once HKDEV_ELEMENTS_PATH . 'includes/error-logger.php';
+require_once HKDEV_ELEMENTS_PATH . 'includes/Support/error-logger.php';
 
 
 /**
@@ -190,6 +191,10 @@ function hkdev_elements_require_file( $relative_path ) {
 		$candidates[] = 'includes/admin/' . substr( $relative_path, strlen( 'includes/Admin/' ) );
 	} elseif ( 0 === strpos( $relative_path, 'includes/admin/' ) ) {
 		$candidates[] = 'includes/Admin/' . substr( $relative_path, strlen( 'includes/admin/' ) );
+	}
+
+	if ( preg_match( '#^includes/([^/]+\.php)$#', $relative_path, $matches ) ) {
+		$candidates[] = 'includes/Support/' . $matches[1];
 	}
 
 	foreach ( $candidates as $candidate ) {
@@ -387,12 +392,12 @@ function hkdev_elements_github_updater() {
 		return;
 	}
 
-	if ( ! hkdev_elements_require_file( 'includes/github-updater.php' ) ) {
-		hkdev_elements_handle_incomplete_install( 'includes/github-updater.php' );
+	if ( ! hkdev_elements_require_file( 'includes/Support/github-updater.php' ) ) {
+		hkdev_elements_handle_incomplete_install( 'includes/Support/github-updater.php' );
 		return;
 	}
 
-	new Includes\GitHub_Updater( __FILE__, HKDEV_ELEMENTS_GITHUB_REPO );
+	new Includes\GitHubUpdater( __FILE__, HKDEV_ELEMENTS_GITHUB_REPO );
 }
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\hkdev_elements_github_updater' );
 

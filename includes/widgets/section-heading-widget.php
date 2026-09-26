@@ -7,7 +7,7 @@
  * optionally wrapped in a light bordered box.
  *
  * Controls come from the shared Heading_Controls trait and the markup is
- * rendered by Shop_Engine so this widget, the Shop Grid and the Trending
+ * rendered by ShopEngine so this widget, the Shop Grid and the Trending
  * widget all look and behave identically.
  *
  * @package HkdevShopElements
@@ -23,9 +23,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Section_Heading_Widget
+ * Class SectionHeadingWidget
  */
-class Section_Heading_Widget extends Widget_Base {
+class SectionHeadingWidget extends Widget_Base {
 
 	use Heading_Controls;
 	use Style_Controls;

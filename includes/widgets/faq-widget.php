@@ -18,7 +18,7 @@ use Elementor\Controls_Manager;
 use Elementor\Repeater;
 use Elementor\Widget_Base;
 
-class FAQ_Widget extends Widget_Base {
+class FaqWidget extends Widget_Base {
 
 	use Style_Controls;
 

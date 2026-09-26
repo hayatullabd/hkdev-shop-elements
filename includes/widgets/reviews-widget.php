@@ -22,9 +22,9 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\ReviewEngine;
 
 /**
- * Class Reviews_Widget
+ * Class ReviewsWidget
  */
-class Reviews_Widget extends Widget_Base {
+class ReviewsWidget extends Widget_Base {
 
 	use Style_Controls;
 

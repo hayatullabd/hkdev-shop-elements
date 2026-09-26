@@ -23,9 +23,9 @@ use Elementor\Repeater;
 use Elementor\Widget_Base;
 
 /**
- * Class Hero_Slider_Widget
+ * Class HeroSliderWidget
  */
-class Hero_Slider_Widget extends Widget_Base {
+class HeroSliderWidget extends Widget_Base {
 
 	use Style_Controls;
 

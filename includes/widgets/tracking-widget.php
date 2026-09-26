@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
-class Tracking_Widget extends Widget_Base {
+class TrackingWidget extends Widget_Base {
 
 	use Style_Controls;
 

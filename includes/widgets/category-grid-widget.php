@@ -11,14 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! class_exists( __NAMESPACE__ . '\\Category_Carousel_Widget' ) ) {
+if ( ! class_exists( __NAMESPACE__ . '\\CategoryCarouselWidget' ) ) {
 	require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/category-carousel-widget.php';
 }
 
 /**
  * Dedicated category grid widget.
  */
-class Category_Grid_Widget extends Category_Carousel_Widget {
+class CategoryGridWidget extends CategoryCarouselWidget {
 
 	/**
 	 * Widget slug.
@@ -64,8 +64,4 @@ class Category_Grid_Widget extends Category_Carousel_Widget {
 	protected function get_widget_layout_style() {
 		return 'grid';
 	}
-}
-
-if ( ! class_exists( __NAMESPACE__ . '\\CategoryGridWidget' ) ) {
-	class CategoryGridWidget extends Category_Grid_Widget {}
 }

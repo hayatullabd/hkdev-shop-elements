@@ -11,14 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-if ( ! class_exists( __NAMESPACE__ . '\\Header_Widget' ) ) {
+if ( ! class_exists( __NAMESPACE__ . '\\HeaderWidget' ) ) {
 	require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/header-widget.php';
 }
 
 /**
  * Dedicated Header Bottom (navigation) widget.
  */
-class Header_Bottom_Widget extends Header_Widget {
+class HeaderBottomWidget extends HeaderWidget {
 
 	/**
 	 * Widget slug.
@@ -66,6 +66,3 @@ class Header_Bottom_Widget extends Header_Widget {
 	}
 }
 
-if ( ! class_exists( __NAMESPACE__ . '\\HeaderBottomWidget' ) ) {
-	class HeaderBottomWidget extends Header_Bottom_Widget {}
-}

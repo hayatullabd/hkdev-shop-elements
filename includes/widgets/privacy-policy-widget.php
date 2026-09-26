@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Privacy_Policy_Widget extends Policy_Link_Base_Widget {
+class PrivacyPolicyWidget extends PolicyLinkBaseWidget {
 
 	public function get_name() {
 		return 'hkdev_privacy_policy_link';

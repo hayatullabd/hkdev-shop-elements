@@ -19,9 +19,9 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\ShopEngine;
 
 /**
- * Class Related_Widget
+ * Class RelatedWidget
  */
-class Related_Widget extends Widget_Base {
+class RelatedWidget extends Widget_Base {
 
 	use Product_Controls;
 	use Style_Controls;
@@ -41,7 +41,7 @@ class Related_Widget extends Widget_Base {
 	 * @return string
 	 */
 	public function get_title() {
-		return esc_html__( 'HKDEV Related Products', 'hkdev-shop-elements' );
+		return esc_html__( 'Related Products', 'hkdev-shop-elements' );
 	}
 
 	/**
@@ -59,7 +59,7 @@ class Related_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_categories() {
-		return [ 'hkdev-shop-elements' ];
+		return [ 'hkdev-shop-elements', 'woocommerce-elements' ];
 	}
 
 	/**
@@ -68,7 +68,7 @@ class Related_Widget extends Widget_Base {
 	 * @return array
 	 */
 	public function get_keywords() {
-		return [ 'related', 'product', 'woocommerce', 'upsell', 'cross-sell' ];
+		return [ 'related', 'related product', 'related products', 'upsell', 'cross-sell', 'single', 'woocommerce', 'hkdev' ];
 	}
 
 	/**
@@ -228,12 +228,10 @@ class Related_Widget extends Widget_Base {
 
 		$settings = $this->get_settings_for_display();
 
-		$product_id = ! empty( $settings['id'] ) ? absint( $settings['id'] ) : 0;
-		if ( ! $product_id && is_product() ) {
-			$product_id = get_the_ID();
-		}
+		$product_id = $this->resolve_product_id( $settings );
 
 		if ( ! $product_id ) {
+			$this->render_empty_state( esc_html__( 'Related Products needs a product page (or a Product ID) to show items.', 'hkdev-shop-elements' ) );
 			return;
 		}
 
@@ -244,6 +242,7 @@ class Related_Widget extends Widget_Base {
 		$atts = array_merge(
 			$this->get_design_atts( $settings ),
 			$this->get_image_atts( $settings ),
+			$this->get_buy_now_atts( $settings ),
 			[
 				'limit'            => $limit,
 				'columns'          => (string) $cols['desktop'],
@@ -263,14 +262,20 @@ class Related_Widget extends Widget_Base {
 
 		if ( ! empty( $related_ids ) ) {
 			$atts['product_ids'] = implode( ',', $related_ids );
-		} elseif ( isset( $settings['fallback'] ) && 'yes' === $settings['fallback'] ) {
+		} elseif ( ! isset( $settings['fallback'] ) || 'yes' === $settings['fallback'] ) {
 			$atts['is_related'] = 'yes';
 			$atts['id']         = $product_id;
 		} else {
+			$this->render_empty_state( esc_html__( 'No related products found for this item.', 'hkdev-shop-elements' ) );
 			return;
 		}
 
 		$grid = ShopEngine::instance()->master_shop_shortcode( $atts );
+
+		if ( '' === trim( wp_strip_all_tags( (string) $grid ) ) ) {
+			$this->render_empty_state( esc_html__( 'No related products found for this item.', 'hkdev-shop-elements' ) );
+			return;
+		}
 
 		$show_title = isset( $settings['show_title'] ) && 'yes' === $settings['show_title'];
 		$title      = isset( $settings['title'] ) ? trim( (string) $settings['title'] ) : '';
@@ -282,4 +287,107 @@ class Related_Widget extends Widget_Base {
 		echo $grid; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</div>';
 	}
+
+	/**
+	 * Product ID from widget setting, current product, or Elementor preview.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return int
+	 */
+	private function resolve_product_id( $settings ) {
+		if ( ! empty( $settings['id'] ) ) {
+			return absint( $settings['id'] );
+		}
+
+		global $product;
+		if ( $product instanceof \WC_Product ) {
+			return absint( $product->get_id() );
+		}
+
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			$current_id = get_the_ID();
+			if ( $current_id && 'product' === get_post_type( $current_id ) ) {
+				return absint( $current_id );
+			}
+		}
+
+		if ( class_exists( '\Elementor\Plugin' ) && isset( \Elementor\Plugin::$instance ) ) {
+			$elementor = \Elementor\Plugin::$instance;
+
+			if ( isset( $elementor->editor ) && method_exists( $elementor->editor, 'is_edit_mode' ) && $elementor->editor->is_edit_mode() ) {
+				$editor_post_id = method_exists( $elementor->editor, 'get_post_id' ) ? absint( $elementor->editor->get_post_id() ) : 0;
+				if ( $editor_post_id && 'product' === get_post_type( $editor_post_id ) ) {
+					return $editor_post_id;
+				}
+			}
+
+			if ( isset( $elementor->preview ) && method_exists( $elementor->preview, 'is_preview_mode' ) && $elementor->preview->is_preview_mode() ) {
+				$preview_post_id = method_exists( $elementor->preview, 'get_post_id' ) ? absint( $elementor->preview->get_post_id() ) : 0;
+				if ( ! $preview_post_id && isset( $_GET['preview_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+					$preview_post_id = absint( wp_unslash( $_GET['preview_id'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				}
+				if ( $preview_post_id && 'product' === get_post_type( $preview_post_id ) ) {
+					return $preview_post_id;
+				}
+			}
+		}
+
+		$current_id = get_the_ID();
+		if ( $current_id && 'product' === get_post_type( $current_id ) ) {
+			return absint( $current_id );
+		}
+
+		if ( $this->is_editor_mode() && function_exists( 'wc_get_products' ) ) {
+			$sample = wc_get_products(
+				[
+					'limit'   => 1,
+					'status'  => 'publish',
+					'orderby' => 'date',
+					'order'   => 'DESC',
+				]
+			);
+			if ( ! empty( $sample[0] ) && $sample[0] instanceof \WC_Product ) {
+				return absint( $sample[0]->get_id() );
+			}
+		}
+
+		return 0;
+	}
+
+	/**
+	 * Whether Elementor editor or preview is active.
+	 *
+	 * @return bool
+	 */
+	private function is_editor_mode() {
+		if ( ! class_exists( '\Elementor\Plugin' ) || ! isset( \Elementor\Plugin::$instance ) ) {
+			return false;
+		}
+
+		$plugin = \Elementor\Plugin::$instance;
+
+		if ( isset( $plugin->editor ) && method_exists( $plugin->editor, 'is_edit_mode' ) && $plugin->editor->is_edit_mode() ) {
+			return true;
+		}
+
+		return isset( $plugin->preview ) && method_exists( $plugin->preview, 'is_preview_mode' ) && $plugin->preview->is_preview_mode();
+	}
+
+	/**
+	 * Visible empty state so the widget is not invisible in the editor.
+	 *
+	 * @param string $message Message.
+	 * @return void
+	 */
+	private function render_empty_state( $message ) {
+		if ( ! $this->is_editor_mode() ) {
+			return;
+		}
+
+		echo '<div class="hkdev-related-empty" style="padding:18px 20px;border:1px dashed #c3c4c7;border-radius:8px;color:#50575e;background:#fff;">';
+		echo '<strong>' . esc_html__( 'Related Products', 'hkdev-shop-elements' ) . '</strong>';
+		echo '<p style="margin:8px 0 0;">' . esc_html( $message ) . '</p>';
+		echo '</div>';
+	}
 }
+

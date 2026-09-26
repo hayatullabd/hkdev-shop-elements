@@ -18,9 +18,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Cart_Widget
+ * Class CartWidget
  */
-class Cart_Widget extends Widget_Base {
+class CartWidget extends Widget_Base {
 
 	use Style_Controls;
 

@@ -605,7 +605,7 @@ trait Style_Controls {
 		$this->start_controls_section(
 			'hkdev_style_button',
 			[
-				'label' => esc_html__( 'Add to Cart Button', 'hkdev-shop-elements' ),
+				'label' => esc_html__( 'Buy Now Button', 'hkdev-shop-elements' ),
 				'tab'   => Controls_Manager::TAB_STYLE,
 			]
 		);

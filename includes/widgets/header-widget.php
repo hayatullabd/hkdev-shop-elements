@@ -18,9 +18,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Header_Widget
+ * Class HeaderWidget
  */
-class Header_Widget extends Widget_Base {
+class HeaderWidget extends Widget_Base {
 
 	use Style_Controls;
 
@@ -647,6 +647,3 @@ class Header_Widget extends Widget_Base {
 	}
 }
 
-if ( ! class_exists( __NAMESPACE__ . '\\HeaderWidget' ) ) {
-	class HeaderWidget extends Header_Widget {}
-}

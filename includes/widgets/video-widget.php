@@ -20,9 +20,9 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\VideoEngine;
 
 /**
- * Class Video_Widget
+ * Class VideoWidget
  */
-class Video_Widget extends Widget_Base {
+class VideoWidget extends Widget_Base {
 
 	use Style_Controls;
 

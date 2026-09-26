@@ -18,7 +18,7 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\BlogEngine;
 use HkdevShopElements\Includes\Core\ShopEngine;
 
-class Blog_Widget extends Widget_Base {
+class BlogWidget extends Widget_Base {
 
 	use Style_Controls;
 	use Heading_Controls;

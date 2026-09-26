@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Terms_Conditions_Widget extends Policy_Link_Base_Widget {
+class TermsConditionsWidget extends PolicyLinkBaseWidget {
 
 	public function get_name() {
 		return 'hkdev_terms_conditions_link';

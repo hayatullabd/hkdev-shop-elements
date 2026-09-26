@@ -31,9 +31,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class GitHub_Updater
+ * Class GitHubUpdater
  */
-class GitHub_Updater {
+class GitHubUpdater {
 
 	/**
 	 * How long a successful GitHub API response is cached.
@@ -799,7 +799,7 @@ class GitHub_Updater {
 
 		if ( $wp_filesystem ) {
 			return $wp_filesystem->exists( $dir . 'hkdev-shop-elements.php' )
-				|| $wp_filesystem->exists( $dir . 'includes/shop-engine.php' );
+				|| $wp_filesystem->exists( $dir . 'includes/Core/ShopEngine.php' );
 		}
 
 		return false;

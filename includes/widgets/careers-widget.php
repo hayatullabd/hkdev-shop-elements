@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Careers_Widget extends Policy_Link_Base_Widget {
+class CareersWidget extends PolicyLinkBaseWidget {
 
 	public function get_name() {
 		return 'hkdev_careers_link';

@@ -2,8 +2,8 @@
 
 Thanks for contributing.
 
-This repository uses a canonical architecture migration plan with compatibility
-aliases. Please follow the process below so changes remain stable and release-safe.
+This repository uses canonical namespaces only (1.0.0+). Please follow the
+process below so changes remain stable and release-safe.
 
 ## Branch and PR flow
 
@@ -14,17 +14,15 @@ aliases. Please follow the process below so changes remain stable and release-sa
 
 ## Architecture rules
 
-- Prefer canonical classes/namespaces:
+- Use canonical classes/namespaces:
   - `HkdevShopElements\Includes\Core\*`
   - `HkdevShopElements\Includes\Admin\*`
-  - Canonical widget class names (with compatibility aliases as needed)
-- Do not introduce new legacy runtime references.
-- Keep backward compatibility unless the change is planned for a major release.
+  - `HkdevShopElements\Includes\Widgets\*` (`ShopWidget`, not `Shop_Widget`)
+- Do not introduce underscored legacy class names.
 
 Reference:
 
 - `docs/ARCHITECTURE-MIGRATION.md`
-- `docs/LEGACY-CLEANUP-CANDIDATES.md`
 
 ## Required local checks
 

@@ -25,13 +25,20 @@ Standalone Elementor + WooCommerce widgets that work with **any** WordPress them
 
 ## Install
 
-1. Download the repository (Code → Download ZIP) or a release asset ZIP.
-2. WP Admin → Plugins → Add New → Upload Plugin → choose the ZIP → Install → Activate.
-3. Configure under **WP Admin → HKDEV Shop** (Checkout Fields, Header, Footer, Contact Form).
+This is **1.0.0** — a clean production tree. Delete the old plugin folder
+first, then install this zip. Do not overwrite an older 0.5.x copy in place.
+
+1. WP Admin → Plugins → deactivate and delete **HKDEV Shop Elements**.
+2. Download the `hkdev-shop-elements.zip` release asset (or build it with `scripts/build-release-zip.sh`).
+3. WP Admin → Plugins → Add New → Upload Plugin → choose the ZIP → Install → Activate.
+4. Configure under **WP Admin → HKDEV Shop** (Checkout Fields, Header, Footer, Contact Form).
+
+Elementor widget slugs (`hkdev_shop_grid`, `hkdev_shop_carousel`, …) are
+unchanged, so existing pages keep their widgets after the new install.
 
 ## Automatic updates from GitHub
 
-The plugin ships its own update checker (`includes/github-updater.php`), so
+The plugin ships its own update checker (`includes/Support/github-updater.php`), so
 **WP Admin → Plugins → Update Now** pulls the newest code straight from GitHub.
 No wordpress.org, no manual re-upload.
 
@@ -45,7 +52,7 @@ define( 'HKDEV_ELEMENTS_GITHUB_REPO', 'hayatullabd/hkdev-shop-elements' );
 
 …and the matching `Update URI:` header at the top of `hkdev-shop-elements.php`.
 The repository is **public**. To point the plugin at a different repository,
-change both values. Remove `includes/github-updater.php`, its loader in
+change both values. Remove `includes/Support/github-updater.php`, its loader in
 `hkdev-shop-elements.php` and the `Update URI:` header if you don't want the
 feature.
 
@@ -69,8 +76,8 @@ feature.
 4. Create a tag (optionally a full GitHub Release with notes):
 
    ```sh
-   git tag v0.2.1
-   git push origin v0.2.1
+   git tag v1.0.0
+   git push origin v1.0.0
    ```
 
 Every site running the plugin now shows "There is a new version available" and

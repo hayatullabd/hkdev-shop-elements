@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-class Company_Information_Widget extends Policy_Link_Base_Widget {
+class CompanyInformationWidget extends PolicyLinkBaseWidget {
 
 	public function get_name() {
 		return 'hkdev_company_information_link';

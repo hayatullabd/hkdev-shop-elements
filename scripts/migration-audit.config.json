@@ -29,12 +29,15 @@
     "/includes/Core/",
     "/includes/Admin/",
     "/includes/admin/",
+    "/includes/Support/",
     "/docs/"
   ],
   "file_extensions": [
     "php"
   ],
-  "allow_line_patterns": [],
+	"allow_line_patterns": [
+		"/class_alias\\s*\\(/"
+	],
   "strict_block_patterns": [
     "/\\\\HkdevShopElements\\\\Includes\\\\[A-Za-z0-9]+_[A-Za-z0-9_]+::/",
     "/\\b[A-Za-z0-9]+_[A-Za-z0-9_]+::instance\\s*\\(/"

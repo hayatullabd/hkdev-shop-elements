@@ -19,9 +19,9 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\ShopEngine;
 
 /**
- * Class Shop_Widget
+ * Class ShopWidget
  */
-class Shop_Widget extends Widget_Base {
+class ShopWidget extends Widget_Base {
 
 	use Heading_Controls;
 	use Product_Controls;
@@ -358,11 +358,12 @@ class Shop_Widget extends Widget_Base {
 
 		$this->end_controls_section();
 
-		/* ---- Layout: Pagination ---- */
+		/* ---- Layout: Pagination (grid Load More only; hidden on carousel) ---- */
 		$this->start_controls_section(
 			'section_pagination',
 			[
-				'label' => esc_html__( 'Pagination', 'hkdev-shop-elements' ),
+				'label'     => esc_html__( 'Pagination', 'hkdev-shop-elements' ),
+				'condition' => [ 'style' => 'grid' ],
 			]
 		);
 
@@ -401,6 +402,7 @@ class Shop_Widget extends Widget_Base {
 		$this->register_heading_controls();
 		$this->register_product_title_controls();
 		$this->register_product_image_controls( true );
+		$this->register_buy_now_controls();
 
 		$this->register_style_sections( '{{WRAPPER}} .hkdev-shop-wrapper' );
 		$this->register_tabs_style_controls();
@@ -505,6 +507,7 @@ class Shop_Widget extends Widget_Base {
 		$atts = array_merge(
 			$this->get_design_atts( $settings ),
 			$this->get_image_atts( $settings ),
+			$this->get_buy_now_atts( $settings ),
 			[
 				'limit'            => isset( $settings['limit'] ) ? absint( $settings['limit'] ) : 12,
 				'columns'          => (string) $cols['desktop'],

@@ -11,10 +11,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+if ( ! class_exists( __NAMESPACE__ . '\\ShopWidget' ) ) {
+	require_once HKDEV_ELEMENTS_PATH . 'includes/widgets/shop-widget.php';
+}
+
 /**
  * Dedicated Shop Carousel Elementor widget.
  */
-class Shop_Carousel_Widget extends Shop_Widget {
+class ShopCarouselWidget extends ShopWidget {
 
 	/**
 	 * Widget slug.
@@ -60,8 +64,4 @@ class Shop_Carousel_Widget extends Shop_Widget {
 	protected function get_widget_layout_style() {
 		return 'carousel';
 	}
-}
-
-if ( ! class_exists( __NAMESPACE__ . '\\ShopCarouselWidget' ) ) {
-	class ShopCarouselWidget extends Shop_Carousel_Widget {}
 }

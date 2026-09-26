@@ -1077,7 +1077,10 @@ button.hkdev-order-btn{
     background: var(--hkdev-brand-primary) !important;
 }body.hkdev-vm-open{
     overflow: hidden !important;
-}/* WooCommerce auto-appends a "View cart" link after the modal button; hide it. */.hkdev-variation-modal .added_to_cart{
+}/* WooCommerce auto-appends a "View cart" link after add-to-cart; hide it on cards and in the modal. */.hkdev-shop-wrapper .added_to_cart,
+.hkdev-shop-wrapper a.added_to_cart.wc-forward,
+.hkdev-product-card .added_to_cart,
+.hkdev-variation-modal .added_to_cart{
     display: none !important;
 }@media (max-width: 480px){.hkdev-variation-modal{
         padding: 14px !important;

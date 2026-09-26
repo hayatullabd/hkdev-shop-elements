@@ -23,9 +23,9 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\CheckoutEngine;
 
 /**
- * Class Checkout_Widget
+ * Class CheckoutWidget
  */
-class Checkout_Widget extends Widget_Base {
+class CheckoutWidget extends Widget_Base {
 
 	use Style_Controls;
 

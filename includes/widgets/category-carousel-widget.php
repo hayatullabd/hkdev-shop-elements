@@ -23,9 +23,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Category_Carousel_Widget
+ * Class CategoryCarouselWidget
  */
-class Category_Carousel_Widget extends Widget_Base {
+class CategoryCarouselWidget extends Widget_Base {
 
 	use Heading_Controls;
 	use Product_Controls;

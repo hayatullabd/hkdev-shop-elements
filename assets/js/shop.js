@@ -362,6 +362,40 @@ jQuery(function($) {
         });
     })();
 
+    function listingRequestFields($wrapper) {
+        return {
+            exclude: $wrapper.data('exclude'),
+            include_children: $wrapper.data('include_children'),
+            type: $wrapper.data('type'),
+            limit: $wrapper.data('limit'),
+            days: $wrapper.data('days'),
+            order_by: $wrapper.data('order_by'),
+            tags: $wrapper.data('tags'),
+            brands: $wrapper.data('brands'),
+            on_sale: $wrapper.data('on_sale'),
+            featured: $wrapper.data('featured'),
+            stock_status: $wrapper.data('stock_status'),
+            product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
+            image_size: $wrapper.data('image_size'),
+            image_size_mode: $wrapper.attr('data-image_size_mode') || 'preset',
+            custom_img_w: $wrapper.attr('data-custom_img_w') || 0,
+            custom_img_h: $wrapper.attr('data-custom_img_h') || 0,
+            custom_img_w_tablet: $wrapper.attr('data-custom_img_w_tablet') || 0,
+            custom_img_h_tablet: $wrapper.attr('data-custom_img_h_tablet') || 0,
+            custom_img_w_mobile: $wrapper.attr('data-custom_img_w_mobile') || 0,
+            custom_img_h_mobile: $wrapper.attr('data-custom_img_h_mobile') || 0,
+            custom_img_pos_x: $wrapper.attr('data-custom_img_pos_x') || 50,
+            custom_img_pos_y: $wrapper.attr('data-custom_img_pos_y') || 50,
+            hover_img: $wrapper.attr('data-hover-img'),
+            show_buy_now: $wrapper.attr('data-show-buy-now') || 'yes',
+            buy_now_text: $wrapper.attr('data-buy-now-text') || '',
+            buy_now_icon: $wrapper.attr('data-buy-now-icon') || 'yes',
+            buy_now_action: $wrapper.attr('data-buy-now-action') || 'checkout',
+            buy_now_after: $wrapper.attr('data-buy-now-after') || 'auto',
+            style: $wrapper.data('style')
+        };
+    }
+
     // Category Tabs Filter AJAX
     $('.hkdev-tab-item').on('click', function() {
         var $btn = $(this), 
@@ -379,35 +413,11 @@ jQuery(function($) {
         $.ajax({
             url: ajaxUrl,
             type: 'POST',
-            data: {
+            data: $.extend({
                 action: filterAction,
                 nonce: filterNonce,
-                category: $btn.attr('data-slug'),
-                exclude: $wrapper.data('exclude'), 
-                include_children: $wrapper.data('include_children'),
-                type: $wrapper.data('type'),
-                limit: $wrapper.data('limit'),
-                days: $wrapper.data('days'),
-                order_by: $wrapper.data('order_by'),
-                tags: $wrapper.data('tags'),
-                brands: $wrapper.data('brands'),
-                on_sale: $wrapper.data('on_sale'),
-                featured: $wrapper.data('featured'),
-                stock_status: $wrapper.data('stock_status'),
-                product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
-                image_size: $wrapper.data('image_size'),
-                image_size_mode: $wrapper.attr('data-image_size_mode') || 'preset',
-                custom_img_w: $wrapper.attr('data-custom_img_w') || 0,
-                custom_img_h: $wrapper.attr('data-custom_img_h') || 0,
-                custom_img_w_tablet: $wrapper.attr('data-custom_img_w_tablet') || 0,
-                custom_img_h_tablet: $wrapper.attr('data-custom_img_h_tablet') || 0,
-                custom_img_w_mobile: $wrapper.attr('data-custom_img_w_mobile') || 0,
-                custom_img_h_mobile: $wrapper.attr('data-custom_img_h_mobile') || 0,
-                custom_img_pos_x: $wrapper.attr('data-custom_img_pos_x') || 50,
-                custom_img_pos_y: $wrapper.attr('data-custom_img_pos_y') || 50,
-                hover_img: $wrapper.attr('data-hover-img'),
-                style: $wrapper.data('style')
-            },
+                category: $btn.attr('data-slug')
+            }, listingRequestFields($wrapper)),
             success: function(response) { 
                 $grid.html(response); 
                 $loader.fadeOut(150); 
@@ -595,36 +605,12 @@ jQuery(function($) {
             url: ajaxUrl,
             type: 'POST',
             dataType: 'json',
-            data: {
+            data: $.extend({
                 action: loadMoreAction,
                 nonce: filterNonce,
                 page: nextPage,
-                category: category,
-                exclude: $wrapper.data('exclude'),
-                include_children: $wrapper.data('include_children'),
-                type: $wrapper.data('type'),
-                limit: $wrapper.data('limit'),
-                days: $wrapper.data('days'),
-                order_by: $wrapper.data('order_by'),
-                tags: $wrapper.data('tags'),
-                brands: $wrapper.data('brands'),
-                on_sale: $wrapper.data('on_sale'),
-                featured: $wrapper.data('featured'),
-                stock_status: $wrapper.data('stock_status'),
-                product_ids: $wrapper.data('product_ids') || $wrapper.attr('data-product_ids') || '',
-                image_size: $wrapper.data('image_size'),
-                image_size_mode: $wrapper.attr('data-image_size_mode') || 'preset',
-                custom_img_w: $wrapper.attr('data-custom_img_w') || 0,
-                custom_img_h: $wrapper.attr('data-custom_img_h') || 0,
-                custom_img_w_tablet: $wrapper.attr('data-custom_img_w_tablet') || 0,
-                custom_img_h_tablet: $wrapper.attr('data-custom_img_h_tablet') || 0,
-                custom_img_w_mobile: $wrapper.attr('data-custom_img_w_mobile') || 0,
-                custom_img_h_mobile: $wrapper.attr('data-custom_img_h_mobile') || 0,
-                custom_img_pos_x: $wrapper.attr('data-custom_img_pos_x') || 50,
-                custom_img_pos_y: $wrapper.attr('data-custom_img_pos_y') || 50,
-                hover_img: $wrapper.attr('data-hover-img'),
-                style: $wrapper.data('style')
-            },
+                category: category
+            }, listingRequestFields($wrapper)),
             success: function (response) {
                 const data = (response && response.success && response.data) ? response.data : null;
 
@@ -788,6 +774,10 @@ jQuery(function($) {
         $modal.data('variations', variations);
         $modal.data('product-id', $btn.attr('data-product-id'));
         $modal.data('matched', null);
+        $modal.attr('data-btn-action', $btn.attr('data-btn-action') || getBtnAction($btn));
+        $modal.attr('data-btn-after', $btn.attr('data-btn-after') || getBtnAfter($btn));
+        $modal.attr('data-product-url', $btn.attr('data-product-url') || '');
+        $modal.attr('data-checkout_url', $btn.attr('data-checkout_url') || checkoutPageUrl);
 
         $modal.css('display', 'flex');
         $('body').addClass('hkdev-vm-open');
@@ -872,6 +862,39 @@ jQuery(function($) {
         if (checkoutModalScope === 'none') return false;
         if (checkoutModalScope === 'both') return true;
         return checkoutModalScope === productType;
+    }
+
+    function getBtnAction($el) {
+        return $el.attr('data-btn-action') || $el.closest('.hkdev-shop-wrapper').attr('data-buy-now-action') || 'checkout';
+    }
+
+    function getBtnAfter($el) {
+        return $el.attr('data-btn-after') || $el.closest('.hkdev-shop-wrapper').attr('data-buy-now-after') || 'auto';
+    }
+
+    function finishBuyNow(productType, $source, checkoutUrl) {
+        var action = getBtnAction($source);
+        if (action === 'add_to_cart') {
+            return;
+        }
+        if (action === 'product') {
+            var productUrl = $source.attr('data-product-url');
+            if (productUrl) {
+                window.location.href = productUrl;
+            }
+            return;
+        }
+
+        var after = getBtnAfter($source);
+        if (after === 'page') {
+            window.location.href = checkoutUrl || checkoutPageUrl;
+            return;
+        }
+        if (after === 'modal' || (after === 'auto' && shouldOpenCheckoutModal(productType))) {
+            openCheckoutModal();
+            return;
+        }
+        window.location.href = checkoutUrl || checkoutPageUrl;
     }
 
     function ensureCheckoutModal() {
@@ -972,11 +995,7 @@ jQuery(function($) {
                 if (res && res.success) {
                     $(document.body).trigger('added_to_cart', [res.data.fragments, res.data.cart_hash, $btn]);
                     vmClose($modal);
-                    if (shouldOpenCheckoutModal('variable')) {
-                        openCheckoutModal();
-                    } else {
-                        window.location.href = checkoutPageUrl;
-                    }
+                    finishBuyNow('variable', $modal, $modal.attr('data-checkout_url') || checkoutPageUrl);
                 } else {
                     showToast('Could not add product to cart. Try again.', 'error');
                 }
@@ -1015,11 +1034,7 @@ jQuery(function($) {
                 $btn.prop('disabled', false).css('opacity', '1');
                 if (res && res.success) {
                     $(document.body).trigger('added_to_cart', [res.data.fragments, res.data.cart_hash, $btn]);
-                    if (shouldOpenCheckoutModal('simple')) {
-                        openCheckoutModal();
-                    } else {
-                        window.location.href = btnCheckoutUrl;
-                    }
+                    finishBuyNow('simple', $btn, btnCheckoutUrl);
                 } else {
                     showToast('Could not add product to cart. Try again.', 'error');
                 }
@@ -1034,6 +1049,10 @@ jQuery(function($) {
     // Global Add to Cart Toast & Button state handler
     $(document.body).on('added_to_cart', function(e, f, h, $button) {
         $('.added_to_cart').remove(); // Default woocommerce 'view cart' link remove
+        // WooCommerce add-to-cart.js may re-append the link after this handler.
+        setTimeout(function () {
+            $('.hkdev-shop-wrapper .added_to_cart, .hkdev-product-card .added_to_cart').remove();
+        }, 0);
         
         // Show Toast Notification
         var $toast = $('#hkdev-toast-master');

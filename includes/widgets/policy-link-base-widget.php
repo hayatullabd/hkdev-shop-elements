@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
-abstract class Policy_Link_Base_Widget extends Widget_Base {
+abstract class PolicyLinkBaseWidget extends Widget_Base {
 
 	use Style_Controls;
 

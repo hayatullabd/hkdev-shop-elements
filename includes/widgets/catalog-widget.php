@@ -20,9 +20,9 @@ use Elementor\Widget_Base;
 use HkdevShopElements\Includes\Core\CatalogEngine;
 
 /**
- * Class Catalog_Widget
+ * Class CatalogWidget
  */
-class Catalog_Widget extends Widget_Base {
+class CatalogWidget extends Widget_Base {
 
 	use Product_Controls;
 	use Style_Controls;
@@ -173,6 +173,7 @@ class Catalog_Widget extends Widget_Base {
 
 		$this->register_product_title_controls();
 		$this->register_product_image_controls( true );
+		$this->register_buy_now_controls();
 
 		// Product card styling (same controls as the Shop Grid widget).
 		$this->register_style_sections( '{{WRAPPER}} .hkdev-catalog' );
@@ -195,6 +196,7 @@ class Catalog_Widget extends Widget_Base {
 			array_merge(
 				$this->get_design_atts( $settings ),
 				$this->get_image_atts( $settings ),
+				$this->get_buy_now_atts( $settings ),
 				[
 					'columns'        => (string) $cols['desktop'],
 					'columns_tablet' => (string) $cols['tablet'],

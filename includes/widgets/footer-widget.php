@@ -18,9 +18,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Footer_Widget
+ * Class FooterWidget
  */
-class Footer_Widget extends Widget_Base {
+class FooterWidget extends Widget_Base {
 
 	use Style_Controls;
 

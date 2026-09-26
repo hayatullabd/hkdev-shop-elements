@@ -19,9 +19,9 @@ use Elementor\Controls_Manager;
 use Elementor\Widget_Base;
 
 /**
- * Class Single_Product_Widget
+ * Class SingleProductWidget
  */
-class Single_Product_Widget extends Widget_Base {
+class SingleProductWidget extends Widget_Base {
 
 	use Product_Controls;
 	use Style_Controls;

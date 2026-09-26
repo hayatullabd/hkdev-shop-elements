@@ -33,6 +33,7 @@ trait Product_Controls {
 		$this->register_product_title_controls();
 		if ( $for_products ) {
 			$this->register_product_image_controls( $include_image_size );
+			$this->register_buy_now_controls();
 		}
 		$this->register_carousel_controls();
 	}
@@ -383,15 +384,119 @@ trait Product_Controls {
 	}
 
 	/**
-	 * @deprecated Use register_product_title_controls() / register_product_image_controls().
-	 * @param bool $for_products Include hover image controls.
+	 * Content tab – product card Buy Now button text and click behaviour.
+	 *
 	 * @return void
 	 */
-	protected function register_card_controls( $for_products = true ) {
-		$this->register_product_title_controls();
-		if ( $for_products ) {
-			$this->register_product_image_controls();
+	protected function register_buy_now_controls() {
+		$this->start_controls_section(
+			'section_buy_now',
+			[
+				'label' => esc_html__( 'Buy Now Button', 'hkdev-shop-elements' ),
+			]
+		);
+
+		$this->add_control(
+			'show_buy_now',
+			[
+				'label'        => esc_html__( 'Show Button', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'default'      => 'yes',
+				'return_value' => 'yes',
+			]
+		);
+
+		$this->add_control(
+			'buy_now_text',
+			[
+				'label'       => esc_html__( 'Button Text', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::TEXT,
+				'default'     => esc_html__( 'Buy Now', 'hkdev-shop-elements' ),
+				'placeholder' => esc_html__( 'Buy Now', 'hkdev-shop-elements' ),
+				'label_block' => true,
+				'condition'   => [ 'show_buy_now' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'buy_now_icon',
+			[
+				'label'        => esc_html__( 'Show Icon', 'hkdev-shop-elements' ),
+				'type'         => Controls_Manager::SWITCHER,
+				'label_on'     => esc_html__( 'Show', 'hkdev-shop-elements' ),
+				'label_off'    => esc_html__( 'Hide', 'hkdev-shop-elements' ),
+				'default'      => 'yes',
+				'return_value' => 'yes',
+				'condition'    => [ 'show_buy_now' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'buy_now_action',
+			[
+				'label'       => esc_html__( 'Click Action', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'checkout',
+				'options'     => [
+					'checkout'    => esc_html__( 'Buy Now (add to cart + checkout)', 'hkdev-shop-elements' ),
+					'add_to_cart' => esc_html__( 'Add to Cart (stay on page)', 'hkdev-shop-elements' ),
+					'product'     => esc_html__( 'Open Product Page', 'hkdev-shop-elements' ),
+				],
+				'description' => esc_html__( 'What happens when a customer taps the card button.', 'hkdev-shop-elements' ),
+				'condition'   => [ 'show_buy_now' => 'yes' ],
+			]
+		);
+
+		$this->add_control(
+			'buy_now_after',
+			[
+				'label'       => esc_html__( 'After Buy Now', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'auto',
+				'options'     => [
+					'auto'  => esc_html__( 'Plugin setting (modal or page)', 'hkdev-shop-elements' ),
+					'modal' => esc_html__( 'Checkout popup', 'hkdev-shop-elements' ),
+					'page'  => esc_html__( 'Checkout page', 'hkdev-shop-elements' ),
+				],
+				'description' => esc_html__( 'Where to go after the product is added to cart.', 'hkdev-shop-elements' ),
+				'condition'   => [
+					'show_buy_now'    => 'yes',
+					'buy_now_action'  => 'checkout',
+				],
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Buy Now attributes passed through to ShopEngine / CatalogEngine.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return array<string,string>
+	 */
+	protected function get_buy_now_atts( $settings ) {
+		$action = isset( $settings['buy_now_action'] ) ? sanitize_key( $settings['buy_now_action'] ) : 'checkout';
+		if ( ! in_array( $action, [ 'checkout', 'add_to_cart', 'product' ], true ) ) {
+			$action = 'checkout';
 		}
+
+		$after = isset( $settings['buy_now_after'] ) ? sanitize_key( $settings['buy_now_after'] ) : 'auto';
+		if ( ! in_array( $after, [ 'auto', 'modal', 'page' ], true ) ) {
+			$after = 'auto';
+		}
+
+		$text = isset( $settings['buy_now_text'] ) ? sanitize_text_field( $settings['buy_now_text'] ) : '';
+
+		return [
+			'show_buy_now'    => ( ! isset( $settings['show_buy_now'] ) || 'yes' === $settings['show_buy_now'] ) ? 'yes' : 'no',
+			'buy_now_text'    => $text,
+			'buy_now_icon'    => ( ! isset( $settings['buy_now_icon'] ) || 'yes' === $settings['buy_now_icon'] ) ? 'yes' : 'no',
+			'buy_now_action'  => $action,
+			'buy_now_after'   => $after,
+		];
 	}
 
 	/**
