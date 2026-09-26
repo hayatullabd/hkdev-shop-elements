@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           0.5.137
+ * Version:           0.5.138
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '0.5.137' );
+define( 'HKDEV_ELEMENTS_VERSION', '0.5.138' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -181,14 +181,26 @@ function hkdev_elements_price_args( $args ) {
  * @return bool True when the file was loaded.
  */
 function hkdev_elements_require_file( $relative_path ) {
-	$file = HKDEV_ELEMENTS_PATH . ltrim( $relative_path, '/' );
-	if ( ! file_exists( $file ) ) {
-		return false;
+	$relative_path = ltrim( (string) $relative_path, '/' );
+	$candidates    = [ $relative_path ];
+
+	// Git on Windows can record includes/admin while bootstrap asks for
+	// includes/Admin. Linux hosts are case-sensitive, so try both.
+	if ( 0 === strpos( $relative_path, 'includes/Admin/' ) ) {
+		$candidates[] = 'includes/admin/' . substr( $relative_path, strlen( 'includes/Admin/' ) );
+	} elseif ( 0 === strpos( $relative_path, 'includes/admin/' ) ) {
+		$candidates[] = 'includes/Admin/' . substr( $relative_path, strlen( 'includes/admin/' ) );
 	}
 
-	require_once $file;
+	foreach ( $candidates as $candidate ) {
+		$file = HKDEV_ELEMENTS_PATH . $candidate;
+		if ( file_exists( $file ) ) {
+			require_once $file;
+			return true;
+		}
+	}
 
-	return true;
+	return false;
 }
 
 /**
