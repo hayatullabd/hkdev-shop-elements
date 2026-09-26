@@ -801,22 +801,11 @@ class CheckoutEngine {
 							</div>
 						<?php endif; ?>
 
-						<?php
-						$terms_url   = wc_get_page_permalink( 'terms' );
-						$privacy_url = get_privacy_policy_url();
-						?>
 						<div class="hkdev-co-terms-row">
 							<label class="hkdev-co-terms-label" for="hkdev-co-terms">
 								<input type="checkbox" id="hkdev-co-terms" name="hkdev_terms" value="1">
 								<span class="hkdev-co-terms-text">
-									<?php
-									printf(
-										wp_kses_post( __( 'I have read and agree to the <a href="%1$s" target="_blank" rel="noopener">Terms and Conditions</a>, <a href="%2$s" target="_blank" rel="noopener">Privacy Policy</a> &amp; <a href="%3$s" target="_blank" rel="noopener">Refund and Return Policy</a>.', 'hkdev-shop-elements' ) ),
-										esc_url( $terms_url ? $terms_url : '#' ),
-										esc_url( $privacy_url ? $privacy_url : '#' ),
-										esc_url( $terms_url ? $terms_url : '#' )
-									);
-									?>
+									<?php echo wp_kses_post( $this->terms_agreement_html() ); ?>
 								</span>
 							</label>
 						</div>
@@ -1611,5 +1600,116 @@ class CheckoutEngine {
 		} catch ( \Throwable $e ) {
 			wp_send_json_error( [ 'message' => $e->getMessage() ] );
 		}
+	}
+
+	/**
+	 * Checkout agreement copy with links to WooCommerce / WordPress legal pages.
+	 *
+	 * @return string
+	 */
+	private function terms_agreement_html() {
+		$terms   = $this->wc_legal_page_link( 'terms', __( 'Terms and Conditions', 'hkdev-shop-elements' ) );
+		$privacy = $this->wc_legal_page_link( 'privacy', __( 'Privacy Policy', 'hkdev-shop-elements' ) );
+		$refund  = $this->wc_legal_page_link( 'refund', __( 'Refund and Return Policy', 'hkdev-shop-elements' ) );
+
+		return sprintf(
+			/* translators: 1: terms link, 2: privacy link, 3: refund link */
+			__( 'I have read and agree to the %1$s, %2$s &amp; %3$s.', 'hkdev-shop-elements' ),
+			$terms,
+			$privacy,
+			$refund
+		);
+	}
+
+	/**
+	 * Linked label if the WooCommerce page exists, otherwise plain text.
+	 *
+	 * @param string $type  terms|privacy|refund.
+	 * @param string $label Visible label.
+	 * @return string
+	 */
+	private function wc_legal_page_link( $type, $label ) {
+		$url   = $this->wc_legal_page_url( $type );
+		$label = esc_html( $label );
+		if ( '' === $url ) {
+			return $label;
+		}
+
+		return '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . $label . '</a>';
+	}
+
+	/**
+	 * Permalink for a WooCommerce legal page. Empty when that page is not assigned.
+	 *
+	 * @param string $type terms|privacy|refund.
+	 * @return string
+	 */
+	private function wc_legal_page_url( $type ) {
+		$page_id = 0;
+
+		if ( 'terms' === $type ) {
+			$page_id = function_exists( 'wc_terms_and_conditions_page_id' )
+				? (int) wc_terms_and_conditions_page_id()
+				: (int) get_option( 'woocommerce_terms_page_id' );
+		} elseif ( 'privacy' === $type ) {
+			$page_id = function_exists( 'wc_privacy_policy_page_id' )
+				? (int) wc_privacy_policy_page_id()
+				: (int) get_option( 'wp_page_for_privacy_policy' );
+		} elseif ( 'refund' === $type ) {
+			$page_id = $this->wc_refund_returns_page_id();
+		}
+
+		if ( $page_id < 1 || 'publish' !== get_post_status( $page_id ) ) {
+			return '';
+		}
+
+		$url = get_permalink( $page_id );
+		return $url ? (string) $url : '';
+	}
+
+	/**
+	 * WooCommerce Refund and Returns page id (setup wizard page or common slugs).
+	 *
+	 * @return int
+	 */
+	private function wc_refund_returns_page_id() {
+		$option_id = (int) get_option( 'woocommerce_refund_returns_page_id' );
+		if ( $option_id > 0 && 'publish' === get_post_status( $option_id ) ) {
+			return $option_id;
+		}
+
+		$slugs = [
+			'refund_returns',
+			'refund-and-returns-policy',
+			'refund-and-return-policy',
+			'refund-returns-policy',
+			'returns-refunds',
+			'refund-policy',
+			'return-policy',
+			'returns',
+		];
+		foreach ( $slugs as $slug ) {
+			$page = get_page_by_path( $slug );
+			if ( $page && 'publish' === $page->post_status ) {
+				return (int) $page->ID;
+			}
+		}
+
+		$query = new \WP_Query(
+			[
+				'post_type'              => 'page',
+				'post_status'            => 'publish',
+				'title'                  => 'Refund and Returns Policy',
+				'posts_per_page'         => 1,
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			]
+		);
+		if ( $query->have_posts() ) {
+			return (int) $query->posts[0]->ID;
+		}
+
+		return 0;
 	}
 }
