@@ -1102,15 +1102,42 @@ jQuery(function($) {
         });
     });
 
-    // Global Add to Cart Toast & Button state handler
+    // WooCommerce appends "View cart" after add-to-cart; remove it from HKDEV cards.
     function stripViewCartLinks() {
-        $('.hkdev-shop-wrapper .added_to_cart, .hkdev-product-card .added_to_cart, .hkdev-action-group .added_to_cart, .hkdev-variation-modal .added_to_cart, a.added_to_cart.wc-forward').remove();
+        $('.hkdev-shop-wrapper a.added_to_cart, .hkdev-product-card a.added_to_cart, .hkdev-action-group a.added_to_cart, .hkdev-variation-modal a.added_to_cart, .hkdev-action-group a.wc-forward:not(.hkdev-order-btn):not(.hkdev-cart-btn)').remove();
     }
+
+    function watchViewCartLinks() {
+        stripViewCartLinks();
+        if (window.hkdevViewCartObserver || typeof MutationObserver === 'undefined') {
+            return;
+        }
+        window.hkdevViewCartObserver = new MutationObserver(function (mutations) {
+            for (var i = 0; i < mutations.length; i++) {
+                var nodes = mutations[i].addedNodes;
+                for (var j = 0; j < nodes.length; j++) {
+                    var node = nodes[j];
+                    if (1 !== node.nodeType) {
+                        continue;
+                    }
+                    if ((node.classList && node.classList.contains('added_to_cart')) || (node.querySelector && node.querySelector('a.added_to_cart'))) {
+                        stripViewCartLinks();
+                        return;
+                    }
+                }
+            }
+        });
+        window.hkdevViewCartObserver.observe(document.body, { childList: true, subtree: true });
+    }
+
+    watchViewCartLinks();
 
     $(document.body).on('added_to_cart', function(e, f, h, $button) {
         stripViewCartLinks();
         setTimeout(stripViewCartLinks, 0);
+        setTimeout(stripViewCartLinks, 50);
         setTimeout(stripViewCartLinks, 250);
+        setTimeout(stripViewCartLinks, 800);
         
         // Show Toast Notification
         var $toast = $('#hkdev-toast-master');

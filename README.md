@@ -25,7 +25,7 @@ Standalone Elementor + WooCommerce widgets that work with **any** WordPress them
 
 ## Install
 
-This is **1.1.4**. Update from 1.0.x via WP Admin → Plugins → Update Now, or
+This is **1.1.5**. Update from 1.0.x via WP Admin → Plugins → Update Now, or
 install the release zip. For a first install from 0.5.x, delete the old plugin
 folder first — do not overwrite it in place.
 

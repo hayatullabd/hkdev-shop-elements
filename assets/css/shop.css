@@ -1138,7 +1138,8 @@ button.hkdev-order-btn{
 .hkdev-product-card .added_to_cart,
 .hkdev-product-card a.added_to_cart,
 .hkdev-action-group .added_to_cart,
-.hkdev-action-group a.wc-forward,
+.hkdev-action-group a.added_to_cart,
+.hkdev-action-group a.wc-forward:not(.hkdev-order-btn):not(.hkdev-cart-btn),
 .hkdev-variation-modal .added_to_cart,
 .hkdev-variation-modal a.added_to_cart.wc-forward{
     display: none !important;
@@ -1149,6 +1150,10 @@ button.hkdev-order-btn{
     overflow: hidden !important;
     border: 0 !important;
     visibility: hidden !important;
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0) !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
 }@media (max-width: 480px){.hkdev-variation-modal{
         padding: 14px !important;
     }.hkdev-vm-box{

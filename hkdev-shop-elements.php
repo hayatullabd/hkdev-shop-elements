@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           1.1.4
+ * Version:           1.1.5
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '1.1.4' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.1.5' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -1010,3 +1010,26 @@ function hkdev_elements_enqueue_checkout_assets() {
 	wp_enqueue_script( 'hkdev-elements-checkout-js' );
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_checkout_assets', 30 );
+
+/**
+ * Hide WooCommerce "View cart" next to HKDEV Buy Now / add-to-cart buttons.
+ *
+ * Attached as inline CSS after styles are re-queued so a stale shop.min.css
+ * cannot leave the link visible.
+ *
+ * @return void
+ */
+function hkdev_elements_hide_view_cart_css() {
+	if ( is_admin() ) {
+		return;
+	}
+
+	$css = '.hkdev-shop-wrapper a.added_to_cart,.hkdev-shop-wrapper a.added_to_cart.wc-forward,.hkdev-product-card a.added_to_cart,.hkdev-action-group a.added_to_cart,.hkdev-action-group a.wc-forward:not(.hkdev-order-btn):not(.hkdev-cart-btn),.hkdev-variation-modal a.added_to_cart{display:none!important;width:0!important;height:0!important;margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;visibility:hidden!important;position:absolute!important;clip:rect(0,0,0,0)!important;font-size:0!important;line-height:0!important;}';
+
+	foreach ( [ 'hkdev-elements-shop-style', 'hkdev-elements-catalog-style' ] as $handle ) {
+		if ( wp_style_is( $handle, 'enqueued' ) ) {
+			wp_add_inline_style( $handle, $css );
+		}
+	}
+}
+add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_hide_view_cart_css', 1000 );

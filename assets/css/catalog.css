@@ -529,4 +529,15 @@
 .hkdev-catalog[data-font-mode="dual"] .hkdev-cat-rating-label{
 	font-family: var(--hkdev-font-en, var(--hkdev-font)) !important;
 }
+.hkdev-catalog a.added_to_cart,
+.hkdev-catalog .hkdev-action-group a.wc-forward:not(.hkdev-order-btn):not(.hkdev-cart-btn){
+	display: none !important;
+	width: 0 !important;
+	height: 0 !important;
+	overflow: hidden !important;
+	visibility: hidden !important;
+	position: absolute !important;
+	clip: rect(0, 0, 0, 0) !important;
+	font-size: 0 !important;
+}
 
