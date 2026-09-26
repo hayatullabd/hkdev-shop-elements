@@ -213,7 +213,8 @@ final class PluginRow {
 
 /**
  * Backward-compatible alias for old class naming.
+ * class_alias is required because PluginRow is final and cannot be extended.
  */
 if ( ! class_exists( __NAMESPACE__ . '\\Plugin_Row' ) ) {
-	class Plugin_Row extends PluginRow {}
+	class_alias( __NAMESPACE__ . '\\PluginRow', __NAMESPACE__ . '\\Plugin_Row' );
 }
