@@ -113,6 +113,7 @@ class FooterEngine {
 			'payment_banner_link' => '',
 			'show_backtotop'    => 'yes',
 			'copyright'         => '',
+			'color_theme'       => '',
 
 			// ---- Appearance (edited from the Footer admin → Appearance) ----
 			// Empty/0 means "keep the plugin default". Size values are per device:
@@ -152,6 +153,37 @@ class FooterEngine {
 	}
 
 	/**
+	 * Fill empty footer accent colors from the selected Color Theme preset.
+	 *
+	 * @param array $atts Merged configuration.
+	 * @return array
+	 */
+	private function apply_color_theme_to_colors( $atts ) {
+		$atts = is_array( $atts ) ? $atts : [];
+		if ( ! class_exists( __NAMESPACE__ . '\\ColorTheme' ) ) {
+			return $atts;
+		}
+
+		$slug = ColorTheme::sanitize_optional( isset( $atts['color_theme'] ) ? $atts['color_theme'] : '' );
+		if ( '' === $slug ) {
+			return $atts;
+		}
+
+		$tokens = ColorTheme::tokens( $slug );
+		$fill   = [
+			'st_green'  => $tokens['primary'],
+			'st_orange' => $tokens['accent'],
+		];
+		foreach ( $fill as $key => $value ) {
+			if ( '' === (string) ( isset( $atts[ $key ] ) ? $atts[ $key ] : '' ) ) {
+				$atts[ $key ] = $value;
+			}
+		}
+
+		return $atts;
+	}
+
+	/**
 	 * Build the front-end <style> block from the Appearance settings.
 	 *
 	 * Scoped to the footer's unique wrapper id so it wins over the stylesheet's
@@ -174,6 +206,8 @@ class FooterEngine {
 		$font = static function ( $value ) {
 			return \HkdevShopElements\hkdev_elements_sanitize_font_stack( $value );
 		};
+
+		$atts = $this->apply_color_theme_to_colors( $atts );
 
 		// ---- Colour + font tokens (shared by every device) ------------------
 		$vars = [];
@@ -502,7 +536,13 @@ class FooterEngine {
 
 		ob_start();
 		?>
-		<div class="hkdev-footer-wrap" id="<?php echo esc_attr( $uid ); ?>" role="contentinfo">
+		<?php
+		$color_theme = class_exists( __NAMESPACE__ . '\\ColorTheme' )
+			? ColorTheme::sanitize_optional( isset( $atts['color_theme'] ) ? $atts['color_theme'] : '' )
+			: '';
+		$theme_attr  = ( '' !== $color_theme ) ? ' data-card-theme="' . esc_attr( $color_theme ) . '"' : '';
+		?>
+		<div class="hkdev-footer-wrap" id="<?php echo esc_attr( $uid ); ?>" role="contentinfo"<?php echo $theme_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<?php echo $this->style_css( $uid, $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- colours/fonts sanitised in style_css() ?>
 			<span class="hkdev-footer-accent" aria-hidden="true"></span>
 

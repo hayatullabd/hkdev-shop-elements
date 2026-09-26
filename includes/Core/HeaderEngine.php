@@ -136,6 +136,7 @@ class HeaderEngine {
 			'st_density_preset' => 'normal',
 			'st_style_preset'   => 'classic',
 			'st_mobile_preset'  => 'logo-first',
+			'color_theme'       => '',
 			'st_container'     => 0,
 			'st_container_t'   => 0,
 			'st_container_m'   => 0,
@@ -190,6 +191,46 @@ class HeaderEngine {
 	}
 
 	/**
+	 * Fill empty appearance colors from the selected Color Theme preset.
+	 *
+	 * Manual color fields still win. Style Pack colors fill whatever is left.
+	 *
+	 * @param array $atts Merged configuration.
+	 * @return array
+	 */
+	private function apply_color_theme_to_colors( $atts ) {
+		$atts = is_array( $atts ) ? $atts : [];
+		if ( ! class_exists( __NAMESPACE__ . '\\ColorTheme' ) ) {
+			return $atts;
+		}
+
+		$slug = ColorTheme::sanitize_optional( isset( $atts['color_theme'] ) ? $atts['color_theme'] : '' );
+		if ( '' === $slug ) {
+			return $atts;
+		}
+
+		$tokens = ColorTheme::tokens( $slug );
+		ColorTheme::set_document_theme( $slug );
+
+		$fill = [
+			'st_primary'   => $tokens['primary'],
+			'st_secondary' => $tokens['secondary'],
+			'st_text'      => $tokens['text'],
+			'st_muted'     => $tokens['muted'],
+			'st_soft'      => $tokens['bg_soft'],
+			'st_topbar_bg' => $tokens['primary'],
+			'st_navbar_bg' => $tokens['secondary'],
+		];
+		foreach ( $fill as $key => $value ) {
+			if ( '' === (string) ( isset( $atts[ $key ] ) ? $atts[ $key ] : '' ) ) {
+				$atts[ $key ] = $value;
+			}
+		}
+
+		return $atts;
+	}
+
+	/**
 	 * Build the front-end <style> block from the Appearance settings.
 	 *
 	 * Everything is scoped to the header's unique wrapper id so it wins over the
@@ -235,6 +276,7 @@ class HeaderEngine {
 		$style_preset   = $style_name( isset( $atts['st_style_preset'] ) ? $atts['st_style_preset'] : 'classic' );
 		$mobile_preset  = $mobile_name( isset( $atts['st_mobile_preset'] ) ? $atts['st_mobile_preset'] : 'logo-first' );
 		$atts['st_mobile_preset'] = $mobile_preset;
+		$atts                     = $this->apply_color_theme_to_colors( $atts );
 
 		$style_tokens = [
 			'classic' => [
@@ -1120,7 +1162,16 @@ class HeaderEngine {
 
 		ob_start();
 		?>
-		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> data-header-part="<?php echo esc_attr( $header_part ); ?>" data-mobile-preset="<?php echo esc_attr( $atts['st_mobile_preset'] ); ?>" id="<?php echo esc_attr( $uid ); ?>">
+		<?php
+		$color_theme = class_exists( __NAMESPACE__ . '\\ColorTheme' )
+			? ColorTheme::sanitize_optional( isset( $atts['color_theme'] ) ? $atts['color_theme'] : '' )
+			: '';
+		$theme_attr  = '';
+		if ( '' !== $color_theme ) {
+			$theme_attr = ' data-card-theme="' . esc_attr( $color_theme ) . '" data-hkdev-theme-root="1"';
+		}
+		?>
+		<div class="hkdev-header-wrap<?php echo esc_attr( $sticky_class ); ?>"<?php echo $hide_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped above ?> data-header-part="<?php echo esc_attr( $header_part ); ?>" data-mobile-preset="<?php echo esc_attr( $atts['st_mobile_preset'] ); ?>" id="<?php echo esc_attr( $uid ); ?>"<?php echo $theme_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 
 			<?php echo $this->style_css( $uid, $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- colours/fonts sanitised in style_css() ?>
 

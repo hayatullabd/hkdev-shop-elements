@@ -181,6 +181,9 @@ final class FooterOptions {
 				'payment_banner_link' => $url( 'hkdev_ft_payment_banner_link' ),
 				'show_backtotop'      => $yes_no( 'hkdev_ft_show_backtotop' ),
 				'copyright'         => $text( 'hkdev_ft_copyright' ),
+				'color_theme'         => class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+					? \HkdevShopElements\Includes\Core\ColorTheme::sanitize_optional( isset( $_POST['hkdev_ft_color_theme'] ) ? wp_unslash( $_POST['hkdev_ft_color_theme'] ) : '' ) // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					: ( isset( $_POST['hkdev_ft_color_theme'] ) && in_array( sanitize_key( wp_unslash( $_POST['hkdev_ft_color_theme'] ) ), [ 'green', 'orange', 'monochrome' ], true ) ? sanitize_key( wp_unslash( $_POST['hkdev_ft_color_theme'] ) ) : '' ), // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 				// ---- Appearance ----
 				'st_font'           => $font_stack( 'hkdev_ft_st_font' ),
@@ -672,7 +675,21 @@ final class FooterOptions {
 							</header>
 							<div class="hd-card-body">
 								<?php
+								$color_theme_options = class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+									? \HkdevShopElements\Includes\Core\ColorTheme::admin_select_options()
+									: [
+										''           => __( 'Style Pack / default colors', 'hkdev-shop-elements' ),
+										'green'      => __( 'Green (Default)', 'hkdev-shop-elements' ),
+										'orange'     => __( 'Orange', 'hkdev-shop-elements' ),
+										'monochrome' => __( 'Monochrome', 'hkdev-shop-elements' ),
+									];
 								$app_groups = [
+									[
+										'title'  => __( 'Color Theme', 'hkdev-shop-elements' ),
+										'fields' => [
+											[ 'key' => 'color_theme', 'type' => 'select', 'label' => __( 'Color Theme', 'hkdev-shop-elements' ), 'help' => __( 'Applies Green / Orange / Monochrome / custom presets to footer accents. Empty Accent Green / Orange fields follow this preset.', 'hkdev-shop-elements' ), 'options' => $color_theme_options ],
+										],
+									],
 									[
 										'title'  => __( 'Typography & Layout', 'hkdev-shop-elements' ),
 										'fields' => [
@@ -726,7 +743,16 @@ final class FooterOptions {
 													<?php endif; ?>
 												</div>
 												<div class="hd-field-input">
-													<?php if ( 'color' === $field['type'] ) : ?>
+													<?php if ( 'select' === $field['type'] ) : ?>
+														<select id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>">
+															<?php
+															$field_options = isset( $field['options'] ) && is_array( $field['options'] ) ? $field['options'] : [];
+															foreach ( $field_options as $opt_key => $opt_label ) :
+																?>
+																<option value="<?php echo esc_attr( $opt_key ); ?>" <?php selected( (string) $val, (string) $opt_key ); ?>><?php echo esc_html( $opt_label ); ?></option>
+															<?php endforeach; ?>
+														</select>
+													<?php elseif ( 'color' === $field['type'] ) : ?>
 														<div class="hd-color-wrap">
 															<input type="text" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fname ); ?>" class="hd-color-text" value="<?php echo esc_attr( $val ); ?>" placeholder="<?php echo esc_attr( $field['ph'] ); ?>">
 															<input type="color" class="hd-color-pick" value="<?php echo esc_attr( preg_match( '/^#[0-9a-f]{6}$/i', (string) $val ) ? $val : ( preg_match( '/^#[0-9a-f]{6}$/i', $field['ph'] ) ? $field['ph'] : '#000000' ) ); ?>" tabindex="-1" aria-hidden="true">

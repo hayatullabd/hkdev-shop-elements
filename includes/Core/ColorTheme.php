@@ -228,6 +228,35 @@ final class ColorTheme {
 	}
 
 	/**
+	 * Like sanitize(), but empty stays empty (use style-pack / default colors).
+	 *
+	 * @param string $slug Raw slug.
+	 * @return string Known slug, or empty.
+	 */
+	public static function sanitize_optional( $slug ) {
+		$slug = sanitize_key( (string) $slug );
+		if ( '' === $slug ) {
+			return '';
+		}
+
+		return self::exists( $slug ) ? $slug : '';
+	}
+
+	/**
+	 * Admin SELECT options, including an empty "don't apply" row.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function admin_select_options() {
+		return array_merge(
+			[
+				'' => __( 'Style Pack / default colors', 'hkdev-shop-elements' ),
+			],
+			self::select_options()
+		);
+	}
+
+	/**
 	 * @param string $slug Preset slug.
 	 * @return array{name:string,builtin:bool,colors:array<string,string>}|null
 	 */

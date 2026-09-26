@@ -181,6 +181,9 @@ final class HeaderOptions {
 				'st_density_preset' => $choice( 'hkdev_hd_st_density_preset', [ 'normal', 'compact', 'ultra' ], 'normal' ),
 				'st_style_preset'   => $choice( 'hkdev_hd_st_style_preset', [ 'classic', 'modern-clean', 'minimal', 'bold-ecommerce' ], 'classic' ),
 				'st_mobile_preset'  => $choice( 'hkdev_hd_st_mobile_preset', [ 'logo-first', 'search-first', 'icons-only', 'minimal' ], 'logo-first' ),
+				'color_theme'       => class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+					? \HkdevShopElements\Includes\Core\ColorTheme::sanitize_optional( isset( $_POST['hkdev_hd_color_theme'] ) ? wp_unslash( $_POST['hkdev_hd_color_theme'] ) : '' ) // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+					: $choice( 'hkdev_hd_color_theme', [ '', 'green', 'orange', 'monochrome' ], '' ),
 				'st_container'     => $num( 'hkdev_hd_st_container' ),
 				'st_container_t'   => $num( 'hkdev_hd_st_container_t' ),
 				'st_container_m'   => $num( 'hkdev_hd_st_container_m' ),
@@ -660,12 +663,21 @@ final class HeaderOptions {
 									'icons-only'   => __( 'Icons Only', 'hkdev-shop-elements' ),
 									'minimal'      => __( 'Minimal', 'hkdev-shop-elements' ),
 								];
+								$color_theme_options = class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+									? \HkdevShopElements\Includes\Core\ColorTheme::admin_select_options()
+									: [
+										''           => __( 'Style Pack / default colors', 'hkdev-shop-elements' ),
+										'green'      => __( 'Green (Default)', 'hkdev-shop-elements' ),
+										'orange'     => __( 'Orange', 'hkdev-shop-elements' ),
+										'monochrome' => __( 'Monochrome', 'hkdev-shop-elements' ),
+									];
 								$app_groups = [
 									[
 										'title'  => __( 'Preset Controls', 'hkdev-shop-elements' ),
 										'fields' => [
+											[ 'key' => 'color_theme', 'type' => 'select', 'label' => __( 'Color Theme', 'hkdev-shop-elements' ), 'help' => __( 'Applies Green / Orange / Monochrome / custom presets to the auto-print header. Empty colour fields below follow this preset. Add custom presets under Color Themes.', 'hkdev-shop-elements' ), 'options' => $color_theme_options ],
 											[ 'key' => 'st_density_preset', 'type' => 'select', 'label' => __( 'Global Density', 'hkdev-shop-elements' ), 'help' => __( 'Set Normal / Compact / Ultra for the whole header.', 'hkdev-shop-elements' ), 'options' => $preset_options ],
-											[ 'key' => 'st_style_preset', 'type' => 'select', 'label' => __( 'Header Style Pack', 'hkdev-shop-elements' ), 'help' => __( 'Apply curated color/style combinations quickly.', 'hkdev-shop-elements' ), 'options' => $style_preset_options ],
+											[ 'key' => 'st_style_preset', 'type' => 'select', 'label' => __( 'Header Style Pack', 'hkdev-shop-elements' ), 'help' => __( 'Layout look. Color Theme above wins for empty brand colours.', 'hkdev-shop-elements' ), 'options' => $style_preset_options ],
 											[ 'key' => 'st_mobile_preset', 'type' => 'select', 'label' => __( 'Mobile Header Preset', 'hkdev-shop-elements' ), 'help' => __( 'Control mobile header layout behavior without custom CSS.', 'hkdev-shop-elements' ), 'options' => $mobile_preset_options ],
 										],
 									],
