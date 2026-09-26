@@ -5,9 +5,9 @@
 ========================================================== */
 
 .hkdev-rv{
-    --hkdev-rv-primary: #03a550;
-    --hkdev-rv-primary-dark: #026b33;
-    --hkdev-rv-secondary: #f06724;
+    --hkdev-rv-primary: var(--hkdev-brand-primary, #03a550);
+    --hkdev-rv-primary-dark: var(--hkdev-brand-info, #026b33);
+    --hkdev-rv-secondary: var(--hkdev-brand-secondary, #f06724);
     --hkdev-rv-text: #141a14;
     --hkdev-rv-muted: #5f6e66;
     --hkdev-rv-border: rgba(0, 0, 0, 0.08);

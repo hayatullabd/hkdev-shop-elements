@@ -8,7 +8,7 @@
 .hkdev-hero{
     --hkdev-hero-height: 100vh;
     --hkdev-hero-radius: 0px;
-    --hkdev-hero-primary: #03a550;
+    --hkdev-hero-primary: var(--hkdev-brand-primary, #03a550);
     --hkdev-hero-overlay: rgba(0, 0, 0, 0.35);
     --hkdev-hero-ease: 0.8s;
     --hkdev-hero-bg: #0f1510;

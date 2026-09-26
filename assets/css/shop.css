@@ -8,6 +8,7 @@
 
     
     --hkdev-brand-primary: #03a550;
+    --hkdev-brand-hover: #028a40;
     --hkdev-brand-secondary: #f06724;
     --hkdev-brand-dark: #000000;
     --hkdev-brand-info: #026b33;
@@ -754,9 +755,9 @@ button.hkdev-order-btn{
     background: var(--hkdev-brand-primary) !important;
     border: 1px solid var(--hkdev-brand-primary) !important;
 }.hkdev-order-btn:hover{
-    background: #028a40 !important;
-    border-color: #028a40 !important;
-    box-shadow: 0 8px 18px rgba(3, 165, 80, 0.3) !important;
+    background: var(--hkdev-brand-hover, #028a40) !important;
+    border-color: var(--hkdev-brand-hover, #028a40) !important;
+    box-shadow: 0 8px 18px var(--hkdev-brand-light, rgba(3, 165, 80, 0.3)) !important;
 }.hkdev-btn-full{
     width: 100% !important;
     height: 46px !important;
@@ -764,9 +765,9 @@ button.hkdev-order-btn{
     background: var(--hkdev-brand-primary) !important;
     border: 1px solid var(--hkdev-brand-primary) !important;
 }.hkdev-btn-full:hover{
-    background: #03a550 !important;
-    border-color: #03a550 !important;
-    box-shadow: 0 8px 18px rgba(3, 165, 80, 0.3) !important;
+    background: var(--hkdev-brand-hover, var(--hkdev-brand-primary, #03a550)) !important;
+    border-color: var(--hkdev-brand-hover, var(--hkdev-brand-primary, #03a550)) !important;
+    box-shadow: 0 8px 18px var(--hkdev-brand-light, rgba(3, 165, 80, 0.3)) !important;
 }.hkdev-btn-disabled{
     width: 100% !important;
     height: 46px !important;

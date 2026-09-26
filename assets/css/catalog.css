@@ -3,8 +3,8 @@
    Matches the plugin design language: brand green + soft green tints + pills.
    Control styles use !important so theme / Elementor globals cannot override.
    ========================================================================== */.hkdev-catalog{
-	--hkcat-primary: #03a550;
-	--hkcat-primary-dark: #027a3b;
+	--hkcat-primary: var(--hkdev-brand-primary, #03a550);
+	--hkcat-primary-dark: var(--hkdev-brand-hover, #027a3b);
 	--hkcat-soft: #f2f9f4;
 	--hkcat-soft-2: #e5f4e6;
 	--hkcat-border: #dcebe0;

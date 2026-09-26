@@ -2,16 +2,16 @@
     /* ============================================================== */
     /* 🎨 PROFESSIONAL BRAND COLORS (FROM THE FITFORLIFE LOGO)        🎨 */
     /* ============================================================== */
-    --brand-primary: #03a550 !important;       /* Logo green */
-    --brand-hover: #028a40 !important;         /* Deeper green for hover states */
-    --brand-secondary: #ffffff !important;     /* Crisp white as accent */
-    --brand-light: rgba(3, 165, 80, 0.10) !important; /* Soft green tint for backgrounds */
-    --co-border-color: rgba(0, 0, 0, 0.06) !important; /* Clean, neutral border */
-    --co-bg-main: #ffffff !important;          /* Pure white main background */
-    --bg-soft: #f2f9f3 !important;             /* Very light green for inputs & boxes */
-    --text-dark: #141a14 !important;           /* Near-black for high readability */
-    --text-muted: #5f6e66 !important;          /* Neutral muted text */
-    --brand-accent: #f06724 !important;        /* Logo orange for highlights */
+    --brand-primary: #03a550;       /* Overridden by Color Theme on [data-card-theme] / :root */
+    --brand-hover: #028a40;
+    --brand-secondary: #ffffff;
+    --brand-light: rgba(3, 165, 80, 0.10);
+    --co-border-color: rgba(0, 0, 0, 0.06) !important;
+    --co-bg-main: #ffffff !important;
+    --bg-soft: #f2f9f3;
+    --text-dark: #141a14;
+    --text-muted: #5f6e66;
+    --brand-accent: #f06724;
     /* ============================================================== */
 }
 

@@ -631,10 +631,11 @@ class CategoryCarouselWidget extends Widget_Base {
 		$this->add_control(
 			'card_theme',
 			[
-				'label'       => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'green',
-				'options'     => $theme_options,
+				'label'              => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'type'               => Controls_Manager::SELECT,
+				'default'            => 'green',
+				'frontend_available' => true,
+				'options'            => $theme_options,
 				'description' => sprintf(
 					/* translators: %s: Color Themes admin URL */
 					esc_html__( 'Add custom presets in %s.', 'hkdev-shop-elements' ),

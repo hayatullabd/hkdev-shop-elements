@@ -5,7 +5,7 @@
 ========================================================== */
 
 .hkdev-yt{
-    --hkdev-yt-primary: #03a550;
+    --hkdev-yt-primary: var(--hkdev-brand-primary, #03a550);
     --hkdev-yt-text: #141a14;
     --hkdev-yt-muted: #5f6e66;
     --hkdev-yt-bg: transparent;
@@ -14,7 +14,7 @@
     --hkdev-yt-ratio: 16 / 9;
     --hkdev-yt-play-size: 78px;
     --hkdev-yt-play-bg: rgba(255, 255, 255, 0.94);
-    --hkdev-yt-play-color: #03a550;
+    --hkdev-yt-play-color: var(--hkdev-brand-primary, #03a550);
     --hkdev-yt-play-hover-bg: #ffffff;
     font-family: var(--hkdev-font, 'Hind Siliguri', 'Poppins', sans-serif) !important;
     color: var(--hkdev-yt-text) !important;

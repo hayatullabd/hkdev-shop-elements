@@ -2,14 +2,14 @@
     /* ============================================================== */
     /* 🎨 BRAND COLORS (GREEN & ORANGE, FROM THE FITFORLIFE LOGO)     🎨 */
     /* ============================================================== */
-    --hkdev-brand-primary:   #03a550 !important;  /* Logo Green */
-    --hkdev-brand-hover:     #028a40 !important;  /* Deep Green for hover */
-    --hkdev-brand-secondary: #ffffff !important;  /* Crisp White */
-    --hkdev-brand-light:     rgba(3, 165, 80, 0.10) !important; /* Soft Green Tint */
-    --hkdev-border-color:    rgba(0, 0, 0, 0.06) !important;      /* Clean Neutral Border */
-    --hkdev-text-color:      #141a14 !important;                  /* Near-Black for Readability */
-    --hkdev-text-muted:      #5f6e66 !important;                  /* Neutral Muted Text */
-    --hkdev-bg-soft:         #f2f9f3 !important;                  /* Very Light Green Background */
+    --hkdev-brand-primary:   #03a550;
+    --hkdev-brand-hover:     #028a40;
+    --hkdev-brand-secondary: #ffffff;
+    --hkdev-brand-light:     rgba(3, 165, 80, 0.10);
+    --hkdev-border-color:    rgba(0, 0, 0, 0.06);
+    --hkdev-text-color:      #141a14;
+    --hkdev-text-muted:      #5f6e66;
+    --hkdev-bg-soft:         #f2f9f3;
     /* ============================================================== */
 }
 

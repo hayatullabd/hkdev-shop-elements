@@ -514,10 +514,11 @@ final class WidgetManager {
 		$element->add_control(
 			'hkdev_color_theme',
 			[
-				'label'       => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
-				'type'        => Controls_Manager::SELECT,
-				'default'     => 'green',
-				'options'     => $themes,
+				'label'              => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'type'               => Controls_Manager::SELECT,
+				'default'            => 'green',
+				'frontend_available' => true,
+				'options'            => $themes,
 				'description' => sprintf(
 					/* translators: %s: Color Themes admin URL */
 					esc_html__( 'Add custom presets in %s.', 'hkdev-shop-elements' ),
@@ -551,11 +552,23 @@ final class WidgetManager {
 
 		if ( ! class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' ) ) {
 			$theme = in_array( $theme, [ 'green', 'orange', 'monochrome' ], true ) ? $theme : 'green';
-		} else {
-			$theme = \HkdevShopElements\Includes\Core\ColorTheme::sanitize( $theme );
+			$widget->add_render_attribute( '_wrapper', 'data-card-theme', $theme, true );
+			return;
 		}
 
-		$widget->add_render_attribute( '_wrapper', 'data-card-theme', $theme );
+		$theme = \HkdevShopElements\Includes\Core\ColorTheme::sanitize( $theme );
+		$css   = \HkdevShopElements\Includes\Core\ColorTheme::tokens_css( $theme, [ 'hkdev', 'sp' ] );
+
+		$widget->add_render_attribute( '_wrapper', 'data-card-theme', $theme, true );
+		if ( '' !== $css ) {
+			$widget->add_render_attribute( '_wrapper', 'style', $css );
+		}
+
+		$name = method_exists( $widget, 'get_name' ) ? $widget->get_name() : '';
+		if ( \HkdevShopElements\Includes\Core\ColorTheme::is_document_theme_widget( $name ) ) {
+			$widget->add_render_attribute( '_wrapper', 'data-hkdev-theme-root', '1', true );
+			\HkdevShopElements\Includes\Core\ColorTheme::set_document_theme( $theme );
+		}
 	}
 
 	/**

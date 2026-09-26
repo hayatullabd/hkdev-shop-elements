@@ -29,6 +29,13 @@ final class ColorTheme {
 	private static $instance = null;
 
 	/**
+	 * Theme promoted to :root / body so portaled drawers inherit it.
+	 *
+	 * @var string
+	 */
+	private static $document_theme = '';
+
+	/**
 	 * @return ColorTheme
 	 */
 	public static function instance() {
@@ -43,9 +50,16 @@ final class ColorTheme {
 	 */
 	public function init() {
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_theme_css' ], 30 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_theme_js' ], 31 );
+		add_action( 'wp_head', [ $this, 'print_theme_css' ], 20 );
+		add_action( 'wp_footer', [ $this, 'print_theme_css' ], 4 );
+		add_action( 'wp_footer', [ $this, 'print_document_theme_css' ], 5 );
 		add_action( 'elementor/frontend/after_enqueue_styles', [ $this, 'enqueue_theme_css' ] );
 		add_action( 'elementor/preview/enqueue_styles', [ $this, 'enqueue_theme_css' ] );
 		add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueue_theme_css' ] );
+		add_action( 'elementor/frontend/after_enqueue_scripts', [ $this, 'enqueue_theme_js' ] );
+		add_action( 'elementor/preview/enqueue_scripts', [ $this, 'enqueue_theme_js' ] );
+		add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueue_theme_js' ] );
 	}
 
 	/**
@@ -281,13 +295,13 @@ final class ColorTheme {
 	}
 
 	/**
-	 * Inline CSS custom properties for a preset.
+	 * CSS custom-property map for a preset (property => value).
 	 *
-	 * @param string          $slug     Preset slug.
-	 * @param string[]        $prefixes Variable prefixes (hkdev, sp).
-	 * @return string
+	 * @param string   $slug     Preset slug.
+	 * @param string[] $prefixes Variable prefixes (hkdev, sp).
+	 * @return array<string,string>
 	 */
-	public static function tokens_css( $slug, $prefixes = [ 'hkdev' ] ) {
+	public static function tokens_map( $slug, $prefixes = [ 'hkdev' ] ) {
 		$tokens   = self::tokens( $slug );
 		$prefixes = is_array( $prefixes ) ? $prefixes : [ 'hkdev' ];
 		$map      = [
@@ -305,7 +319,7 @@ final class ColorTheme {
 			'brand_light'  => 'brand-light',
 		];
 
-		$css = '';
+		$out = [];
 		foreach ( $prefixes as $prefix ) {
 			$prefix = sanitize_key( (string) $prefix );
 			if ( '' === $prefix ) {
@@ -315,34 +329,110 @@ final class ColorTheme {
 				if ( ! isset( $tokens[ $key ] ) || '' === $tokens[ $key ] ) {
 					continue;
 				}
-				$css .= '--' . $prefix . '-' . $suffix . ':' . $tokens[ $key ] . ';';
+				$out[ '--' . $prefix . '-' . $suffix ] = $tokens[ $key ];
 			}
 		}
 
 		if ( in_array( 'hkdev', $prefixes, true ) ) {
-			$css .= '--hd-primary:' . $tokens['primary'] . ';';
-			$css .= '--hd-primary-dark:' . $tokens['hover'] . ';';
-			$css .= '--hd-secondary:' . $tokens['secondary'] . ';';
-			$css .= '--hd-secondary-dark:' . $tokens['info'] . ';';
-			$css .= '--hd-info:' . $tokens['info'] . ';';
-			$css .= '--hd-text:' . $tokens['text'] . ';';
-			$css .= '--hd-muted:' . $tokens['muted'] . ';';
-			$css .= '--hd-soft:' . $tokens['bg_soft'] . ';';
-			$css .= '--brand-primary:' . $tokens['primary'] . ';';
-			$css .= '--brand-hover:' . $tokens['hover'] . ';';
-			$css .= '--brand-accent:' . $tokens['accent'] . ';';
-			$css .= '--brand-light:' . $tokens['brand_light'] . ';';
-			$css .= '--text-dark:' . $tokens['text'] . ';';
-			$css .= '--text-muted:' . $tokens['muted'] . ';';
-			$css .= '--bg-soft:' . $tokens['bg_soft'] . ';';
-			$css .= '--hkcat-primary:' . $tokens['primary'] . ';';
-			$css .= '--hkcat-primary-dark:' . $tokens['hover'] . ';';
-			$css .= '--hkcat-soft:' . $tokens['bg_soft'] . ';';
-			$css .= '--hkcat-text:' . $tokens['text'] . ';';
-			$css .= '--hkcat-muted:' . $tokens['muted'] . ';';
+			$aliases = [
+				'--hd-primary'           => $tokens['primary'],
+				'--hd-primary-dark'      => $tokens['hover'],
+				'--hd-secondary'         => $tokens['secondary'],
+				'--hd-secondary-dark'    => $tokens['info'],
+				'--hd-info'              => $tokens['info'],
+				'--hd-text'              => $tokens['text'],
+				'--hd-muted'             => $tokens['muted'],
+				'--hd-soft'              => $tokens['bg_soft'],
+				'--brand-primary'        => $tokens['primary'],
+				'--brand-hover'          => $tokens['hover'],
+				'--brand-accent'         => $tokens['accent'],
+				'--brand-light'          => $tokens['brand_light'],
+				'--text-dark'            => $tokens['text'],
+				'--text-muted'           => $tokens['muted'],
+				'--bg-soft'              => $tokens['bg_soft'],
+				'--hkcat-primary'        => $tokens['primary'],
+				'--hkcat-primary-dark'   => $tokens['hover'],
+				'--hkcat-soft'           => $tokens['bg_soft'],
+				'--hkcat-text'           => $tokens['text'],
+				'--hkcat-muted'          => $tokens['muted'],
+				'--hkdev-hero-primary'   => $tokens['primary'],
+				'--hkdev-yt-primary'     => $tokens['primary'],
+				'--hkdev-yt-play-color'  => $tokens['primary'],
+				'--hkblog-primary'       => $tokens['primary'],
+				'--hkblog-primary-dark'  => $tokens['hover'],
+				'--hkdev-404-accent'     => $tokens['primary'],
+				'--ft-green'             => $tokens['primary'],
+				'--ft-green-dark'        => $tokens['info'],
+				'--ft-orange'            => $tokens['accent'],
+				'--hkdev-rv-primary'     => $tokens['primary'],
+				'--hkdev-rv-primary-dark'=> $tokens['info'],
+				'--hkdev-rv-secondary'   => $tokens['secondary'],
+			];
+			$out = array_merge( $out, $aliases );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Inline CSS custom properties for a preset.
+	 *
+	 * @param string   $slug     Preset slug.
+	 * @param string[] $prefixes Variable prefixes (hkdev, sp).
+	 * @return string
+	 */
+	public static function tokens_css( $slug, $prefixes = [ 'hkdev' ] ) {
+		$css = '';
+		foreach ( self::tokens_map( $slug, $prefixes ) as $prop => $value ) {
+			$css .= $prop . ':' . $value . ';';
 		}
 
 		return $css;
+	}
+
+	/**
+	 * Preset maps for the Elementor editor / frontend helper script.
+	 *
+	 * @return array<string,array<string,string>>
+	 */
+	public static function js_payload() {
+		$out = [];
+		foreach ( array_keys( self::all() ) as $slug ) {
+			$out[ $slug ] = self::tokens_map( $slug, [ 'hkdev', 'sp' ] );
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Widgets whose theme should also tint portaled drawers / :root.
+	 *
+	 * @param string $name Elementor widget name.
+	 * @return bool
+	 */
+	public static function is_document_theme_widget( $name ) {
+		return in_array(
+			(string) $name,
+			[
+				'hkdev_header',
+				'hkdev_header_upper',
+				'hkdev_header_main',
+				'hkdev_header_bottom',
+				'hkdev_footer',
+				'hkdev_checkout',
+				'hkdev_cart',
+				'hkdev_account',
+			],
+			true
+		);
+	}
+
+	/**
+	 * @param string $slug Preset slug.
+	 * @return void
+	 */
+	public static function set_document_theme( $slug ) {
+		self::$document_theme = self::sanitize( $slug );
 	}
 
 	/**
@@ -358,7 +448,8 @@ final class ColorTheme {
 			if ( '' === $vars ) {
 				continue;
 			}
-			$rules .= '[data-card-theme="' . esc_attr( $slug ) . '"]{' . $vars . '}';
+			$attr   = esc_attr( $slug );
+			$rules .= '[data-card-theme="' . $attr . '"],html[data-card-theme="' . $attr . '"]{' . $vars . '}';
 		}
 
 		return $rules;
@@ -485,6 +576,65 @@ final class ColorTheme {
 			wp_enqueue_style( 'hkdev-elements-color-themes' );
 			wp_add_inline_style( 'hkdev-elements-color-themes', $css );
 		}
+	}
+
+	/**
+	 * Guaranteed <style> print — empty-src handles are skipped by some stacks.
+	 *
+	 * @return void
+	 */
+	public function print_theme_css() {
+		static $printed = false;
+		if ( $printed ) {
+			return;
+		}
+
+		$css = self::stylesheet();
+		if ( '' === $css ) {
+			return;
+		}
+
+		$printed = true;
+		echo '<style id="hkdev-elements-color-themes-css">' . $css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Apply the header/checkout theme on :root so drawers moved to body inherit it.
+	 *
+	 * @return void
+	 */
+	public function print_document_theme_css() {
+		if ( '' === self::$document_theme ) {
+			return;
+		}
+
+		$vars = self::tokens_css( self::$document_theme, [ 'hkdev', 'sp' ] );
+		if ( '' === $vars ) {
+			return;
+		}
+
+		echo '<style id="hkdev-elements-color-theme-root">:root,html,body,.hkdev-header-panel,.hkdev-mini-cart,.hkdev-co-modal,.hkdev-variation-modal,.hkdev-auth-modal{' . $vars . '}</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+
+	/**
+	 * Editor + frontend helper: apply tokens instantly and copy chrome theme to <html>.
+	 *
+	 * @return void
+	 */
+	public function enqueue_theme_js() {
+		if ( wp_script_is( 'hkdev-elements-color-theme', 'enqueued' ) ) {
+			return;
+		}
+
+		wp_register_script(
+			'hkdev-elements-color-theme',
+			\HkdevShopElements\hkdev_elements_asset_url( 'assets/js/color-theme.js' ),
+			[],
+			\HkdevShopElements\hkdev_elements_asset_ver( 'assets/js/color-theme.js' ),
+			true
+		);
+		wp_localize_script( 'hkdev-elements-color-theme', 'hkdevColorThemes', self::js_payload() );
+		wp_enqueue_script( 'hkdev-elements-color-theme' );
 	}
 
 	/**

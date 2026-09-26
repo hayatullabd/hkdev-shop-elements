@@ -10,9 +10,9 @@
     --ft-text: #c6d5cb;
     --ft-heading: #ffffff;
     --ft-muted: #8ba498;
-    --ft-green: #03a550;
-    --ft-green-dark: #026b33;
-    --ft-orange: #f06724;
+    --ft-green: var(--hkdev-brand-primary, #03a550);
+    --ft-green-dark: var(--hkdev-brand-info, #026b33);
+    --ft-orange: var(--hkdev-brand-accent, #f06724);
     --ft-border: rgba(255, 255, 255, 0.1);
     --ft-soft: rgba(255, 255, 255, 0.05);
     --ft-container: 1280px;

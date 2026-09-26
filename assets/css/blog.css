@@ -9,8 +9,8 @@
    ------------------------------------------------------------------ */
 .hkdev-blog,
 .hkdev-blog-single-wrap {
-	--hkblog-primary: #03a550;
-	--hkblog-primary-dark: #027a3b;
+	--hkblog-primary: var(--hkdev-brand-primary, #03a550);
+	--hkblog-primary-dark: var(--hkdev-brand-hover, #027a3b);
 	--hkblog-primary-soft: rgba(3, 165, 80, 0.08);
 	--hkblog-soft: #f2f9f4;
 	--hkblog-soft-2: #e5f4e6;
