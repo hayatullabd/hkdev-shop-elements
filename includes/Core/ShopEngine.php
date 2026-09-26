@@ -200,12 +200,12 @@ class ShopEngine {
 				<?php do_action( 'woocommerce_before_shop_loop_item_title' ); ?>
 
 				<a href="<?php echo esc_url( $permalink ); ?>">
-					<?php echo $product->get_image( $resolved_size, [ 'loading' => 'lazy', 'decoding' => 'async' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+					<?php echo $product->get_image( $resolved_size, [ 'loading' => 'lazy', 'decoding' => 'async', 'sizes' => '(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</a>
 
 				<?php if ( $hover_image_id ) : ?>
 					<span class="hkdev-hover-img" aria-hidden="true">
-						<?php echo wp_get_attachment_image( $hover_image_id, $resolved_size, false, [ 'loading' => 'lazy', 'decoding' => 'async' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						<?php echo wp_get_attachment_image( $hover_image_id, $resolved_size, false, [ 'loading' => 'lazy', 'decoding' => 'async', 'sizes' => '(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw' ] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</span>
 				<?php endif; ?>
 

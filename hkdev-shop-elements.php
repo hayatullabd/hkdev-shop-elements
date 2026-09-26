@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           1.1.0
+ * Version:           1.1.1
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '1.1.0' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.1.1' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -638,6 +638,14 @@ function hkdev_elements_register_assets() {
 				'co_apply_coupon'  => wp_create_nonce( 'hkdev_elements_co_apply_coupon' ),
 				'co_remove_coupon' => wp_create_nonce( 'hkdev_elements_co_remove_coupon' ),
 			],
+			'assets'   => [
+				'checkoutCss' => hkdev_elements_registered_asset_src( 'hkdev-elements-checkout-style', 'style' ),
+				'checkoutJs'  => hkdev_elements_registered_asset_src( 'hkdev-elements-checkout-js', 'script' ),
+				'select2Css'  => hkdev_elements_registered_asset_src( 'select2', 'style' ),
+				'select2Js'   => hkdev_elements_registered_asset_src( wp_script_is( 'wc-select2', 'registered' ) ? 'wc-select2' : 'select2', 'script' ),
+				'authCss'     => hkdev_elements_registered_asset_src( 'hkdev-elements-auth-style', 'style' ),
+				'authJs'      => hkdev_elements_registered_asset_src( 'hkdev-elements-auth-js', 'script' ),
+			],
 		]
 	);
 
@@ -746,18 +754,66 @@ function hkdev_elements_force_style_order() {
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_force_style_order', 999 );
 
 /**
- * Load Font Awesome and the font pack asynchronously.
+ * Registered style/script URL with cache-busting ver, or empty.
  *
- * Neither stylesheet defines page layout, so they must not block first paint.
- * Each tag becomes a <link rel="preload"> that promotes itself to a stylesheet
- * on load, with a <noscript> copy. Layout-critical CSS stays render-blocking.
+ * @param string $handle Asset handle.
+ * @param string $type   style|script.
+ * @return string
+ */
+function hkdev_elements_registered_asset_src( $handle, $type ) {
+	$wp = ( 'script' === $type ) ? wp_scripts() : wp_styles();
+	if ( ! $wp || empty( $wp->registered[ $handle ] ) ) {
+		return '';
+	}
+
+	$src = (string) $wp->registered[ $handle ]->src;
+	if ( '' === $src ) {
+		return '';
+	}
+
+	if ( 0 === strpos( $src, '//' ) ) {
+		$src = ( is_ssl() ? 'https:' : 'http:' ) . $src;
+	} elseif ( 0 !== strpos( $src, 'http' ) ) {
+		$src = site_url( $src );
+	}
+
+	$ver = $wp->registered[ $handle ]->ver;
+	if ( $ver ) {
+		$src = add_query_arg( 'ver', $ver, $src );
+	}
+
+	return $src;
+}
+
+/**
+ * Load Font Awesome, the font pack, and below-the-fold widget CSS asynchronously.
+ *
+ * Header / hero / single-product CSS stay render-blocking because they paint
+ * the LCP. Everything else becomes a <link rel="preload"> that promotes itself
+ * to a stylesheet on load, with a <noscript> copy.
  *
  * @param string $tag    Full <link> markup.
  * @param string $handle Style handle.
  * @return string
  */
 function hkdev_elements_async_fontawesome( $tag, $handle ) {
-	if ( is_admin() || ! in_array( $handle, [ 'hkdev-elements-fontawesome', 'hkdev-elements-font' ], true ) ) {
+	$async_handles = [
+		'hkdev-elements-fontawesome',
+		'hkdev-elements-font',
+		'hkdev-elements-shop-style',
+		'hkdev-elements-swiper-css',
+		'hkdev-elements-catalog-style',
+		'hkdev-elements-footer-style',
+		'hkdev-elements-reviews-style',
+		'hkdev-elements-video-style',
+		'hkdev-elements-faq-style',
+		'hkdev-elements-policy-link-style',
+		'hkdev-elements-blog-style',
+		'hkdev-elements-auth-style',
+		'hkdev-elements-checkout-style',
+	];
+
+	if ( is_admin() || ! in_array( $handle, $async_handles, true ) ) {
 		return $tag;
 	}
 	if ( false === strpos( $tag, 'rel=' ) || false === strpos( $tag, 'stylesheet' ) ) {
@@ -794,12 +850,7 @@ function hkdev_elements_enqueue_assets() {
 		wp_enqueue_script( 'hkdev-elements-catalog-js' );
 	}
 
-	// Auth modal loads everywhere (login/signup button can appear on any page).
-	if ( ! is_user_logged_in() ) {
-		wp_enqueue_style( 'hkdev-elements-auth-style' );
-		wp_enqueue_script( 'hkdev-elements-auth-js' );
-	}
-
+	// Auth CSS/JS load on the account page or the first login-modal click.
 	// Account page assets.
 	if ( function_exists( 'is_account_page' ) && is_account_page() ) {
 		wp_enqueue_style( 'hkdev-elements-account-style' );
@@ -825,7 +876,6 @@ function hkdev_elements_enqueue_assets() {
 	wp_enqueue_style( 'hkdev-elements-swiper-css' );
 	wp_enqueue_script( 'hkdev-elements-swiper-js' );
 	wp_enqueue_style( 'hkdev-elements-fontawesome' );
-	hkdev_elements_enqueue_buy_now_checkout_assets();
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_assets', 30 );
 
@@ -852,16 +902,21 @@ function hkdev_elements_enqueue_buy_now_checkout_assets() {
 }
 
 /**
- * Load Buy Now checkout assets whenever a shop listing script is present.
+ * Load Buy Now checkout assets only on the real checkout page.
+ *
+ * Shop / home listings fetch checkout.css and checkout.js on the first
+ * Buy Now click so those files do not block first paint.
  *
  * @return void
  */
 function hkdev_elements_enqueue_buy_now_when_shop_js() {
-	if ( is_admin() || ! wp_script_is( 'hkdev-elements-shop-js', 'enqueued' ) ) {
+	if ( is_admin() ) {
 		return;
 	}
 
-	hkdev_elements_enqueue_buy_now_checkout_assets();
+	if ( function_exists( 'is_checkout' ) && ( is_checkout() || ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'order-received' ) ) ) ) {
+		hkdev_elements_enqueue_buy_now_checkout_assets();
+	}
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_buy_now_when_shop_js', 40 );
 
@@ -907,6 +962,11 @@ function hkdev_elements_enqueue_tracking_404_assets() {
 	if ( hkdev_elements_page_has_shortcode( $post, 'hkdev_404' ) ) {
 		wp_enqueue_style( 'hkdev-elements-fontawesome' );
 		wp_enqueue_style( 'hkdev-elements-404-style' );
+	}
+	if ( hkdev_elements_page_has_shortcode( $post, 'hkdev_login' ) ) {
+		wp_enqueue_style( 'hkdev-elements-fontawesome' );
+		wp_enqueue_style( 'hkdev-elements-auth-style' );
+		wp_enqueue_script( 'hkdev-elements-auth-js' );
 	}
 	if ( hkdev_elements_page_has_shortcode( $post, 'hkdev_my_account' ) ) {
 		wp_enqueue_style( 'hkdev-elements-fontawesome' );

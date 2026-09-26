@@ -850,6 +850,7 @@ button.hkdev-order-btn{
 }.hkdev-carousel-dots.swiper-pagination-bullets-dynamic{
     overflow: hidden !important;
 }.hkdev-carousel-dots .swiper-pagination-bullet{
+    position: relative !important;
     width: 7px !important;
     height: 7px !important;
     margin: 0 !important;
@@ -862,6 +863,11 @@ button.hkdev-order-btn{
     transform: scale(1);
     cursor: pointer;
     transition: width .26s ease, opacity .22s ease, transform .22s ease;
+}.hkdev-carousel-dots .swiper-pagination-bullet::before{
+    content: "" !important;
+    position: absolute !important;
+    inset: -12px -10px !important;
+}
 }.hkdev-carousel-dots .swiper-pagination-bullet-active-main,
 .hkdev-carousel-dots .swiper-pagination-bullet-active{
     width: 20px !important;

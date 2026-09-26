@@ -458,17 +458,17 @@ class HeroSliderWidget extends Widget_Base {
 			[
 				'label'       => esc_html__( 'Image Size', 'hkdev-shop-elements' ),
 				'type'        => Controls_Manager::SELECT,
-				'default'     => 'full',
+				'default'     => '1536x1536',
 				'separator'   => 'before',
 				'options'     => [
 					'full'              => esc_html__( 'Full (original) - best for full-width', 'hkdev-shop-elements' ),
 					'2048x2048'         => esc_html__( '2048 x 2048', 'hkdev-shop-elements' ),
-					'1536x1536'         => esc_html__( '1536 x 1536', 'hkdev-shop-elements' ),
+					'1536x1536'         => esc_html__( '1536 x 1536 (recommended)', 'hkdev-shop-elements' ),
 					'large'             => esc_html__( 'Large (1024px)', 'hkdev-shop-elements' ),
 					'woocommerce_single' => esc_html__( 'WooCommerce Single (600px)', 'hkdev-shop-elements' ),
 					'medium_large'      => esc_html__( 'Medium Large (768px)', 'hkdev-shop-elements' ),
 				],
-				'description' => esc_html__( 'Which stored file the browser loads. Keep Full for a screen-wide banner; smaller files load faster but look soft when stretched across the width.', 'hkdev-shop-elements' ),
+				'description' => esc_html__( 'Preferred file the browser starts from. Srcset still serves a smaller file on phones. Use Full only when the artwork is already compressed WebP.', 'hkdev-shop-elements' ),
 			]
 		);
 
@@ -855,6 +855,92 @@ class HeroSliderWidget extends Widget_Base {
 	}
 
 	/**
+	 * Responsive hero image: one file per viewport, with srcset.
+	 *
+	 * @param array  $desktop Desktop MEDIA control value.
+	 * @param array  $mobile  Optional mobile MEDIA control value.
+	 * @param string $size    WordPress image size.
+	 * @param string $alt     Alt text.
+	 * @param bool   $priority First slide (LCP).
+	 * @return string
+	 */
+	protected function slide_picture_html( $desktop, $mobile, $size, $alt, $priority ) {
+		$desktop = is_array( $desktop ) ? $desktop : [];
+		$mobile  = is_array( $mobile ) ? $mobile : [];
+		$desk_id = ! empty( $desktop['id'] ) ? absint( $desktop['id'] ) : 0;
+		$mob_id  = ! empty( $mobile['id'] ) ? absint( $mobile['id'] ) : 0;
+
+		$attrs = [
+			'class'    => 'hkdev-hero-img',
+			'alt'      => $alt,
+			'decoding' => 'async',
+			'loading'  => $priority ? 'eager' : 'lazy',
+			'sizes'    => '100vw',
+		];
+
+		if ( $priority ) {
+			$attrs['fetchpriority'] = 'high';
+		}
+
+		if ( $desk_id && $mob_id ) {
+			$mob_srcset = wp_get_attachment_image_srcset( $mob_id, $size );
+			$mob_src    = wp_get_attachment_image_url( $mob_id, $size );
+			$html       = '<picture>';
+			if ( $mob_srcset || $mob_src ) {
+				$html .= '<source media="(max-width:767px)" sizes="100vw" srcset="' . esc_attr( $mob_srcset ? $mob_srcset : $mob_src ) . '">';
+			}
+			$html .= wp_get_attachment_image( $desk_id, $size, false, $attrs );
+			$html .= '</picture>';
+			return $html;
+		}
+
+		if ( $desk_id ) {
+			return wp_get_attachment_image( $desk_id, $size, false, $attrs );
+		}
+
+		$url = ! empty( $desktop['url'] ) ? (string) $desktop['url'] : '';
+		if ( '' === $url ) {
+			return '';
+		}
+
+		return '<img class="hkdev-hero-img" src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '" loading="' . ( $priority ? 'eager' : 'lazy' ) . '" decoding="async"' . ( $priority ? ' fetchpriority="high"' : '' ) . '>';
+	}
+
+	/**
+	 * Preload the first slide so LCP does not wait on CSS.
+	 *
+	 * @param array  $desktop Desktop MEDIA control value.
+	 * @param array  $mobile  Optional mobile MEDIA control value.
+	 * @param string $size    WordPress image size.
+	 * @return void
+	 */
+	protected function print_lcp_preload( $desktop, $mobile, $size ) {
+		$desktop = is_array( $desktop ) ? $desktop : [];
+		$mobile  = is_array( $mobile ) ? $mobile : [];
+		$desk_id = ! empty( $desktop['id'] ) ? absint( $desktop['id'] ) : 0;
+		$mob_id  = ! empty( $mobile['id'] ) ? absint( $mobile['id'] ) : 0;
+
+		$desk_url    = $desk_id ? wp_get_attachment_image_url( $desk_id, $size ) : ( ! empty( $desktop['url'] ) ? $desktop['url'] : '' );
+		$desk_srcset = $desk_id ? wp_get_attachment_image_srcset( $desk_id, $size ) : '';
+		$mob_url     = $mob_id ? wp_get_attachment_image_url( $mob_id, $size ) : ( ! empty( $mobile['url'] ) ? $mobile['url'] : '' );
+
+		if ( $mob_url ) {
+			echo '<link rel="preload" as="image" href="' . esc_url( $mob_url ) . '" media="(max-width:767px)" fetchpriority="high">' . "\n";
+		}
+
+		if ( $desk_url ) {
+			$attr = ' rel="preload" as="image" href="' . esc_url( $desk_url ) . '" fetchpriority="high"';
+			if ( $desk_srcset ) {
+				$attr .= ' imagesrcset="' . esc_attr( $desk_srcset ) . '" imagesizes="100vw"';
+			}
+			if ( $mob_url ) {
+				$attr .= ' media="(min-width:768px)"';
+			}
+			echo '<link' . $attr . '>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		}
+	}
+
+	/**
 	 * Render the widget output.
 	 *
 	 * @return void
@@ -880,8 +966,8 @@ class HeroSliderWidget extends Widget_Base {
 				$btn  = isset( $row['button_link'] ) ? (array) $row['button_link'] : [];
 
 				$slides[] = [
-					'image'      => $this->slide_image_url( $row['image'], $image_size ),
-					'image_mobile' => ! empty( $row['image_mobile'] ) ? $this->slide_image_url( $row['image_mobile'], $image_size ) : '',
+					'image'        => isset( $row['image'] ) ? (array) $row['image'] : [],
+					'image_mobile' => ! empty( $row['image_mobile']['url'] ) ? (array) $row['image_mobile'] : [],
 					'alt'        => ! empty( $row['alt'] ) ? $row['alt'] : ( isset( $row['heading'] ) ? $row['heading'] : '' ),
 					'link'       => ! empty( $link['url'] ) ? $link['url'] : '',
 					'link_blank' => ! empty( $link['is_external'] ),
@@ -928,6 +1014,8 @@ class HeroSliderWidget extends Widget_Base {
 
 		$classes = 'hkdev-hero hkdev-hero-position-' . $position . ' hkdev-hero-transition-' . $transition;
 
+		$this->print_lcp_preload( $slides[0]['image'], $slides[0]['image_mobile'], $image_size );
+
 		if ( isset( $settings['hero_full_width'] ) && 'yes' === $settings['hero_full_width'] ) {
 			$classes .= ' hkdev-hero-full';
 		}
@@ -973,16 +1061,9 @@ class HeroSliderWidget extends Widget_Base {
 						}
 					}
 
-					$img = '<img class="hkdev-hero-img hkdev-hero-img-desktop" src="' . esc_url( $slide['image'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="' . ( $active ? 'eager' : 'lazy' ) . '" decoding="async"' . ( $active ? ' fetchpriority="high"' : '' ) . ' />';
+					$img = $this->slide_picture_html( $slide['image'], $slide['image_mobile'], $image_size, $slide['alt'], $active );
 
-					if ( '' !== $slide['image_mobile'] ) {
-						$img .= '<img class="hkdev-hero-img hkdev-hero-img-mobile" src="' . esc_url( $slide['image_mobile'] ) . '" alt="' . esc_attr( $slide['alt'] ) . '" loading="lazy" decoding="async" />';
-					}
-
-					// The phone/desktop image swap is scoped to this class, so a
-					// slide with no mobile image keeps its desktop one on phones.
-					$slide_class = 'hkdev-hero-slide' . ( $active ? ' is-active' : '' )
-						. ( '' !== $slide['image_mobile'] ? ' hkdev-hero-slide-has-mobile' : '' );
+					$slide_class = 'hkdev-hero-slide' . ( $active ? ' is-active' : '' );
 					?>
 					<div class="<?php echo esc_attr( $slide_class ); ?>">
 						<?php if ( '' !== $link_attrs ) : ?>

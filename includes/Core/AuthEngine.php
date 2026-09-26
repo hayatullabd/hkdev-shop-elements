@@ -55,6 +55,7 @@ class AuthEngine {
 		}
 		$rendered = true;
 		?>
+		<style id="hkdev-auth-hide">.hkdev-auth-modal{display:none!important}.hkdev-auth-modal.is-open{display:flex!important}</style>
 		<div class="hkdev-auth-modal" id="hkdev-auth-modal" aria-hidden="true">
 			<div class="hkdev-auth-modal-overlay"></div>
 			<div class="hkdev-auth-modal-container">
@@ -197,6 +198,46 @@ class AuthEngine {
 			</div>
 		</div>
 		<?php
+		if ( ! wp_script_is( 'hkdev-elements-auth-js', 'enqueued' ) && ! wp_script_is( 'hkdev-elements-auth-js', 'done' ) ) {
+			?>
+			<script>
+			(function () {
+				var started = false;
+				document.addEventListener('click', function (e) {
+					var btn = e.target.closest ? e.target.closest('.hkdev-auth-open') : null;
+					if (!btn || started) {
+						return;
+					}
+					e.preventDefault();
+					e.stopPropagation();
+					started = true;
+					var assets = (window.hkdev_elements_ajax && hkdev_elements_ajax.assets) ? hkdev_elements_ajax.assets : {};
+					function load(kind, href, done) {
+						if (!href) {
+							done();
+							return;
+						}
+						var el = document.createElement(kind === 'style' ? 'link' : 'script');
+						if (kind === 'style') {
+							el.rel = 'stylesheet';
+							el.href = href;
+						} else {
+							el.src = href;
+						}
+						el.onload = done;
+						el.onerror = done;
+						document.head.appendChild(el);
+					}
+					load('style', assets.authCss, function () {
+						load('script', assets.authJs, function () {
+							btn.click();
+						});
+					});
+				}, true);
+			})();
+			</script>
+			<?php
+		}
 	}
 
 	public function ajax_login() {

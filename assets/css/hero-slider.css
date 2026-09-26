@@ -93,6 +93,12 @@
     transition: transform var(--hkdev-hero-kb-dur, 8000ms) ease-out !important;
 }
 
+.hkdev-hero-slide picture{
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .hkdev-hero-slide img{
     position: absolute !important;
     top: 0 !important;
@@ -340,6 +346,7 @@
 }
 
 .hkdev-hero-dot{
+    position: relative !important;
     width: var(--hkdev-hero-dot-size, 8px) !important;
     height: var(--hkdev-hero-dot-size, 8px) !important;
     padding: 0 !important;
@@ -350,6 +357,11 @@
     cursor: pointer !important;
     opacity: .55 !important;
     transition: width .26s ease, opacity .22s ease, background-color .24s ease !important;
+}
+.hkdev-hero-dot::before{
+    content: "" !important;
+    position: absolute !important;
+    inset: -12px -10px !important;
 }
 
 .hkdev-hero-dot.is-active{

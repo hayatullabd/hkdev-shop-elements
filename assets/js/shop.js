@@ -916,6 +916,52 @@ jQuery(function($) {
         return $m;
     }
 
+    function loadCheckoutAsset(kind, href) {
+        return new Promise(function (resolve) {
+            if (!href) {
+                resolve();
+                return;
+            }
+            if (kind === 'style') {
+                if (document.querySelector('link[href="' + href + '"]')) {
+                    resolve();
+                    return;
+                }
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = href;
+                link.onload = resolve;
+                link.onerror = resolve;
+                document.head.appendChild(link);
+                return;
+            }
+            if (document.querySelector('script[src="' + href + '"]')) {
+                resolve();
+                return;
+            }
+            var script = document.createElement('script');
+            script.src = href;
+            script.onload = resolve;
+            script.onerror = resolve;
+            document.body.appendChild(script);
+        });
+    }
+
+    function ensureCheckoutAssets() {
+        if (window.hkdevCheckoutAssetsReady) {
+            return Promise.resolve();
+        }
+        var assets = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.assets) ? hkdev_elements_ajax.assets : {};
+        return Promise.all([
+            loadCheckoutAsset('style', assets.checkoutCss),
+            loadCheckoutAsset('style', assets.select2Css),
+            loadCheckoutAsset('script', assets.select2Js),
+            loadCheckoutAsset('script', assets.checkoutJs)
+        ]).then(function () {
+            window.hkdevCheckoutAssetsReady = true;
+        });
+    }
+
     function openCheckoutModal() {
         const $m = ensureCheckoutModal();
         $m.find('.hkdev-co-modal-body').html(
@@ -924,6 +970,7 @@ jQuery(function($) {
         $m.addClass('is-open');
         $('body').addClass('hkdev-co-modal-open');
 
+        ensureCheckoutAssets().then(function () {
         $.ajax({
             url: ajaxUrl,
             type: 'POST',
@@ -948,6 +995,7 @@ jQuery(function($) {
                     '<div class="hkdev-co-modal-loading">Could not load checkout. Please try again.</div>'
                 );
             }
+        });
         });
     }
 
