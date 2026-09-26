@@ -1129,11 +1129,25 @@ button.hkdev-order-btn{
     background: var(--hkdev-brand-primary) !important;
 }body.hkdev-vm-open{
     overflow: hidden !important;
-}/* WooCommerce auto-appends a "View cart" link after add-to-cart; hide it on cards and in the modal. */.hkdev-shop-wrapper .added_to_cart,
+}.hkdev-variation-modal.is-open{
+    display: flex !important;
+}/* WooCommerce auto-appends a "View cart" link after add-to-cart; hide it. */.hkdev-shop-wrapper .added_to_cart,
+.hkdev-shop-wrapper a.added_to_cart,
 .hkdev-shop-wrapper a.added_to_cart.wc-forward,
 .hkdev-product-card .added_to_cart,
-.hkdev-variation-modal .added_to_cart{
+.hkdev-product-card a.added_to_cart,
+.hkdev-action-group .added_to_cart,
+.hkdev-action-group a.wc-forward,
+.hkdev-variation-modal .added_to_cart,
+.hkdev-variation-modal a.added_to_cart.wc-forward{
     display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border: 0 !important;
+    visibility: hidden !important;
 }@media (max-width: 480px){.hkdev-variation-modal{
         padding: 14px !important;
     }.hkdev-vm-box{

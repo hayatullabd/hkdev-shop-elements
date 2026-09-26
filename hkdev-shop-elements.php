@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           1.1.1
+ * Version:           1.1.2
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '1.1.1' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.1.2' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -800,9 +800,6 @@ function hkdev_elements_async_fontawesome( $tag, $handle ) {
 	$async_handles = [
 		'hkdev-elements-fontawesome',
 		'hkdev-elements-font',
-		'hkdev-elements-shop-style',
-		'hkdev-elements-swiper-css',
-		'hkdev-elements-catalog-style',
 		'hkdev-elements-footer-style',
 		'hkdev-elements-reviews-style',
 		'hkdev-elements-video-style',
@@ -810,7 +807,6 @@ function hkdev_elements_async_fontawesome( $tag, $handle ) {
 		'hkdev-elements-policy-link-style',
 		'hkdev-elements-blog-style',
 		'hkdev-elements-auth-style',
-		'hkdev-elements-checkout-style',
 	];
 
 	if ( is_admin() || ! in_array( $handle, $async_handles, true ) ) {
@@ -902,21 +898,20 @@ function hkdev_elements_enqueue_buy_now_checkout_assets() {
 }
 
 /**
- * Load Buy Now checkout assets only on the real checkout page.
+ * Load Buy Now checkout assets whenever a shop listing script is present.
  *
- * Shop / home listings fetch checkout.css and checkout.js on the first
- * Buy Now click so those files do not block first paint.
+ * The checkout popup and its form JS need to be on the page before Buy Now
+ * is clicked. Lazy-loading them after add-to-cart left the modal unstyled
+ * and checkout.js never bound.
  *
  * @return void
  */
 function hkdev_elements_enqueue_buy_now_when_shop_js() {
-	if ( is_admin() ) {
+	if ( is_admin() || ! wp_script_is( 'hkdev-elements-shop-js', 'enqueued' ) ) {
 		return;
 	}
 
-	if ( function_exists( 'is_checkout' ) && ( is_checkout() || ( function_exists( 'is_wc_endpoint_url' ) && is_wc_endpoint_url( 'order-received' ) ) ) ) {
-		hkdev_elements_enqueue_buy_now_checkout_assets();
-	}
+	hkdev_elements_enqueue_buy_now_checkout_assets();
 }
 add_action( 'wp_enqueue_scripts', __NAMESPACE__ . '\\hkdev_elements_enqueue_buy_now_when_shop_js', 40 );
 

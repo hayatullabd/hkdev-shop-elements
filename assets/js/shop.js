@@ -729,7 +729,7 @@ jQuery(function($) {
 
     function vmClose($modal) {
         if (!$modal || !$modal.length) return;
-        $modal.hide();
+        $modal.removeClass('is-open').hide();
         $('body').removeClass('hkdev-vm-open');
     }
 
@@ -779,7 +779,7 @@ jQuery(function($) {
         $modal.attr('data-product-url', $btn.attr('data-product-url') || '');
         $modal.attr('data-checkout_url', $btn.attr('data-checkout_url') || checkoutPageUrl);
 
-        $modal.css('display', 'flex');
+        $modal.addClass('is-open').css('display', 'flex');
         $('body').addClass('hkdev-vm-open');
     });
 
@@ -913,6 +913,14 @@ jQuery(function($) {
             );
             $('body').append($m);
         }
+        $m.css({
+            display: 'flex',
+            position: 'fixed',
+            inset: '0',
+            zIndex: '999999',
+            alignItems: 'center',
+            justifyContent: 'center'
+        });
         return $m;
     }
 
@@ -967,7 +975,7 @@ jQuery(function($) {
         $m.find('.hkdev-co-modal-body').html(
             '<div class="hkdev-co-modal-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading checkout...</div>'
         );
-        $m.addClass('is-open');
+        $m.addClass('is-open').css('display', 'flex');
         $('body').addClass('hkdev-co-modal-open');
 
         ensureCheckoutAssets().then(function () {
@@ -1000,7 +1008,7 @@ jQuery(function($) {
     }
 
     function closeCheckoutModal() {
-        $('#hkdev-co-modal').removeClass('is-open');
+        $('#hkdev-co-modal').removeClass('is-open').css('display', 'none');
         $('body').removeClass('hkdev-co-modal-open');
     }
 
@@ -1095,12 +1103,14 @@ jQuery(function($) {
     });
 
     // Global Add to Cart Toast & Button state handler
+    function stripViewCartLinks() {
+        $('.hkdev-shop-wrapper .added_to_cart, .hkdev-product-card .added_to_cart, .hkdev-action-group .added_to_cart, .hkdev-variation-modal .added_to_cart, a.added_to_cart.wc-forward').remove();
+    }
+
     $(document.body).on('added_to_cart', function(e, f, h, $button) {
-        $('.added_to_cart').remove(); // Default woocommerce 'view cart' link remove
-        // WooCommerce add-to-cart.js may re-append the link after this handler.
-        setTimeout(function () {
-            $('.hkdev-shop-wrapper .added_to_cart, .hkdev-product-card .added_to_cart').remove();
-        }, 0);
+        stripViewCartLinks();
+        setTimeout(stripViewCartLinks, 0);
+        setTimeout(stripViewCartLinks, 250);
         
         // Show Toast Notification
         var $toast = $('#hkdev-toast-master');
