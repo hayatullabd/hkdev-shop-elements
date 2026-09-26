@@ -25,8 +25,9 @@ Standalone Elementor + WooCommerce widgets that work with **any** WordPress them
 
 ## Install
 
-This is **1.0.0** — a clean production tree. Delete the old plugin folder
-first, then install this zip. Do not overwrite an older 0.5.x copy in place.
+This is **1.1.0**. Update from 1.0.x via WP Admin → Plugins → Update Now, or
+install the release zip. For a first install from 0.5.x, delete the old plugin
+folder first — do not overwrite it in place.
 
 1. WP Admin → Plugins → deactivate and delete **HKDEV Shop Elements**.
 2. Download the `hkdev-shop-elements.zip` release asset (or build it with `scripts/build-release-zip.sh`).

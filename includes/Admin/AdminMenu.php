@@ -73,6 +73,7 @@ final class AdminMenu {
 			\HkdevShopElements\Includes\Admin\ContactFormOptions::SETTINGS_SLUG,
 			\HkdevShopElements\Includes\Admin\ReviewOptions::SETTINGS_SLUG,
 			\HkdevShopElements\Includes\Admin\WidgetOptions::SETTINGS_SLUG,
+			\HkdevShopElements\Includes\Admin\ColorThemeOptions::SETTINGS_SLUG,
 		];
 	}
 
@@ -117,6 +118,12 @@ final class AdminMenu {
 				'label' => esc_html__( 'Widget Manager', 'hkdev-shop-elements' ),
 				'icon'  => 'dashicons-screenoptions',
 				'page'  => \HkdevShopElements\Includes\Admin\WidgetOptions::SETTINGS_SLUG,
+				'gate'  => [],
+			],
+			'colors'   => [
+				'label' => esc_html__( 'Color Themes', 'hkdev-shop-elements' ),
+				'icon'  => 'dashicons-art',
+				'page'  => \HkdevShopElements\Includes\Admin\ColorThemeOptions::SETTINGS_SLUG,
 				'gate'  => [],
 			],
 		];

@@ -129,7 +129,6 @@ class GitHubUpdater {
 		add_filter( 'upgrader_pre_install', [ $this, 'remember_activation_before_install' ], 5, 2 );
 		add_filter( 'upgrader_post_install', [ $this, 'maybe_reactivate_after_install' ], 100, 2 );
 		add_action( 'upgrader_process_complete', [ $this, 'maybe_reactivate_after_update' ], 20, 2 );
-		add_filter( 'plugin_row_meta', [ $this, 'plugin_row_meta' ], 10, 4 );
 
 		// Priority 1: must run before core's _maybe_update_plugins() (priority
 		// 10), otherwise the forced re-check reads our still-cached release and
@@ -157,11 +156,14 @@ class GitHubUpdater {
 			return $transient;
 		}
 
+		$installed = $this->installed_version();
+		$latest    = $this->clean_version( $release['version'] );
+
 		$item = (object) [
 			'id'           => 'github.com/' . $this->repository,
 			'slug'         => $this->slug,
 			'plugin'       => $this->plugin_basename,
-			'new_version'  => $release['version'],
+			'new_version'  => $latest,
 			'url'          => $release['url'],
 			'package'      => $release['package'],
 			'requires'     => '6.0',
@@ -169,7 +171,7 @@ class GitHubUpdater {
 			'requires_php' => '7.4',
 		];
 
-		if ( version_compare( $release['version'], $this->version, '>' ) ) {
+		if ( version_compare( $latest, $installed, '>' ) ) {
 			$transient->response[ $this->plugin_basename ] = $item;
 			unset( $transient->no_update[ $this->plugin_basename ] );
 		} else {
@@ -219,43 +221,6 @@ class GitHubUpdater {
 				'changelog'   => $changelog,
 			],
 		];
-	}
-
-	/**
-	 * Add a "View details" link to the plugin row on the Plugins screen.
-	 *
-	 * WordPress only renders that modal link for wordpress.org-hosted plugins.
-	 * For this external plugin we append our own link so the GitHub release
-	 * notes (served by plugin_information above) open in the standard details
-	 * popup.
-	 *
-	 * @param string[] $plugin_meta Existing row meta links.
-	 * @param string   $plugin_file Plugin basename.
-	 * @param array    $plugin_data Plugin header data.
-	 * @param string   $status      Current list status.
-	 * @return string[]
-	 */
-	public function plugin_row_meta( $plugin_meta, $plugin_file, $plugin_data, $status ) {
-		if ( $plugin_file !== $this->plugin_basename ) {
-			return $plugin_meta;
-		}
-
-		$plugin_name = isset( $plugin_data['Name'] ) && '' !== $plugin_data['Name'] ? $plugin_data['Name'] : 'HKDEV Shop Elements';
-
-		$details_url = self_admin_url(
-			'plugin-install.php?tab=plugin-information&plugin=' . rawurlencode( $this->slug ) . '&section=changelog&TB_iframe=true&width=600&height=800'
-		);
-
-		$plugin_meta[] = sprintf(
-			'<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
-			esc_url( $details_url ),
-			/* translators: %s: Plugin name. */
-			esc_attr( sprintf( __( 'More information about %s', 'hkdev-shop-elements' ), $plugin_name ) ),
-			esc_attr( $plugin_name ),
-			esc_html__( 'View details', 'hkdev-shop-elements' )
-		);
-
-		return $plugin_meta;
 	}
 
 	/**
@@ -361,6 +326,7 @@ class GitHubUpdater {
 		}
 
 		$this->reactivate_if_needed();
+		$this->refresh_after_update();
 
 		return $response;
 	}
@@ -378,6 +344,7 @@ class GitHubUpdater {
 		}
 
 		$this->reactivate_if_needed();
+		$this->refresh_after_update();
 	}
 
 	/**
@@ -467,6 +434,44 @@ class GitHubUpdater {
 		if ( isset( $_GET['force-check'] ) ) {
 			delete_transient( $this->cache_key );
 		}
+	}
+
+	/**
+	 * Version currently on disk (not the value from the start of this request).
+	 *
+	 * After "Update Now" WordPress replaces the files, then rebuilds the
+	 * update transient in the same request. Using the constructor-time
+	 * constant would still look like the old version, so the notice comes
+	 * back and a second update is required.
+	 *
+	 * @return string
+	 */
+	private function installed_version() {
+		$this->ensure_plugin_functions_loaded();
+
+		if ( function_exists( 'get_plugin_data' ) && file_exists( $this->plugin_file ) ) {
+			$data = get_plugin_data( $this->plugin_file, false, false );
+			if ( ! empty( $data['Version'] ) ) {
+				return $this->clean_version( (string) $data['Version'] );
+			}
+		}
+
+		if ( defined( 'HKDEV_ELEMENTS_VERSION' ) ) {
+			return $this->clean_version( (string) HKDEV_ELEMENTS_VERSION );
+		}
+
+		return $this->clean_version( $this->version );
+	}
+
+	/**
+	 * Drop cached GitHub data after a successful update so the next check
+	 * compares against the files that just landed.
+	 *
+	 * @return void
+	 */
+	private function refresh_after_update() {
+		delete_transient( $this->cache_key );
+		$this->version = $this->installed_version();
 	}
 
 	/* ---------------------------------------------------------------------

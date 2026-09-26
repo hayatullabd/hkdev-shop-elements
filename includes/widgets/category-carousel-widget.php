@@ -620,17 +620,26 @@ class CategoryCarouselWidget extends Widget_Base {
 			]
 		);
 
+		$theme_options = class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+			? \HkdevShopElements\Includes\Core\ColorTheme::select_options()
+			: [
+				'green'      => esc_html__( 'Green (Default)', 'hkdev-shop-elements' ),
+				'orange'     => esc_html__( 'Orange', 'hkdev-shop-elements' ),
+				'monochrome' => esc_html__( 'Monochrome', 'hkdev-shop-elements' ),
+			];
+
 		$this->add_control(
 			'card_theme',
 			[
-				'label'   => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'green',
-				'options' => [
-					'green'      => esc_html__( 'Green (Default)', 'hkdev-shop-elements' ),
-					'orange'     => esc_html__( 'Orange', 'hkdev-shop-elements' ),
-					'monochrome' => esc_html__( 'Monochrome', 'hkdev-shop-elements' ),
-				],
+				'label'       => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'green',
+				'options'     => $theme_options,
+				'description' => sprintf(
+					/* translators: %s: Color Themes admin URL */
+					esc_html__( 'Add custom presets in %s.', 'hkdev-shop-elements' ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=hkdev-shop-elements-colors' ) ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'WP Admin → Color Themes', 'hkdev-shop-elements' ) . '</a>'
+				),
 			]
 		);
 
@@ -1311,10 +1320,15 @@ class CategoryCarouselWidget extends Widget_Base {
 		$font_family = isset( $settings['font_family'] ) ? sanitize_key( (string) $settings['font_family'] ) : 'hind_siliguri';
 		$font_mode   = isset( $settings['font_mode'] ) ? sanitize_key( (string) $settings['font_mode'] ) : 'single';
 		$font_latin  = isset( $settings['font_family_latin'] ) ? sanitize_key( (string) $settings['font_family_latin'] ) : 'system_sans';
-		if ( ! in_array( $card_theme, [ 'green', 'orange', 'monochrome' ], true ) ) {
+		if ( class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' ) ) {
+			$card_theme = \HkdevShopElements\Includes\Core\ColorTheme::sanitize( $card_theme );
+		} elseif ( ! in_array( $card_theme, [ 'green', 'orange', 'monochrome' ], true ) ) {
 			$card_theme = 'green';
 		}
 		$grid_style  = \HkdevShopElements\Includes\Core\ShopEngine::instance()->grid_columns_style_attr( $cols['mobile'], $cols['tablet'], $cols['desktop'] );
+		if ( class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' ) ) {
+			$grid_style .= \HkdevShopElements\Includes\Core\ColorTheme::tokens_css( $card_theme );
+		}
 		$grid_style .= '--hkdev-font:' . \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $font_family ) . ';';
 		$grid_style .= '--hkdev-font-bn:' . \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $font_family ) . ';';
 		$grid_style .= '--hkdev-font-en:' . \HkdevShopElements\Includes\Core\ShopEngine::widget_font_stack( $font_latin ) . ';';

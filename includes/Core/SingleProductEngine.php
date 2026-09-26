@@ -578,7 +578,9 @@ class SingleProductEngine {
 		$css       .= '--sp-font-en:' . $font_latin . ';';
 		$css       .= '--hkdev-font:' . $font_stack . ';';
 
-		if ( 'orange' === $design['card_theme'] ) {
+		if ( class_exists( __NAMESPACE__ . '\\ColorTheme' ) ) {
+			$css .= ColorTheme::tokens_css( $design['card_theme'], [ 'hkdev', 'sp' ] );
+		} elseif ( 'orange' === $design['card_theme'] ) {
 			$css .= '--sp-brand-primary:#f06724;--sp-brand-secondary:#03a550;--sp-brand-info:#c45822;--sp-brand-accent:#f06724;--sp-hover-border:rgba(240,103,36,0.28);';
 		} elseif ( 'monochrome' === $design['card_theme'] ) {
 			$css .= '--sp-brand-primary:#222222;--sp-brand-secondary:#4a4a4a;--sp-brand-info:#3a3a3a;--sp-brand-accent:#2f2f2f;--sp-page-bg:#f3f3f3;--sp-bg-soft:#f3f3f3;--sp-text-color:#1d1d1d;--sp-text-muted:#666666;';

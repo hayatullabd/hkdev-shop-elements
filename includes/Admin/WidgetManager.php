@@ -47,7 +47,9 @@ final class WidgetManager {
 	public function init() {
 		add_action( 'elementor/elements/categories_registered', [ $this, 'register_category' ] );
 		add_action( 'elementor/widgets/register', [ $this, 'register_widgets' ] );
+		add_action( 'elementor/element/after_section_end', [ $this, 'register_global_color_theme_controls' ], 15, 3 );
 		add_action( 'elementor/element/after_section_end', [ $this, 'register_global_finetune_controls' ], 20, 3 );
+		add_action( 'elementor/frontend/widget/before_render', [ $this, 'apply_color_theme_to_widget' ] );
 	}
 
 	/**
@@ -422,6 +424,138 @@ final class WidgetManager {
 				);
 			}
 		}
+	}
+
+	/**
+	 * Widgets that already register a Color Theme control as `card_theme`.
+	 *
+	 * @return string[]
+	 */
+	private function widgets_with_native_color_theme() {
+		return [
+			'hkdev_shop_grid',
+			'hkdev_shop_carousel',
+			'hkdev_single_product',
+			'hkdev_related_products',
+			'hkdev_catalog',
+			'hkdev_category_carousel',
+			'hkdev_category_grid',
+		];
+	}
+
+	/**
+	 * Whether this Elementor element is an HKDEV widget.
+	 *
+	 * @param mixed $element Elementor element.
+	 * @return bool
+	 */
+	private function is_hkdev_widget( $element ) {
+		if ( ! is_object( $element ) || ! method_exists( $element, 'get_categories' ) ) {
+			return false;
+		}
+
+		$cats = $element->get_categories();
+		return is_array( $cats ) && in_array( 'hkdev-shop-elements', $cats, true );
+	}
+
+	/**
+	 * Inject Color Theme into widgets that do not already have `card_theme`.
+	 *
+	 * @param \Elementor\Element_Base $element    Elementor element.
+	 * @param string                  $section_id Ended section id.
+	 * @param array                   $args       Section args.
+	 * @return void
+	 */
+	public function register_global_color_theme_controls( $element, $section_id, $args ) {
+		if ( ! class_exists( '\Elementor\Controls_Manager' ) ) {
+			return;
+		}
+
+		if ( ! $this->is_hkdev_widget( $element ) ) {
+			return;
+		}
+
+		if ( method_exists( $element, 'get_name' ) && in_array( $element->get_name(), $this->widgets_with_native_color_theme(), true ) ) {
+			return;
+		}
+
+		if ( method_exists( $element, 'get_controls' ) ) {
+			$controls = $element->get_controls();
+			if ( isset( $controls['hkdev_color_theme'] ) || isset( $controls['card_theme'] ) ) {
+				return;
+			}
+		}
+
+		$tab = is_array( $args ) && isset( $args['tab'] ) ? $args['tab'] : '';
+		if ( 'section_advanced' === $section_id || Controls_Manager::TAB_ADVANCED === $tab ) {
+			return;
+		}
+
+		if ( $tab && Controls_Manager::TAB_CONTENT !== $tab && Controls_Manager::TAB_STYLE !== $tab ) {
+			return;
+		}
+
+		$themes = class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+			? \HkdevShopElements\Includes\Core\ColorTheme::select_options()
+			: [
+				'green'      => esc_html__( 'Green (Default)', 'hkdev-shop-elements' ),
+				'orange'     => esc_html__( 'Orange', 'hkdev-shop-elements' ),
+				'monochrome' => esc_html__( 'Monochrome', 'hkdev-shop-elements' ),
+			];
+
+		$element->start_controls_section(
+			'hkdev_color_theme_section',
+			[
+				'label' => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'tab'   => Controls_Manager::TAB_CONTENT,
+			]
+		);
+
+		$element->add_control(
+			'hkdev_color_theme',
+			[
+				'label'       => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'green',
+				'options'     => $themes,
+				'description' => sprintf(
+					/* translators: %s: Color Themes admin URL */
+					esc_html__( 'Add custom presets in %s.', 'hkdev-shop-elements' ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=hkdev-shop-elements-colors' ) ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'WP Admin → Color Themes', 'hkdev-shop-elements' ) . '</a>'
+				),
+			]
+		);
+
+		$element->end_controls_section();
+	}
+
+	/**
+	 * Apply the selected color theme on the Elementor widget wrapper.
+	 *
+	 * @param \Elementor\Widget_Base $widget Widget instance.
+	 * @return void
+	 */
+	public function apply_color_theme_to_widget( $widget ) {
+		if ( ! $this->is_hkdev_widget( $widget ) ) {
+			return;
+		}
+
+		$settings = method_exists( $widget, 'get_settings_for_display' ) ? $widget->get_settings_for_display() : [];
+		$theme    = '';
+
+		if ( ! empty( $settings['card_theme'] ) ) {
+			$theme = (string) $settings['card_theme'];
+		} elseif ( ! empty( $settings['hkdev_color_theme'] ) ) {
+			$theme = (string) $settings['hkdev_color_theme'];
+		}
+
+		if ( ! class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' ) ) {
+			$theme = in_array( $theme, [ 'green', 'orange', 'monochrome' ], true ) ? $theme : 'green';
+		} else {
+			$theme = \HkdevShopElements\Includes\Core\ColorTheme::sanitize( $theme );
+		}
+
+		$widget->add_render_attribute( '_wrapper', 'data-card-theme', $theme );
 	}
 
 	/**

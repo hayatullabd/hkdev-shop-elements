@@ -88,17 +88,26 @@ trait Product_Controls {
 			]
 		);
 
+		$theme_options = class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+			? \HkdevShopElements\Includes\Core\ColorTheme::select_options()
+			: [
+				'green'      => esc_html__( 'Green (Default)', 'hkdev-shop-elements' ),
+				'orange'     => esc_html__( 'Orange', 'hkdev-shop-elements' ),
+				'monochrome' => esc_html__( 'Monochrome', 'hkdev-shop-elements' ),
+			];
+
 		$this->add_control(
 			'card_theme',
 			[
-				'label'   => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
-				'type'    => Controls_Manager::SELECT,
-				'default' => 'green',
-				'options' => [
-					'green'      => esc_html__( 'Green (Default)', 'hkdev-shop-elements' ),
-					'orange'     => esc_html__( 'Orange', 'hkdev-shop-elements' ),
-					'monochrome' => esc_html__( 'Monochrome', 'hkdev-shop-elements' ),
-				],
+				'label'       => esc_html__( 'Color Theme', 'hkdev-shop-elements' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'green',
+				'options'     => $theme_options,
+				'description' => sprintf(
+					/* translators: %s: Color Themes admin URL */
+					esc_html__( 'Add custom presets in %s.', 'hkdev-shop-elements' ),
+					'<a href="' . esc_url( admin_url( 'admin.php?page=hkdev-shop-elements-colors' ) ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'WP Admin → Color Themes', 'hkdev-shop-elements' ) . '</a>'
+				),
 			]
 		);
 
@@ -149,7 +158,9 @@ trait Product_Controls {
 			'font_family'       => isset( $settings['font_family'] ) ? sanitize_key( $settings['font_family'] ) : 'hind_siliguri',
 			'font_family_latin' => isset( $settings['font_family_latin'] ) ? sanitize_key( $settings['font_family_latin'] ) : 'system_sans',
 			'card_preset'       => isset( $settings['card_preset'] ) ? sanitize_key( $settings['card_preset'] ) : 'clean',
-			'card_theme'        => isset( $settings['card_theme'] ) ? sanitize_key( $settings['card_theme'] ) : 'green',
+			'card_theme'        => class_exists( '\HkdevShopElements\Includes\Core\ColorTheme' )
+				? \HkdevShopElements\Includes\Core\ColorTheme::sanitize( isset( $settings['card_theme'] ) ? $settings['card_theme'] : 'green' )
+				: ( isset( $settings['card_theme'] ) ? sanitize_key( $settings['card_theme'] ) : 'green' ),
 		];
 	}
 

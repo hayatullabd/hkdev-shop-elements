@@ -225,7 +225,29 @@
         if (!$.fn.wpColorPicker) {
             return;
         }
-        $('.hkdev-color-input').wpColorPicker();
+
+        $('.hkdev-color-input').each(function () {
+            var $input = $(this);
+            if ($input.data('hkdevColorReady')) {
+                return;
+            }
+            $input.data('hkdevColorReady', true);
+            $input.wpColorPicker({
+                change: function (event, ui) {
+                    var hex = ui.color.toString();
+                    var key = $input.closest('[data-color-key]').data('color-key');
+                    if (key) {
+                        $('.hkdev-theme-live-swatch[data-color-key="' + key + '"]').css('background-color', hex);
+                    }
+                },
+                clear: function () {
+                    var key = $input.closest('[data-color-key]').data('color-key');
+                    if (key) {
+                        $('.hkdev-theme-live-swatch[data-color-key="' + key + '"]').css('background-color', 'transparent');
+                    }
+                }
+            });
+        });
     }
 
     /**

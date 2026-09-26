@@ -1180,7 +1180,9 @@ class ShopEngine {
 		if ( ! in_array( $preset, [ 'clean', 'compact', 'premium', 'minimal', 'bold', 'classic' ], true ) ) {
 			$preset = 'clean';
 		}
-		if ( ! in_array( $theme, [ 'green', 'orange', 'monochrome' ], true ) ) {
+		if ( class_exists( __NAMESPACE__ . '\\ColorTheme' ) ) {
+			$theme = ColorTheme::sanitize( $theme );
+		} elseif ( ! in_array( $theme, [ 'green', 'orange', 'monochrome' ], true ) ) {
 			$theme = 'green';
 		}
 
@@ -1262,7 +1264,9 @@ class ShopEngine {
 		$css       .= '--hkdev-font-bn:' . $font_stack . ';';
 		$css       .= '--hkdev-font-en:' . $font_latin . ';';
 
-		if ( 'orange' === $design['card_theme'] ) {
+		if ( class_exists( __NAMESPACE__ . '\\ColorTheme' ) ) {
+			$css .= ColorTheme::tokens_css( $design['card_theme'] );
+		} elseif ( 'orange' === $design['card_theme'] ) {
 			$css .= '--hkdev-brand-primary:#f06724;--hkdev-brand-secondary:#03a550;--hkdev-brand-info:#c45822;--hkdev-brand-accent:#f06724;';
 		} elseif ( 'monochrome' === $design['card_theme'] ) {
 			$css .= '--hkdev-brand-primary:#222222;--hkdev-brand-secondary:#4a4a4a;--hkdev-brand-info:#3a3a3a;--hkdev-brand-accent:#2f2f2f;--hkdev-text-color:#1d1d1d;--hkdev-text-muted:#666666;';

@@ -415,12 +415,58 @@
 }.hkdev-shop-wrapper[data-card-preset="classic"] .hkdev-order-btn{
     height: 40px !important;
     font-size: 13px !important;
+}[data-card-theme="orange"]{
+    --hkdev-brand-primary: #f06724;
+    --hkdev-brand-secondary: #03a550;
+    --hkdev-brand-info: #c45822;
+    --hkdev-brand-accent: #f06724;
+    --hkdev-hover-border: rgba(240, 103, 36, 0.28);
+    --hkdev-brand-hover: #c45822;
+    --hkdev-brand-light: rgba(240, 103, 36, 0.10);
+    --sp-brand-primary: #f06724;
+    --sp-brand-secondary: #03a550;
+    --sp-brand-info: #c45822;
+    --sp-brand-accent: #f06724;
+    --sp-hover-border: rgba(240, 103, 36, 0.28);
+    --hd-primary: #f06724;
+    --hd-primary-dark: #c45822;
+    --hd-secondary: #03a550;
+    --brand-primary: #f06724;
+    --brand-hover: #c45822;
+    --hkcat-primary: #f06724;
+    --hkcat-primary-dark: #c45822;
 }.hkdev-shop-wrapper[data-card-theme="orange"]{
     --hkdev-brand-primary: #f06724;
     --hkdev-brand-secondary: #03a550;
     --hkdev-brand-info: #c45822;
     --hkdev-brand-accent: #f06724;
     --hkdev-hover-border: rgba(240, 103, 36, 0.28);
+}[data-card-theme="monochrome"]{
+    --hkdev-brand-primary: #222222;
+    --hkdev-brand-secondary: #4a4a4a;
+    --hkdev-brand-info: #3a3a3a;
+    --hkdev-brand-accent: #2f2f2f;
+    --hkdev-hover-border: rgba(0, 0, 0, 0.20);
+    --hkdev-bg-soft: #f3f3f3;
+    --hkdev-text-color: #1d1d1d;
+    --hkdev-text-muted: #666666;
+    --hkdev-brand-hover: #111111;
+    --hkdev-brand-light: rgba(34, 34, 34, 0.10);
+    --sp-brand-primary: #222222;
+    --sp-brand-secondary: #4a4a4a;
+    --sp-brand-info: #3a3a3a;
+    --sp-brand-accent: #2f2f2f;
+    --sp-page-bg: #f3f3f3;
+    --sp-bg-soft: #f3f3f3;
+    --sp-text-color: #1d1d1d;
+    --sp-text-muted: #666666;
+    --hd-primary: #222222;
+    --hd-primary-dark: #111111;
+    --hd-secondary: #4a4a4a;
+    --brand-primary: #222222;
+    --brand-hover: #111111;
+    --hkcat-primary: #222222;
+    --hkcat-primary-dark: #111111;
 }.hkdev-shop-wrapper[data-card-theme="monochrome"]{
     --hkdev-brand-primary: #222222;
     --hkdev-brand-secondary: #4a4a4a;
