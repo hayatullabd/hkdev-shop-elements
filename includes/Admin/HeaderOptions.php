@@ -172,6 +172,7 @@ final class HeaderOptions {
 				'float_cart_pos'   => $choice( 'hkdev_hd_float_cart_pos', [ 'middle', 'top', 'bottom', 'custom' ], 'middle' ),
 				'float_cart_anchor' => $choice( 'hkdev_hd_float_cart_anchor', [ 'top', 'bottom' ], 'top' ),
 				'float_cart_offset' => isset( $_POST['hkdev_hd_float_cart_offset'] ) ? absint( wp_unslash( $_POST['hkdev_hd_float_cart_offset'] ) ) : 120, // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				'float_cart_customer' => $yes_no( 'hkdev_hd_float_cart_customer' ),
 
 				// ---- Appearance ----
 				'st_font'          => $font_stack( 'hkdev_hd_st_font' ),
@@ -622,6 +623,19 @@ final class HeaderOptions {
 									</div>
 									<div class="hd-field-input">
 										<input type="number" class="hd-compact" id="hkdev-hd-float-cart-offset" name="hkdev_hd_float_cart_offset" value="<?php echo esc_attr( absint( $config['float_cart_offset'] ) ); ?>" min="1" max="1200">
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
+										<span class="hd-field-title"><?php esc_html_e( 'Customers Can Hide & Move', 'hkdev-shop-elements' ); ?></span>
+										<p class="hd-field-help"><?php esc_html_e( 'Let shoppers hide the button or drag it to a new spot. Their choice is saved in the browser.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input">
+										<label class="hd-switch">
+											<input type="checkbox" name="hkdev_hd_float_cart_customer" value="yes" <?php checked( 'yes', $config['float_cart_customer'] ); ?>>
+											<span class="hd-switch-track" aria-hidden="true"></span>
+										</label>
 									</div>
 								</div>
 

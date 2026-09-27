@@ -295,6 +295,7 @@
 
 			$btn.find('.hkdev-float-cart-count').text(label.replace('%d', count));
 			$btn.toggleClass('is-empty', count < 1);
+			$btn.closest('.hkdev-float-cart-wrap').toggleClass('is-empty', count < 1);
 
 			if ('undefined' !== typeof total) {
 				$btn.find('.hkdev-float-cart-total').html(total);
@@ -354,7 +355,15 @@
 			refreshMiniCart({ qty_key: key, qty_value: qty });
 		}
 
+		var floatCartJustDragged = false;
+
 		$(document).on('click', '.hkdev-header-cart, .hkdev-float-cart', function (e) {
+			if ($(this).hasClass('hkdev-float-cart') && floatCartJustDragged) {
+				e.preventDefault();
+				floatCartJustDragged = false;
+				return;
+			}
+
 			if ('1' !== $(this).attr('data-mini-cart')) {
 				return;
 			}
@@ -821,5 +830,171 @@
 			measureTopbar();
 			applyScroll();
 		}
+
+		(function initFloatCartCustomer() {
+			var $wrap = $('.hkdev-float-cart-wrap').first();
+			var $restore = $('.hkdev-float-cart-restore').first();
+			var storageKey = 'hkdevFloatCart';
+			var dragging = false;
+			var moved = false;
+			var startX = 0;
+			var startY = 0;
+			var startTop = 0;
+
+			if (!$wrap.length || '1' !== $wrap.attr('data-customer')) {
+				return;
+			}
+
+			function loadState() {
+				try {
+					var raw = window.localStorage.getItem(storageKey);
+					return raw ? JSON.parse(raw) : {};
+				} catch (err) {
+					return {};
+				}
+			}
+
+			function normalize(raw) {
+				return {
+					hidden: !!(raw && raw.hidden),
+					top: raw && typeof raw.top === 'number' ? raw.top : null,
+					edge: raw && raw.edge === 'left' ? 'left' : 'right'
+				};
+			}
+
+			function saveState(next) {
+				try {
+					window.localStorage.setItem(storageKey, JSON.stringify(next));
+				} catch (err) {}
+			}
+
+			function clampTop(top) {
+				var height = $wrap.outerHeight() || 80;
+				var max = Math.max(8, window.innerHeight - height - 8);
+
+				return Math.max(8, Math.min(max, top));
+			}
+
+			function applyState(state) {
+				var defaults = $wrap.attr('data-default-style') || '';
+
+				$wrap.toggleClass('is-hidden', !!state.hidden);
+
+				if (state.hidden) {
+					$restore.removeAttr('hidden');
+				} else {
+					$restore.attr('hidden', 'hidden');
+				}
+
+				if (null === state.top) {
+					$wrap.removeClass('is-moved').removeAttr('data-edge').attr('style', defaults);
+					$restore.removeAttr('data-edge').attr('style', '');
+					return;
+				}
+
+				var top = clampTop(state.top);
+				var movedStyle = 'top:' + top + 'px !important;bottom:auto !important;transform:none !important;';
+
+				$wrap.addClass('is-moved').attr('data-edge', state.edge).attr('style', defaults + movedStyle);
+				$restore.attr('data-edge', state.edge).attr('style', movedStyle);
+			}
+
+			function persist(partial) {
+				var next = $.extend(normalize(loadState()), partial);
+
+				saveState(next);
+				applyState(next);
+			}
+
+			applyState(normalize(loadState()));
+
+			$wrap.on('click', '.hkdev-float-cart-hide', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				persist({ hidden: true });
+			});
+
+			$restore.on('click', function (e) {
+				e.preventDefault();
+				persist({ hidden: false });
+			});
+
+			$wrap.on('pointerdown', function (e) {
+				if ($(e.target).closest('.hkdev-float-cart-hide').length) {
+					return;
+				}
+
+				if ('mouse' === e.pointerType && 0 !== e.button) {
+					return;
+				}
+
+				dragging = true;
+				moved = false;
+				startX = e.clientX;
+				startY = e.clientY;
+				startTop = $wrap[0].getBoundingClientRect().top;
+				$wrap.addClass('is-dragging');
+
+				try {
+					this.setPointerCapture(e.pointerId);
+				} catch (err) {}
+			});
+
+			$wrap.on('pointermove', function (e) {
+				if (!dragging) {
+					return;
+				}
+
+				var dx = e.clientX - startX;
+				var dy = e.clientY - startY;
+
+				if (!moved && Math.abs(dx) < 6 && Math.abs(dy) < 6) {
+					return;
+				}
+
+				moved = true;
+				floatCartJustDragged = true;
+				e.preventDefault();
+
+				var top = clampTop(startTop + dy);
+				var edge = e.clientX < window.innerWidth / 2 ? 'left' : 'right';
+
+				$wrap.addClass('is-moved').attr('data-edge', edge).attr(
+					'style',
+					($wrap.attr('data-default-style') || '') +
+					'top:' + top + 'px !important;bottom:auto !important;transform:none !important;'
+				);
+			});
+
+			function endDrag() {
+				if (!dragging) {
+					return;
+				}
+
+				dragging = false;
+				$wrap.removeClass('is-dragging');
+
+				if (!moved) {
+					return;
+				}
+
+				var rect = $wrap[0].getBoundingClientRect();
+
+				persist({
+					top: Math.round(rect.top),
+					edge: 'left' === $wrap.attr('data-edge') ? 'left' : 'right'
+				});
+			}
+
+			$wrap.on('pointerup pointercancel', endDrag);
+
+			$(window).on('resize', function () {
+				var state = normalize(loadState());
+
+				if (null !== state.top) {
+					applyState(state);
+				}
+			});
+		})();
 	});
 })(jQuery);

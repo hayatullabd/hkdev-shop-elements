@@ -125,6 +125,7 @@ class HeaderEngine {
 			'float_cart_pos'   => 'middle',
 			'float_cart_anchor' => 'top',
 			'float_cart_offset' => 120,
+			'float_cart_customer' => 'yes',
 
 			// ---- Appearance (edited from the Header admin → Appearance) ----
 			// Empty/0 means "keep the plugin default". Size values are per device:
@@ -936,6 +937,9 @@ class HeaderEngine {
 			$offset = 120;
 		}
 
+		$customer = ( 'yes' === ( isset( $config['float_cart_customer'] ) ? $config['float_cart_customer'] : 'yes' ) );
+		$empty_class = $count ? '' : ' is-empty';
+
 		$float_cart_inline_style = '--hkdev-float-cart-offset:' . $offset . 'px;';
 		if ( 'middle' === $float_pos ) {
 			$float_cart_inline_style .= 'top:50% !important;bottom:auto !important;transform:translateY(-50%) !important;';
@@ -949,30 +953,47 @@ class HeaderEngine {
 			echo $this->mini_cart_drawer_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		}
 		?>
-		<a
-			class="hkdev-float-cart<?php echo $count ? '' : ' is-empty'; ?>"
-			href="<?php echo esc_url( wc_get_cart_url() ); ?>"
-			data-mini-cart="<?php echo ( 'yes' === $config['mini_cart'] ) ? '1' : '0'; ?>"
+		<div
+			class="hkdev-float-cart-wrap<?php echo esc_attr( $empty_class ); ?>"
 			data-hide-empty="<?php echo esc_attr( $hide_empty ); ?>"
 			data-pos="<?php echo esc_attr( $float_pos ); ?>"
 			data-custom-anchor="<?php echo esc_attr( $anchor ); ?>"
+			data-default-style="<?php echo esc_attr( $float_cart_inline_style ); ?>"
+			<?php echo $customer ? ' data-customer="1"' : ''; ?>
 			style="<?php echo esc_attr( $float_cart_inline_style ); ?>"
-			aria-label="<?php esc_attr_e( 'Cart', 'hkdev-shop-elements' ); ?>"
 		>
-			<span class="hkdev-float-cart-top">
-				<i class="fa-solid fa-cart-shopping"></i>
-				<span class="hkdev-float-cart-count">
-					<?php
-					printf(
-						/* translators: %d: number of cart items */
-						esc_html( _n( '%d Item', '%d Items', $count, 'hkdev-shop-elements' ) ),
-						(int) $count
-					);
-					?>
+			<?php if ( $customer ) : ?>
+			<button type="button" class="hkdev-float-cart-hide" aria-label="<?php esc_attr_e( 'Hide floating cart', 'hkdev-shop-elements' ); ?>">
+				<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+			</button>
+			<?php endif; ?>
+			<a
+				class="hkdev-float-cart"
+				href="<?php echo esc_url( wc_get_cart_url() ); ?>"
+				data-mini-cart="<?php echo ( 'yes' === $config['mini_cart'] ) ? '1' : '0'; ?>"
+				aria-label="<?php esc_attr_e( 'Cart', 'hkdev-shop-elements' ); ?>"
+			>
+				<span class="hkdev-float-cart-top">
+					<i class="fa-solid fa-cart-shopping"></i>
+					<span class="hkdev-float-cart-count">
+						<?php
+						printf(
+							/* translators: %d: number of cart items */
+							esc_html( _n( '%d Item', '%d Items', $count, 'hkdev-shop-elements' ) ),
+							(int) $count
+						);
+						?>
+					</span>
 				</span>
-			</span>
-			<span class="hkdev-float-cart-total"><?php echo wp_kses_post( $cart->get_cart_subtotal() ); ?></span>
-		</a>
+				<span class="hkdev-float-cart-total"><?php echo wp_kses_post( $cart->get_cart_subtotal() ); ?></span>
+			</a>
+		</div>
+		<?php if ( $customer ) : ?>
+		<button type="button" class="hkdev-float-cart-restore" hidden
+			aria-label="<?php esc_attr_e( 'Show floating cart', 'hkdev-shop-elements' ); ?>">
+			<i class="fa-solid fa-cart-shopping" aria-hidden="true"></i>
+		</button>
+		<?php endif; ?>
 		<?php
 	}
 	/**
