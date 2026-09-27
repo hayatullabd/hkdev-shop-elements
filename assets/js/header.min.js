@@ -356,11 +356,32 @@
 		}
 
 		var floatCartJustDragged = false;
+		var floatCartOpenedByPointer = false;
+
+		function openFloatCartFromButton($btn) {
+			if (!$btn || !$btn.length) {
+				return;
+			}
+
+			if ('1' !== $btn.attr('data-mini-cart')) {
+				var href = $btn.attr('href');
+
+				if (href) {
+					window.location.href = href;
+				}
+
+				return;
+			}
+
+			openMiniCart();
+			refreshMiniCart();
+		}
 
 		$(document).on('click', '.hkdev-header-cart, .hkdev-float-cart', function (e) {
-			if ($(this).hasClass('hkdev-float-cart') && floatCartJustDragged) {
+			if ($(this).hasClass('hkdev-float-cart') && (floatCartJustDragged || floatCartOpenedByPointer)) {
 				e.preventDefault();
 				floatCartJustDragged = false;
+				floatCartOpenedByPointer = false;
 				return;
 			}
 
@@ -834,16 +855,24 @@
 		(function initFloatCartCustomer() {
 			var $wrap = $('.hkdev-float-cart-wrap').first();
 			var $restore = $('.hkdev-float-cart-restore').first();
+			var $link = $wrap.find('.hkdev-float-cart').first();
+			var wrapEl = $wrap[0];
 			var storageKey = 'hkdevFloatCart';
 			var dragging = false;
 			var moved = false;
 			var startX = 0;
 			var startY = 0;
+			var startLeft = 0;
 			var startTop = 0;
+			var pointerId = null;
+			var inputType = 'mouse';
+			var hasPointer = 'PointerEvent' in window;
 
-			if (!$wrap.length || '1' !== $wrap.attr('data-customer')) {
+			if (!$wrap.length || '1' !== $wrap.attr('data-customer') || !wrapEl) {
 				return;
 			}
+
+			$link.attr('draggable', 'false');
 
 			function loadState() {
 				try {
@@ -854,11 +883,44 @@
 				}
 			}
 
+			function viewSize() {
+				var view = window.visualViewport;
+
+				if (view && view.width && view.height) {
+					return { w: view.width, h: view.height };
+				}
+
+				return { w: window.innerWidth, h: window.innerHeight };
+			}
+
+			function pads() {
+				var coarse = window.matchMedia('(pointer: coarse)').matches || 'touch' === inputType;
+
+				return {
+					x: 8,
+					top: coarse ? 12 : 8,
+					bottom: coarse ? 24 : 8
+				};
+			}
+
+			function defaultLeft() {
+				return Math.max(pads().x, viewSize().w - ($wrap.outerWidth() || 96) - pads().x);
+			}
+
 			function normalize(raw) {
+				var top = raw && typeof raw.top === 'number' ? raw.top : null;
+				var left = null;
+
+				if (raw && typeof raw.left === 'number') {
+					left = raw.left;
+				} else if (null !== top) {
+					left = raw && raw.edge === 'left' ? pads().x : defaultLeft();
+				}
+
 				return {
 					hidden: !!(raw && raw.hidden),
-					top: raw && typeof raw.top === 'number' ? raw.top : null,
-					edge: raw && raw.edge === 'left' ? 'left' : 'right'
+					top: top,
+					left: left
 				};
 			}
 
@@ -869,10 +931,23 @@
 			}
 
 			function clampTop(top) {
+				var space = pads();
 				var height = $wrap.outerHeight() || 80;
-				var max = Math.max(8, window.innerHeight - height - 8);
+				var max = Math.max(space.top, viewSize().h - height - space.bottom);
 
-				return Math.max(8, Math.min(max, top));
+				return Math.max(space.top, Math.min(max, top));
+			}
+
+			function clampLeft(left) {
+				var space = pads();
+				var width = $wrap.outerWidth() || 96;
+				var max = Math.max(space.x, viewSize().w - width - space.x);
+
+				return Math.max(space.x, Math.min(max, left));
+			}
+
+			function movedStyle(left, top) {
+				return 'top:' + top + 'px !important;left:' + left + 'px !important;right:auto !important;bottom:auto !important;transform:none !important;';
 			}
 
 			function applyState(state) {
@@ -886,17 +961,18 @@
 					$restore.attr('hidden', 'hidden');
 				}
 
-				if (null === state.top) {
-					$wrap.removeClass('is-moved').removeAttr('data-edge').attr('style', defaults);
-					$restore.removeAttr('data-edge').attr('style', '');
+				if (null === state.top || null === state.left) {
+					$wrap.removeClass('is-moved').attr('style', defaults);
+					$restore.removeClass('is-moved').attr('style', '');
 					return;
 				}
 
 				var top = clampTop(state.top);
-				var movedStyle = 'top:' + top + 'px !important;bottom:auto !important;transform:none !important;';
+				var left = clampLeft(state.left);
+				var style = movedStyle(left, top);
 
-				$wrap.addClass('is-moved').attr('data-edge', state.edge).attr('style', defaults + movedStyle);
-				$restore.attr('data-edge', state.edge).attr('style', movedStyle);
+				$wrap.addClass('is-moved').attr('style', defaults + style);
+				$restore.addClass('is-moved').attr('style', style);
 			}
 
 			function persist(partial) {
@@ -904,6 +980,133 @@
 
 				saveState(next);
 				applyState(next);
+			}
+
+			function eventPoint(e) {
+				var touch = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]);
+
+				if (touch) {
+					return { x: touch.clientX, y: touch.clientY };
+				}
+
+				return { x: e.clientX, y: e.clientY };
+			}
+
+			function isHideTarget(target) {
+				return $(target).closest('.hkdev-float-cart-hide, .hkdev-float-cart-restore').length > 0;
+			}
+
+			function dragThreshold() {
+				return 'mouse' === inputType ? 6 : 12;
+			}
+
+			function beginDrag(e) {
+				if (isHideTarget(e.target)) {
+					return;
+				}
+
+				if ('mouse' === (e.pointerType || inputType) && 'button' in e && 0 !== e.button) {
+					return;
+				}
+
+				var point = eventPoint(e);
+				var rect = wrapEl.getBoundingClientRect();
+
+				dragging = true;
+				moved = false;
+				pointerId = 'pointerId' in e ? e.pointerId : 1;
+				inputType = e.pointerType || ((e.touches && e.touches.length) ? 'touch' : 'mouse');
+				startX = point.x;
+				startY = point.y;
+				startLeft = rect.left;
+				startTop = rect.top;
+
+				if ('mouse' !== inputType && e.pointerId != null) {
+					try {
+						wrapEl.setPointerCapture(e.pointerId);
+					} catch (err) {}
+				}
+			}
+
+			function moveDrag(e) {
+				if (!dragging) {
+					return;
+				}
+
+				if ('pointerId' in e && pointerId !== null && e.pointerId !== pointerId) {
+					return;
+				}
+
+				var point = eventPoint(e);
+				var dx = point.x - startX;
+				var dy = point.y - startY;
+
+				if (!moved && Math.abs(dx) < dragThreshold() && Math.abs(dy) < dragThreshold()) {
+					return;
+				}
+
+				if (!moved) {
+					moved = true;
+					floatCartJustDragged = true;
+					$wrap.addClass('is-dragging is-moved');
+				}
+
+				if (e.cancelable) {
+					e.preventDefault();
+				}
+
+				$wrap.attr(
+					'style',
+					($wrap.attr('data-default-style') || '') +
+					movedStyle(clampLeft(startLeft + dx), clampTop(startTop + dy))
+				);
+			}
+
+			function endDrag(e) {
+				if (!dragging) {
+					return;
+				}
+
+				if (e && 'pointerId' in e && pointerId !== null && e.pointerId !== pointerId) {
+					return;
+				}
+
+				var wasMoved = moved;
+				var target = e ? e.target : null;
+
+				dragging = false;
+				moved = false;
+				pointerId = null;
+				$wrap.removeClass('is-dragging');
+
+				if (wasMoved) {
+					var rect = wrapEl.getBoundingClientRect();
+
+					persist({
+						top: Math.round(rect.top),
+						left: Math.round(rect.left)
+					});
+					window.setTimeout(function () {
+						floatCartJustDragged = false;
+					}, 400);
+					return;
+				}
+
+				if (isHideTarget(target)) {
+					return;
+				}
+
+				if ($(target).closest('.hkdev-float-cart-wrap, .hkdev-float-cart').length) {
+					floatCartOpenedByPointer = true;
+					openFloatCartFromButton($link);
+					window.setTimeout(function () {
+						floatCartOpenedByPointer = false;
+					}, 400);
+				}
+			}
+
+			function bind(el, type, handler, opts) {
+				el.addEventListener(type, handler, opts || false);
 			}
 
 			applyState(normalize(loadState()));
@@ -919,82 +1122,39 @@
 				persist({ hidden: false });
 			});
 
-			$wrap.on('pointerdown', function (e) {
-				if ($(e.target).closest('.hkdev-float-cart-hide').length) {
-					return;
-				}
-
-				if ('mouse' === e.pointerType && 0 !== e.button) {
-					return;
-				}
-
-				dragging = true;
-				moved = false;
-				startX = e.clientX;
-				startY = e.clientY;
-				startTop = $wrap[0].getBoundingClientRect().top;
-				$wrap.addClass('is-dragging');
-
-				try {
-					this.setPointerCapture(e.pointerId);
-				} catch (err) {}
-			});
-
-			$wrap.on('pointermove', function (e) {
-				if (!dragging) {
-					return;
-				}
-
-				var dx = e.clientX - startX;
-				var dy = e.clientY - startY;
-
-				if (!moved && Math.abs(dx) < 6 && Math.abs(dy) < 6) {
-					return;
-				}
-
-				moved = true;
-				floatCartJustDragged = true;
-				e.preventDefault();
-
-				var top = clampTop(startTop + dy);
-				var edge = e.clientX < window.innerWidth / 2 ? 'left' : 'right';
-
-				$wrap.addClass('is-moved').attr('data-edge', edge).attr(
-					'style',
-					($wrap.attr('data-default-style') || '') +
-					'top:' + top + 'px !important;bottom:auto !important;transform:none !important;'
-				);
-			});
-
-			function endDrag() {
-				if (!dragging) {
-					return;
-				}
-
-				dragging = false;
-				$wrap.removeClass('is-dragging');
-
-				if (!moved) {
-					return;
-				}
-
-				var rect = $wrap[0].getBoundingClientRect();
-
-				persist({
-					top: Math.round(rect.top),
-					edge: 'left' === $wrap.attr('data-edge') ? 'left' : 'right'
-				});
+			if (hasPointer) {
+				bind(wrapEl, 'pointerdown', beginDrag);
+				bind(document, 'pointermove', moveDrag, { passive: false });
+				bind(document, 'pointerup', endDrag);
+				bind(document, 'pointercancel', endDrag);
+			} else {
+				bind(wrapEl, 'mousedown', beginDrag);
+				bind(document, 'mousemove', moveDrag);
+				bind(document, 'mouseup', endDrag);
+				bind(wrapEl, 'touchstart', beginDrag, { passive: false });
+				bind(document, 'touchmove', moveDrag, { passive: false });
+				bind(document, 'touchend', endDrag);
+				bind(document, 'touchcancel', endDrag);
 			}
 
-			$wrap.on('pointerup pointercancel', endDrag);
+			function reflowPosition() {
+				if (dragging) {
+					return;
+				}
 
-			$(window).on('resize', function () {
 				var state = normalize(loadState());
 
-				if (null !== state.top) {
+				if (null !== state.top && null !== state.left) {
 					applyState(state);
 				}
-			});
+			}
+
+			$(window).on('resize orientationchange', reflowPosition);
+
+			if (window.visualViewport) {
+				window.visualViewport.addEventListener('resize', reflowPosition);
+				window.visualViewport.addEventListener('scroll', reflowPosition);
+			}
 		})();
 	});
 })(jQuery);

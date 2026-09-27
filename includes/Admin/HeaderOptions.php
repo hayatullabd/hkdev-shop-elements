@@ -629,7 +629,7 @@ final class HeaderOptions {
 								<div class="hd-field">
 									<div class="hd-field-info">
 										<span class="hd-field-title"><?php esc_html_e( 'Customers Can Hide & Move', 'hkdev-shop-elements' ); ?></span>
-										<p class="hd-field-help"><?php esc_html_e( 'Let shoppers hide the button or drag it to a new spot. Their choice is saved in the browser.', 'hkdev-shop-elements' ); ?></p>
+										<p class="hd-field-help"><?php esc_html_e( 'Let shoppers hide the button or drag it anywhere on the screen. Their choice is saved in the browser.', 'hkdev-shop-elements' ); ?></p>
 									</div>
 									<div class="hd-field-input">
 										<label class="hd-switch">
