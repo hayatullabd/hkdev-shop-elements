@@ -1756,11 +1756,18 @@ body.hkdev-header-locked {
 
 @media (hover: none), (pointer: coarse) {
     .hkdev-float-cart-hide {
-        top: -10px !important;
-        left: -10px !important;
-        width: 28px !important;
-        height: 28px !important;
-        font-size: 13px !important;
+        top: 4px !important;
+        left: auto !important;
+        right: 4px !important;
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 11px !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .hkdev-float-cart-wrap.is-controls .hkdev-float-cart-hide {
         opacity: 1;
         pointer-events: auto;
     }

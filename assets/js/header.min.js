@@ -867,6 +867,9 @@
 			var pointerId = null;
 			var inputType = 'mouse';
 			var hasPointer = 'PointerEvent' in window;
+			var holdTimer = null;
+			var controlsTimer = null;
+			var revealedOnPress = false;
 
 			if (!$wrap.length || '1' !== $wrap.attr('data-customer') || !wrapEl) {
 				return;
@@ -1000,6 +1003,31 @@
 				return 'mouse' === inputType ? 6 : 12;
 			}
 
+			function isCoarseInput() {
+				return window.matchMedia('(hover: none), (pointer: coarse)').matches || 'touch' === inputType;
+			}
+
+			function hideControls() {
+				window.clearTimeout(controlsTimer);
+				controlsTimer = null;
+				$wrap.removeClass('is-controls');
+			}
+
+			function showControls() {
+				if (!isCoarseInput()) {
+					return;
+				}
+
+				$wrap.addClass('is-controls');
+				window.clearTimeout(controlsTimer);
+				controlsTimer = window.setTimeout(hideControls, 4000);
+			}
+
+			function clearHold() {
+				window.clearTimeout(holdTimer);
+				holdTimer = null;
+			}
+
 			function beginDrag(e) {
 				if (isHideTarget(e.target)) {
 					return;
@@ -1014,6 +1042,7 @@
 
 				dragging = true;
 				moved = false;
+				revealedOnPress = false;
 				pointerId = 'pointerId' in e ? e.pointerId : 1;
 				inputType = e.pointerType || ((e.touches && e.touches.length) ? 'touch' : 'mouse');
 				startX = point.x;
@@ -1025,6 +1054,16 @@
 					try {
 						wrapEl.setPointerCapture(e.pointerId);
 					} catch (err) {}
+				}
+
+				if (isCoarseInput()) {
+					clearHold();
+					holdTimer = window.setTimeout(function () {
+						if (dragging && !moved) {
+							revealedOnPress = true;
+							showControls();
+						}
+					}, 480);
 				}
 			}
 
@@ -1047,7 +1086,9 @@
 
 				if (!moved) {
 					moved = true;
+					revealedOnPress = false;
 					floatCartJustDragged = true;
+					clearHold();
 					$wrap.addClass('is-dragging is-moved');
 				}
 
@@ -1072,10 +1113,13 @@
 				}
 
 				var wasMoved = moved;
+				var wasReveal = revealedOnPress;
 				var target = e ? e.target : null;
 
+				clearHold();
 				dragging = false;
 				moved = false;
+				revealedOnPress = false;
 				pointerId = null;
 				$wrap.removeClass('is-dragging');
 
@@ -1086,17 +1130,19 @@
 						top: Math.round(rect.top),
 						left: Math.round(rect.left)
 					});
+					showControls();
 					window.setTimeout(function () {
 						floatCartJustDragged = false;
 					}, 400);
 					return;
 				}
 
-				if (isHideTarget(target)) {
+				if (wasReveal || isHideTarget(target)) {
 					return;
 				}
 
 				if ($(target).closest('.hkdev-float-cart-wrap, .hkdev-float-cart').length) {
+					hideControls();
 					floatCartOpenedByPointer = true;
 					openFloatCartFromButton($link);
 					window.setTimeout(function () {
@@ -1114,6 +1160,7 @@
 			$wrap.on('click', '.hkdev-float-cart-hide', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
+				hideControls();
 				persist({ hidden: true });
 			});
 
