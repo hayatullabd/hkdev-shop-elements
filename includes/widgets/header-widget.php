@@ -317,6 +317,15 @@ class HeaderWidget extends Widget_Base {
 		$this->end_controls_section();
 		}
 
+		if ( in_array( $part, [ 'full', 'main' ], true ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+				$this,
+				'minicart',
+				'section_minicart_texts',
+				esc_html__( 'Mini Cart Texts', 'hkdev-shop-elements' )
+			);
+		}
+
 		if ( in_array( $part, [ 'full', 'upper', 'main' ], true ) ) {
 		$this->start_controls_section(
 			'section_contact',
@@ -616,6 +625,7 @@ class HeaderWidget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'minicart', $settings );
 
 		$part = $this->get_header_part();
 

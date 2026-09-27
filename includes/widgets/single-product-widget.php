@@ -353,6 +353,15 @@ class SingleProductWidget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+				$this,
+				'single',
+				'section_single_texts',
+				esc_html__( 'Single Product Texts', 'hkdev-shop-elements' )
+			);
+		}
+
 		$this->register_sp_style_sections();
 	}
 
@@ -513,6 +522,9 @@ class SingleProductWidget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'single', $settings );
+		}
 		$yes_no   = static function ( $key, $default = 'yes' ) use ( $settings ) {
 			if ( ! isset( $settings[ $key ] ) ) {
 				return $default;

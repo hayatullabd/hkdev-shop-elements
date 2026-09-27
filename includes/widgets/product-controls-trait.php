@@ -481,6 +481,27 @@ trait Product_Controls {
 		);
 
 		$this->end_controls_section();
+
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+				$this,
+				'variation',
+				'section_variation_texts',
+				esc_html__( 'Variation Modal Texts', 'hkdev-shop-elements' )
+			);
+		}
+	}
+
+	/**
+	 * Persist variation-modal labels from this widget.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return void
+	 */
+	protected function save_variation_labels( $settings ) {
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'variation', $settings );
+		}
 	}
 
 	/**

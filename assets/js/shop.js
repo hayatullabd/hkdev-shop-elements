@@ -684,7 +684,7 @@ jQuery(function($) {
         const state = vmSelectedAttrs($modal);
 
         if (!state.complete) {
-            $modal.find('.hkdev-vm-stock').text('Select options');
+            $modal.find('.hkdev-vm-stock').text(modalText('vm_select_options', 'Select options'));
             $btns.attr('data-variation-id', '').data('variation-id', '');
             $modal.data('matched', null);
             return;
@@ -706,7 +706,7 @@ jQuery(function($) {
         }
 
         if (!match) {
-            $modal.find('.hkdev-vm-stock').text('Not available');
+            $modal.find('.hkdev-vm-stock').text(modalText('vm_not_available', 'Not available'));
             $btns.attr('data-variation-id', '').data('variation-id', '');
             $modal.data('matched', null);
             return;
@@ -715,11 +715,11 @@ jQuery(function($) {
         if (match.price_html) $modal.find('.hkdev-vm-price').html(match.price_html);
         if (match.image) $modal.find('.hkdev-vm-thumb').attr('src', match.image);
 
-        let stockText = 'In stock';
+        let stockText = modalText('vm_in_stock', 'In stock');
         if (!match.is_in_stock) {
-            stockText = 'Out of stock';
+            stockText = modalText('vm_out_of_stock', 'Out of stock');
         } else if (match.stock_qty !== null && match.stock_qty !== undefined && match.stock_qty !== '') {
-            stockText = 'In stock (' + match.stock_qty + ')';
+            stockText = modalText('vm_in_stock_qty', 'In stock (%s)').replace('%s', match.stock_qty);
         }
         $modal.find('.hkdev-vm-stock').text(stockText);
 
@@ -768,7 +768,7 @@ jQuery(function($) {
 
         const cardPrice = $card.find('.hkdev-price-container').first().html() || '';
         $modal.find('.hkdev-vm-price').html(cardPrice);
-        $modal.find('.hkdev-vm-stock').text('Select options');
+        $modal.find('.hkdev-vm-stock').text(modalText('vm_select_options', 'Select options'));
         $modal.find('.hkdev-vm-add-btn, .hkdev-vm-view-btn, .hkdev-vm-buy-btn').attr('data-variation-id', '').data('variation-id', '');
 
         $modal.data('variations', variations);
@@ -857,6 +857,12 @@ jQuery(function($) {
     const checkoutPageUrl = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.checkout_url)
         ? hkdev_elements_ajax.checkout_url
         : '/checkout/';
+    const modalI18n = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.i18n)
+        ? hkdev_elements_ajax.i18n
+        : {};
+    function modalText(key, fallback) {
+        return modalI18n[key] || fallback;
+    }
 
     function shouldOpenCheckoutModal(productType) {
         if (checkoutModalScope === 'none') return false;
@@ -904,9 +910,9 @@ jQuery(function($) {
                 '<div class="hkdev-co-modal" id="hkdev-co-modal">' +
                     '<div class="hkdev-co-modal-overlay"></div>' +
                     '<div class="hkdev-co-modal-box">' +
-                        '<button type="button" class="hkdev-co-modal-close" aria-label="Close">&times;</button>' +
+                        '<button type="button" class="hkdev-co-modal-close" aria-label="' + modalText('modal_close', 'Close') + '">&times;</button>' +
                         '<div class="hkdev-co-modal-body">' +
-                            '<div class="hkdev-co-modal-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading checkout...</div>' +
+                            '<div class="hkdev-co-modal-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> ' + modalText('modal_loading', 'Loading checkout...') + '</div>' +
                         '</div>' +
                     '</div>' +
                 '</div>'
@@ -973,7 +979,7 @@ jQuery(function($) {
     function openCheckoutModal() {
         const $m = ensureCheckoutModal();
         $m.find('.hkdev-co-modal-body').html(
-            '<div class="hkdev-co-modal-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading checkout...</div>'
+            '<div class="hkdev-co-modal-loading"><i class="fa-solid fa-circle-notch fa-spin"></i> ' + modalText('modal_loading', 'Loading checkout...') + '</div>'
         );
         $m.addClass('is-open').css('display', 'flex');
         $('body').addClass('hkdev-co-modal-open');
@@ -994,13 +1000,13 @@ jQuery(function($) {
                     }
                 } else {
                     $m.find('.hkdev-co-modal-body').html(
-                        '<div class="hkdev-co-modal-loading">Could not load checkout. Please try again.</div>'
+                        '<div class="hkdev-co-modal-loading">' + modalText('modal_error', 'Could not load checkout. Please try again.') + '</div>'
                     );
                 }
             },
             error: function() {
                 $m.find('.hkdev-co-modal-body').html(
-                    '<div class="hkdev-co-modal-loading">Could not load checkout. Please try again.</div>'
+                    '<div class="hkdev-co-modal-loading">' + modalText('modal_error', 'Could not load checkout. Please try again.') + '</div>'
                 );
             }
         });

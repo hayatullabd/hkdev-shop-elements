@@ -190,6 +190,7 @@ class CatalogWidget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		$this->save_variation_labels( $settings );
 		$cols     = $this->get_cards_per_view( $settings );
 
 		echo CatalogEngine::instance()->render( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

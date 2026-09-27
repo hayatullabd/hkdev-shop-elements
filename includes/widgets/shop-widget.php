@@ -475,6 +475,7 @@ class ShopWidget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		$this->save_variation_labels( $settings );
 		$yes_no   = static function ( $key ) use ( $settings ) {
 			return ( isset( $settings[ $key ] ) && 'yes' === $settings[ $key ] ) ? 'yes' : 'no';
 		};

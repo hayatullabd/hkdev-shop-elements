@@ -74,6 +74,16 @@ class HeaderEngine {
 	}
 
 	/**
+	 * Customizable mini cart label.
+	 *
+	 * @param string $key Label key.
+	 * @return string
+	 */
+	private function t( $key ) {
+		return UiLabels::text( 'minicart', $key );
+	}
+
+	/**
 	 * Register hooks.
 	 */
 	public function __construct() {
@@ -795,9 +805,9 @@ class HeaderEngine {
 			?>
 			<div class="hkdev-mc-empty">
 				<span class="hkdev-mc-empty-icon"><i class="fa-solid fa-cart-shopping"></i></span>
-				<p><?php esc_html_e( 'Your cart is empty.', 'hkdev-shop-elements' ); ?></p>
+				<p><?php echo esc_html( $this->t( 'empty' ) ); ?></p>
 				<a class="hkdev-mc-btn is-solid" href="<?php echo esc_url( function_exists( 'wc_get_page_permalink' ) ? wc_get_page_permalink( 'shop' ) : home_url( '/' ) ); ?>">
-					<?php esc_html_e( 'Continue Shopping', 'hkdev-shop-elements' ); ?>
+					<?php echo esc_html( $this->t( 'continue' ) ); ?>
 				</a>
 			</div>
 			<?php
@@ -857,15 +867,15 @@ class HeaderEngine {
 
 			<div class="hkdev-mc-footer">
 				<div class="hkdev-mc-subtotal">
-					<span><?php esc_html_e( 'Subtotal', 'hkdev-shop-elements' ); ?></span>
+					<span><?php echo esc_html( $this->t( 'subtotal' ) ); ?></span>
 					<strong><?php echo wp_kses_post( $cart->get_cart_subtotal() ); ?></strong>
 				</div>
 				<div class="hkdev-mc-actions">
 					<a class="hkdev-mc-btn is-ghost" href="<?php echo esc_url( wc_get_cart_url() ); ?>">
-						<?php esc_html_e( 'View Cart', 'hkdev-shop-elements' ); ?>
+						<?php echo esc_html( $this->t( 'view_cart' ) ); ?>
 					</a>
 					<a class="hkdev-mc-btn is-solid" href="<?php echo esc_url( wc_get_checkout_url() ); ?>">
-						<?php esc_html_e( 'Checkout', 'hkdev-shop-elements' ); ?>
+						<?php echo esc_html( $this->t( 'checkout' ) ); ?>
 					</a>
 				</div>
 			</div>
@@ -892,7 +902,7 @@ class HeaderEngine {
 			<div class="hkdev-mini-cart-head">
 				<span class="hkdev-mini-cart-title">
 					<i class="fa-solid fa-cart-shopping"></i>
-					<?php esc_html_e( 'Your Cart', 'hkdev-shop-elements' ); ?>
+					<?php echo esc_html( $this->t( 'title' ) ); ?>
 					<b class="hkdev-mini-cart-count-inline"><?php echo esc_html( $count ); ?></b>
 				</span>
 				<button type="button" class="hkdev-mini-cart-close" aria-label="<?php esc_attr_e( 'Close cart', 'hkdev-shop-elements' ); ?>">

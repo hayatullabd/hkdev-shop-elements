@@ -242,6 +242,17 @@ final class HeaderOptions {
 			}
 
 			update_option( \HkdevShopElements\Includes\Core\HeaderEngine::CONFIG_OPTION, $config );
+
+			if ( isset( $_POST['hkdev_hd_mc_title'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				$minicart_fields = \HkdevShopElements\Includes\Core\UiLabels::fields()['minicart'];
+				$minicart_saved  = [];
+				foreach ( $minicart_fields as $key => $field ) {
+					$posted = isset( $_POST[ 'hkdev_hd_mc_' . $key ] ) ? sanitize_textarea_field( wp_unslash( $_POST[ 'hkdev_hd_mc_' . $key ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+					$minicart_saved[ $key ] = '' !== $posted ? $posted : $field['default'];
+				}
+				\HkdevShopElements\Includes\Core\UiLabels::save_group( 'minicart', $minicart_saved );
+			}
+
 			$saved_notice = true;
 		}
 
@@ -623,6 +634,21 @@ final class HeaderOptions {
 									</div>
 									<div class="hd-field-input">
 										<input type="number" class="hd-compact" id="hkdev-hd-float-cart-offset" name="hkdev_hd_float_cart_offset" value="<?php echo esc_attr( absint( $config['float_cart_offset'] ) ); ?>" min="1" max="1200">
+									</div>
+								</div>
+
+								<div class="hd-field">
+									<div class="hd-field-info">
+										<span class="hd-field-title"><?php esc_html_e( 'Mini Cart Texts', 'hkdev-shop-elements' ); ?></span>
+										<p class="hd-field-help"><?php esc_html_e( 'These labels are also available on the Header widget. Saving here updates the drawer site-wide.', 'hkdev-shop-elements' ); ?></p>
+									</div>
+									<div class="hd-field-input" style="display:grid;gap:10px;min-width:240px;">
+										<?php foreach ( \HkdevShopElements\Includes\Core\UiLabels::fields()['minicart'] as $mc_key => $mc_field ) : ?>
+											<label>
+												<span class="hd-field-title" style="display:block;margin-bottom:4px;"><?php echo esc_html( $mc_field['label'] ); ?></span>
+												<input type="text" name="<?php echo esc_attr( 'hkdev_hd_mc_' . $mc_key ); ?>" value="<?php echo esc_attr( \HkdevShopElements\Includes\Core\UiLabels::text( 'minicart', $mc_key ) ); ?>">
+											</label>
+										<?php endforeach; ?>
 									</div>
 								</div>
 

@@ -130,6 +130,25 @@ class CheckoutWidget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+			$this,
+			'checkout',
+			'section_checkout_texts',
+			esc_html__( 'Checkout Texts', 'hkdev-shop-elements' )
+		);
+		\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+			$this,
+			'thankyou',
+			'section_thankyou_texts',
+			esc_html__( 'Thank You Texts', 'hkdev-shop-elements' )
+		);
+		\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+			$this,
+			'modal',
+			'section_modal_texts',
+			esc_html__( 'Checkout Modal Texts', 'hkdev-shop-elements' )
+		);
+
 		$this->register_co_style_sections();
 	}
 
@@ -323,6 +342,10 @@ class CheckoutWidget extends Widget_Base {
 	 * @return void
 	 */
 	protected function render() {
+		$ui = $this->get_settings_for_display();
+		\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'checkout', $ui );
+		\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'thankyou', $ui );
+		\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'modal', $ui );
 		if ( ! did_action( 'elementor/loaded' ) ) {
 			return;
 		}

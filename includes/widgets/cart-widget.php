@@ -111,6 +111,13 @@ class CartWidget extends Widget_Base {
 
 		$this->end_controls_section();
 
+		\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+			$this,
+			'cart',
+			'section_cart_texts',
+			esc_html__( 'Cart Texts', 'hkdev-shop-elements' )
+		);
+
 		$this->start_controls_section(
 			'section_items_style',
 			[
@@ -520,6 +527,7 @@ class CartWidget extends Widget_Base {
 	 * @return void
 	 */
 	protected function render() {
+		\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'cart', $this->get_settings_for_display() );
 		if ( ! did_action( 'elementor/loaded' ) ) {
 			return;
 		}

@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           1.1.9
+ * Version:           1.1.10
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '1.1.9' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.1.10' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -286,6 +286,9 @@ function hkdev_elements_boot() {
 	add_filter( 'wc_price_args', __NAMESPACE__ . '\\hkdev_elements_price_args' );
 
 	$core_modules = [
+		[ 'includes/Core/UiLabels.php', static function () {
+			Includes\Core\UiLabels::init();
+		} ],
 		[ 'includes/Core/ColorTheme.php', static function () {
 			Includes\Core\ColorTheme::instance()->init();
 		} ],
@@ -625,6 +628,25 @@ function hkdev_elements_register_assets() {
 			// or none (redirect to the checkout page instead).
 			'checkout_modal_scope' => get_option( 'hkdev_elements_checkout_modal_scope', 'both' ),
 			'checkout_url'         => wc_get_checkout_url(),
+			'i18n'                 => [
+				'modal_loading'     => Includes\Core\UiLabels::text( 'modal', 'loading' ),
+				'modal_error'       => Includes\Core\UiLabels::text( 'modal', 'error' ),
+				'modal_close'       => Includes\Core\UiLabels::text( 'modal', 'close' ),
+				'vm_select_options'     => Includes\Core\UiLabels::text( 'variation', 'select_options' ),
+				'vm_not_available'      => Includes\Core\UiLabels::text( 'variation', 'not_available' ),
+				'vm_in_stock'           => Includes\Core\UiLabels::text( 'variation', 'in_stock' ),
+				'vm_in_stock_qty'       => Includes\Core\UiLabels::text( 'variation', 'in_stock_qty' ),
+				'vm_out_of_stock'       => Includes\Core\UiLabels::text( 'variation', 'out_of_stock' ),
+				'sp_off'                => Includes\Core\UiLabels::text( 'single', 'off' ),
+				'sp_in_stock'           => Includes\Core\UiLabels::text( 'single', 'in_stock' ),
+				'sp_out_of_stock'       => Includes\Core\UiLabels::text( 'single', 'out_of_stock' ),
+				'sp_select_variation'   => Includes\Core\UiLabels::text( 'single', 'select_variation' ),
+				'sp_add_to_cart_fail'   => Includes\Core\UiLabels::text( 'single', 'add_to_cart_fail' ),
+				'sp_out_of_stock_alert' => Includes\Core\UiLabels::text( 'single', 'out_of_stock_alert' ),
+				'sp_server_error'       => Includes\Core\UiLabels::text( 'single', 'server_error' ),
+				'sp_complete_order'     => Includes\Core\UiLabels::text( 'single', 'complete_order' ),
+				'sp_sku_empty'          => Includes\Core\UiLabels::text( 'single', 'sku_empty' ),
+			],
 			// One nonce per operation so a nonce minted for a low-impact action
 			// (e.g. product filtering) can never satisfy a higher-impact one
 			// (e.g. placing an order).

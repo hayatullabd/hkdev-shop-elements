@@ -51,6 +51,16 @@ class CartEngine {
 	}
 
 	/**
+	 * Customizable cart label.
+	 *
+	 * @param string $key Label key.
+	 * @return string
+	 */
+	private function t( $key ) {
+		return UiLabels::text( 'cart', $key );
+	}
+
+	/**
 	 * Register hooks.
 	 */
 	public function __construct() {
@@ -82,9 +92,9 @@ class CartEngine {
 			?>
 			<div class="hkdev-cart-empty-wrap">
 				<i class="fa-solid fa-cart-arrow-down" style="font-size: 60px; color: #b7c6be; margin-bottom: 25px;"></i>
-				<h3><?php esc_html_e( 'Your cart is empty', 'hkdev-shop-elements' ); ?></h3>
-				<p><?php esc_html_e( 'Browse our products and add to cart.', 'hkdev-shop-elements' ); ?></p>
-				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-cart-primary-btn" style="display: inline-block; width: auto; padding: 15px 40px;"><?php esc_html_e( 'Start Shopping', 'hkdev-shop-elements' ); ?></a>
+				<h3><?php echo esc_html( $this->t( 'empty_title' ) ); ?></h3>
+				<p><?php echo esc_html( $this->t( 'empty_text' ) ); ?></p>
+				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-cart-primary-btn" style="display: inline-block; width: auto; padding: 15px 40px;"><?php echo esc_html( $this->t( 'start_shopping' ) ); ?></a>
 			</div>
 			<?php
 			return ob_get_clean();
@@ -99,8 +109,8 @@ class CartEngine {
 			<?php do_action( 'woocommerce_before_cart' ); ?>
 
 			<div class="hkdev-cart-header">
-				<h2><?php esc_html_e( 'Shopping Cart', 'hkdev-shop-elements' ); ?></h2>
-				<p><?php esc_html_e( 'Selected Products', 'hkdev-shop-elements' ); ?></p>
+				<h2><?php echo esc_html( $this->t( 'heading' ) ); ?></h2>
+				<p><?php echo esc_html( $this->t( 'subtitle' ) ); ?></p>
 			</div>
 
 			<div class="hkdev-cart-grid">
@@ -113,8 +123,8 @@ class CartEngine {
 						<?php if ( 'yes' === HKDEV_ELEMENTS_SHOW_COUPON_FORM && wc_coupons_enabled() ) : ?>
 						<div class="hkdev-cart-coupon-wrap">
 							<div class="coupon-box">
-								<input type="text" id="hkdev-coupon-input" placeholder="<?php esc_attr_e( 'Coupon Code', 'hkdev-shop-elements' ); ?>">
-								<button type="button" id="hkdev-apply-coupon-btn"><?php esc_html_e( 'Apply', 'hkdev-shop-elements' ); ?></button>
+								<input type="text" id="hkdev-coupon-input" placeholder="<?php echo esc_attr( $this->t( 'coupon_placeholder' ) ); ?>">
+								<button type="button" id="hkdev-apply-coupon-btn"><?php echo esc_html( $this->t( 'apply' ) ); ?></button>
 							</div>
 						</div>
 						<?php endif; ?>
@@ -124,7 +134,7 @@ class CartEngine {
 				<div class="hkdev-cart-totals-column">
 					<div class="hkdev-cart-card hkdev-sticky-sidebar">
 						<div class="hkdev-cart-totals-header">
-							<h3><?php esc_html_e( 'Cart Summary', 'hkdev-shop-elements' ); ?></h3>
+							<h3><?php echo esc_html( $this->t( 'summary' ) ); ?></h3>
 						</div>
 
 						<div id="hkdev-cart-totals-area">
@@ -133,14 +143,14 @@ class CartEngine {
 
 						<?php do_action( 'woocommerce_proceed_to_checkout' ); ?>
 
-						<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-cart-secondary-btn"><?php esc_html_e( 'Continue Shopping', 'hkdev-shop-elements' ); ?></a>
+						<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-cart-secondary-btn"><?php echo esc_html( $this->t( 'continue' ) ); ?></a>
 					</div>
 				</div>
 			</div>
 
 			<?php do_action( 'woocommerce_after_cart' ); ?>
 
-			<div id="hkdev-cart-global-loader"><div class="loader-box-inner"><i class="fa-solid fa-circle-notch fa-spin"></i> &nbsp; <?php esc_html_e( 'Updating...', 'hkdev-shop-elements' ); ?></div></div>
+			<div id="hkdev-cart-global-loader"><div class="loader-box-inner"><i class="fa-solid fa-circle-notch fa-spin"></i> &nbsp; <?php echo esc_html( $this->t( 'updating' ) ); ?></div></div>
 		</div>
 		<input type="hidden" id="hkdev_cart_nonce" value="<?php echo esc_attr( wp_create_nonce( self::NONCE_ACTION ) ); ?>">
 		<?php
@@ -160,7 +170,7 @@ class CartEngine {
 		}
 		?>
 		<a href="<?php echo esc_url( wc_get_checkout_url() ); ?>" class="checkout-button button alt wc-forward hkdev-cart-primary-btn proceed-btn">
-			<?php esc_html_e( 'Proceed to Checkout', 'hkdev-shop-elements' ); ?> <i class="fa-solid fa-arrow-right"></i>
+			<?php echo esc_html( $this->t( 'checkout_btn' ) ); ?> <i class="fa-solid fa-arrow-right"></i>
 		</a>
 		<?php
 	}
@@ -234,7 +244,7 @@ class CartEngine {
 								<?php endif; ?>
 
 								<?php if ( 'yes' === HKDEV_ELEMENTS_SHOW_REMOVE_BTN ) : ?>
-									<button type="button" class="hkdev-item-remove-btn" title="<?php esc_attr_e( 'Remove', 'hkdev-shop-elements' ); ?>"><i class="fa-solid fa-trash-can"></i></button>
+									<button type="button" class="hkdev-item-remove-btn" title="<?php echo esc_attr( $this->t( 'remove' ) ); ?>"><i class="fa-solid fa-trash-can"></i></button>
 								<?php endif; ?>
 							</div>
 						</div>
@@ -256,9 +266,9 @@ class CartEngine {
 		$hkdev_cart_paid_qty   = max( 0, $hkdev_cart_total_qty - $hkdev_cart_total_free );
 		?>
 		<div class="hkdev-co-items-count-summary">
-			<span class="paid-count"><?php esc_html_e( 'Paid Items:', 'hkdev-shop-elements' ); ?> <strong><?php echo esc_html( $hkdev_cart_paid_qty ); ?></strong></span>
+			<span class="paid-count"><?php echo esc_html( $this->t( 'paid_items' ) ); ?> <strong><?php echo esc_html( $hkdev_cart_paid_qty ); ?></strong></span>
 			<span class="separator"> | </span>
-			<span class="free-count"><?php esc_html_e( 'Free items:', 'hkdev-shop-elements' ); ?> <strong><?php echo esc_html( $hkdev_cart_total_free ); ?></strong></span>
+			<span class="free-count"><?php echo esc_html( $this->t( 'free_items' ) ); ?> <strong><?php echo esc_html( $hkdev_cart_total_free ); ?></strong></span>
 		</div>
 		<?php
 		do_action( 'woocommerce_cart_contents' );
@@ -280,7 +290,7 @@ class CartEngine {
 		<div class="hkdev-cart-calc-wrap">
 
 			<?php if ( 'yes' === HKDEV_ELEMENTS_SHOW_CART_SUBTOTAL ) : ?>
-			<div class="calc-line"><span><?php esc_html_e( 'Subtotal', 'hkdev-shop-elements' ); ?></span><strong><?php echo WC()->cart->get_cart_subtotal(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+			<div class="calc-line"><span><?php echo esc_html( $this->t( 'subtotal' ) ); ?></span><strong><?php echo WC()->cart->get_cart_subtotal(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 			<?php endif; ?>
 
 			<?php
@@ -295,10 +305,10 @@ class CartEngine {
 				}
 				?>
 				<div class="calc-line coupon-line">
-					<span><i class="fa-solid fa-tag"></i> <?php esc_html_e( 'Coupon', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $display_label ); ?></span>
+					<span><i class="fa-solid fa-tag"></i> <?php echo esc_html( $this->t( 'coupon' ) ); ?> <?php echo esc_html( $display_label ); ?></span>
 					<span>
 						<strong>-<?php echo wc_price( WC()->cart->get_coupon_discount_amount( $code ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
-						<a href="#" class="hkdev-remove-coupon" data-coupon="<?php echo esc_attr( $code ); ?>" style="color:var(--hkdev-brand-secondary, #f06724); font-size:13px; margin-left:5px; text-decoration:underline;">[<?php esc_html_e( 'Remove', 'hkdev-shop-elements' ); ?>]</a>
+						<a href="#" class="hkdev-remove-coupon" data-coupon="<?php echo esc_attr( $code ); ?>" style="color:var(--hkdev-brand-secondary, #f06724); font-size:13px; margin-left:5px; text-decoration:underline;">[<?php echo esc_html( $this->t( 'remove' ) ); ?>]</a>
 					</span>
 				</div>
 			<?php endforeach; ?>
@@ -315,7 +325,7 @@ class CartEngine {
 			if ( 'yes' === HKDEV_ELEMENTS_SHOW_SHIPPING && WC()->cart->needs_shipping() && WC()->cart->show_shipping() ) :
 				do_action( 'woocommerce_cart_totals_before_shipping' );
 				?>
-				<div class="calc-line"><span><?php esc_html_e( 'Shipping Charge', 'hkdev-shop-elements' ); ?></span><strong><?php echo wc_cart_totals_shipping_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+				<div class="calc-line"><span><?php echo esc_html( $this->t( 'shipping' ) ); ?></span><strong><?php echo wc_cart_totals_shipping_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 				<?php
 				do_action( 'woocommerce_cart_totals_after_shipping' );
 			endif;
@@ -324,7 +334,7 @@ class CartEngine {
 			<?php do_action( 'woocommerce_cart_totals_before_order_total' ); ?>
 
 			<div class="calc-line grand-total-line">
-				<span><?php esc_html_e( 'Grand Total', 'hkdev-shop-elements' ); ?></span>
+				<span><?php echo esc_html( $this->t( 'grand_total' ) ); ?></span>
 				<strong><?php echo WC()->cart->get_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
 			</div>
 

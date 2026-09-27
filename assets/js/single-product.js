@@ -3,15 +3,19 @@ jQuery(document).ready(function($) {
 
     // Language Helper for JS
     function hkdevJsT(key) {
+        const i18n = (typeof hkdev_elements_ajax !== 'undefined' && hkdev_elements_ajax.i18n)
+            ? hkdev_elements_ajax.i18n
+            : {};
         const dict = {
-            'off_text': 'Off!',
-            'in_stock': 'In Stock',
-            'out_of_stock': 'Out Of Stock',
-            'select_variation_alert': 'Please select the product options first.',
-            'add_to_cart_fail': 'Could not add product to cart. Try again.',
-            'out_of_stock_alert': 'This product is out of stock.',
-            'server_error': 'Server error occurred. Please try again.',
-            'complete_order': 'Complete Order'
+            'off_text': i18n.sp_off || 'Off!',
+            'in_stock': i18n.sp_in_stock || 'In Stock',
+            'out_of_stock': i18n.sp_out_of_stock || 'Out Of Stock',
+            'select_variation_alert': i18n.sp_select_variation || 'Please select the product options first.',
+            'add_to_cart_fail': i18n.sp_add_to_cart_fail || 'Could not add product to cart. Try again.',
+            'out_of_stock_alert': i18n.sp_out_of_stock_alert || 'This product is out of stock.',
+            'server_error': i18n.sp_server_error || 'Server error occurred. Please try again.',
+            'complete_order': i18n.sp_complete_order || 'Complete Order',
+            'sku_empty': i18n.sp_sku_empty || 'N/A'
         };
         return dict[key] || key;
     }
@@ -394,7 +398,7 @@ jQuery(document).ready(function($) {
                 ($vThumb.length ? $vThumb : $('.hkdev-sp-thumb').first()).addClass('active');
             }
 
-            $('.sku-val').text(match.sku || 'N/A');
+            $('.sku-val').text(match.sku || hkdevJsT('sku_empty'));
             $('.stock-val').html(match.is_in_stock ? '<span class="in-stock-pill">' + hkdevJsT('in_stock') + '</span>' : '<span class="out-stock-pill">' + hkdevJsT('out_of_stock') + '</span>');
 
             $('#hkdev-sp-add-to-cart, #hkdev-sp-buy-now').attr('data-variation-id', match.variation_id).data('variation-id', match.variation_id);

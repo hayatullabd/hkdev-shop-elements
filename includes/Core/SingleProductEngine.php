@@ -371,7 +371,7 @@ class SingleProductEngine {
 		}
 
 		$html   = '<div class="hkdev-sp-faq-section">';
-		$html  .= '<h3 class="hkdev-sp-faq-title">' . esc_html__( 'Product FAQ', 'hkdev-shop-elements' ) . '</h3>';
+		$html  .= '<h3 class="hkdev-sp-faq-title">' . esc_html( UiLabels::text( 'single', 'faq_title' ) ) . '</h3>';
 		$html .= '<div class="hkdev-sp-faq-list">';
 		foreach ( $faqs as $faq ) {
 			$question = ! empty( $faq['question'] ) ? $faq['question'] : esc_html__( 'Question', 'hkdev-shop-elements' );
@@ -464,7 +464,7 @@ class SingleProductEngine {
 		if ( 'youtube' === $video['type'] ) {
 			$poster     = ! empty( $video['thumbnail'] ) ? $video['thumbnail'] : 'https://i.ytimg.com/vi/' . $video['id'] . '/maxresdefault.jpg';
 			$watch_url  = \HkdevShopElements\Includes\Core\VideoEngine::youtube_watch_url( $video['id'] );
-			$play_label = __( 'Play video', 'hkdev-shop-elements' );
+			$play_label = UiLabels::text( 'single', 'play_video' );
 			return '<a href="' . esc_url( $watch_url ) . '" class="hkdev-sp-vp-lite" data-youtube-id="' . esc_attr( $video['id'] ) . '" data-youtube-embed="' . esc_url( $video['embed'] ) . '" data-youtube-fallback="" aria-label="' . esc_attr( $play_label ) . '" target="_blank" rel="noopener">'
 				. '<img src="' . esc_url( $poster ) . '" alt="" loading="lazy" decoding="async" aria-hidden="true">'
 				. '<span class="hkdev-sp-vp-play" aria-hidden="true"><i class="fa-solid fa-play"></i></span>'
@@ -479,7 +479,7 @@ class SingleProductEngine {
 		}
 
 		// vimeo / iframe.
-		return '<iframe class="hkdev-sp-vp-iframe" src="' . esc_url( $video['embed'] ) . '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="' . esc_attr__( 'Product video', 'hkdev-shop-elements' ) . '"></iframe>';
+		return '<iframe class="hkdev-sp-vp-iframe" src="' . esc_url( $video['embed'] ) . '" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy" title="' . esc_attr( UiLabels::text( 'single', 'product_video' ) ) . '"></iframe>';
 	}
 
 	/**
@@ -596,6 +596,10 @@ class SingleProductEngine {
 	 * @return string
 	 */
 	public function custom_single_product_shortcode( $atts = [] ) {
+		$t = static function ( $key ) {
+			return UiLabels::text( 'single', $key );
+		};
+
 		if ( is_admin() && ! $this->is_elementor_edit() ) {
 			return '';
 		}
@@ -637,7 +641,7 @@ class SingleProductEngine {
 
 		if ( ! $product instanceof \WC_Product ) {
 			$product = $previous_product;
-			return '<div style="text-align:center; padding: 60px; color: #e5533d; font-family: inherit; background: #fff; border-radius: 12px; border: 1px solid #eee;">' . esc_html__( 'Product not found.', 'hkdev-shop-elements' ) . '</div>';
+			return '<div style="text-align:center; padding: 60px; color: #e5533d; font-family: inherit; background: #fff; border-radius: 12px; border: 1px solid #eee;">' . esc_html( $t( 'product_not_found' ) ) . '</div>';
 		}
 
 		$product_id = $product->get_id();
@@ -787,8 +791,8 @@ class SingleProductEngine {
 
 			<?php if ( $show_breadcrumb ) : ?>
 			<nav class="hkdev-sp-breadcrumb">
-				<a href="<?php echo esc_url( home_url() ); ?>"><?php esc_html_e( 'Home', 'hkdev-shop-elements' ); ?></a> <i class="fa-solid fa-angle-right"></i>
-				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>"><?php esc_html_e( 'Shop', 'hkdev-shop-elements' ); ?></a> <i class="fa-solid fa-angle-right"></i>
+				<a href="<?php echo esc_url( home_url() ); ?>"><?php echo esc_html( $t( 'home' ) ); ?></a> <i class="fa-solid fa-angle-right"></i>
+				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>"><?php echo esc_html( $t( 'shop' ) ); ?></a> <i class="fa-solid fa-angle-right"></i>
 				<span class="current-crumb"><?php echo esc_html( $product->get_name() ); ?></span>
 			</nav>
 			<?php endif; ?>
@@ -802,7 +806,7 @@ class SingleProductEngine {
 
 					<div class="hkdev-sp-viewport" id="hkdev-sp-viewport">
 						<?php
-						$off_text           = esc_html__( 'Off!', 'hkdev-shop-elements' );
+						$off_text           = esc_html( $t( 'off' ) );
 						// Only show the badge when we actually know the discount.
 						// Variable products show it after a variation with a discount is chosen (handled in JS).
 						$show_badge         = $show_sale_badge && ( 'variable' !== $product->get_type() && $percentage > 0 );
@@ -823,7 +827,7 @@ class SingleProductEngine {
 						<?php endif; ?>
 
 						<?php if ( $show_zoom ) : ?>
-						<button type="button" class="hkdev-sp-zoom-trigger" id="hkdev-sp-zoom-btn" title="<?php esc_attr_e( 'Zoom', 'hkdev-shop-elements' ); ?>">
+						<button type="button" class="hkdev-sp-zoom-trigger" id="hkdev-sp-zoom-btn" title="<?php echo esc_attr( $t( 'zoom' ) ); ?>">
 							<i class="fa-solid fa-magnifying-glass-plus"></i>
 						</button>
 						<?php endif; ?>
@@ -877,7 +881,7 @@ class SingleProductEngine {
 							?>
 						<div class="hkdev-sp-thumb hkdev-sp-video-thumb" data-type="video" data-video-embed="<?php echo esc_attr( $player_html ); ?>">
 							<?php if ( ! empty( $v_data['thumbnail'] ) ) : ?>
-								<img src="<?php echo esc_url( $v_data['thumbnail'] ); ?>" alt="<?php esc_attr_e( 'Product video', 'hkdev-shop-elements' ); ?>" loading="lazy">
+								<img src="<?php echo esc_url( $v_data['thumbnail'] ); ?>" alt="<?php echo esc_attr( $t( 'product_video' ) ); ?>" loading="lazy">
 							<?php else : ?>
 								<span class="hkdev-sp-video-thumb-placeholder"><i class="fa-solid fa-film"></i></span>
 							<?php endif; ?>
@@ -922,7 +926,7 @@ class SingleProductEngine {
 						<div class="hkdev-sp-variable-options" data-variations='<?php echo esc_attr( wp_json_encode( $variations ) ); ?>'>
 							<?php foreach ( $attributes as $attribute_name => $options ) : ?>
 								<div class="hkdev-sp-variation-row" data-attribute="attribute_<?php echo esc_attr( sanitize_title( $attribute_name ) ); ?>">
-									<span class="attr-label"><?php echo esc_html( wc_attribute_label( $attribute_name ) ); ?>: <span class="selected-val"><?php esc_html_e( 'Select', 'hkdev-shop-elements' ); ?></span></span>
+									<span class="attr-label"><?php echo esc_html( wc_attribute_label( $attribute_name ) ); ?>: <span class="selected-val"><?php echo esc_html( $t( 'select' ) ); ?></span></span>
 									<div class="attr-swatches">
 										<?php foreach ( $options as $option ) : ?>
 											<?php
@@ -941,14 +945,14 @@ class SingleProductEngine {
 					<?php if ( ! empty( $size_chart_url ) ) : ?>
 						<div style="margin-bottom: 20px;">
 							<button type="button" id="hkdev-size-chart-btn" style="background:none; border:none; color:var(--hkdev-brand-primary, #03a550); font-family:inherit; font-weight:600; cursor:pointer; text-decoration:underline; font-size:15px; padding:0; display:inline-flex; align-items:center; gap:6px;">
-								<i class="fa-solid fa-ruler-combined"></i> <?php esc_html_e( 'Size Chart', 'hkdev-shop-elements' ); ?>
+								<i class="fa-solid fa-ruler-combined"></i> <?php echo esc_html( $t( 'size_chart' ) ); ?>
 							</button>
 						</div>
 					<?php endif; ?>
 
 					<div class="hkdev-sp-stock-notice<?php echo $show_oos_notice_initial ? ' is-visible' : ''; ?>" id="hkdev-sp-stock-notice" role="status" aria-live="polite">
 						<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
-						<span class="hkdev-sp-stock-notice-text"><?php esc_html_e( 'This product is currently out of stock.', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-sp-stock-notice-text"><?php echo esc_html( $t( 'out_of_stock_notice' ) ); ?></span>
 					</div>
 
 					<!-- Quantity & Buttons -->
@@ -967,7 +971,7 @@ class SingleProductEngine {
 							<button type="button" class="hkdev-sp-btn atc-btn<?php echo esc_attr( $purchase_disabled_cls ); ?>" id="hkdev-sp-add-to-cart"
 									data-product-id="<?php echo esc_attr( $product_id ); ?>"
 									data-variation-id="0"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-								<i class="fa-solid fa-cart-plus"></i> <?php esc_html_e( 'Add to Cart', 'hkdev-shop-elements' ); ?>
+								<i class="fa-solid fa-cart-plus"></i> <?php echo esc_html( $t( 'add_to_cart' ) ); ?>
 							</button>
 
 							<button type="button" class="hkdev-sp-btn buy-now-btn <?php echo $is_in_cart ? 'checkout-active' : ''; ?><?php echo esc_attr( $purchase_disabled_cls ); ?>"
@@ -976,7 +980,7 @@ class SingleProductEngine {
 									data-variation-id="0"
 									data-checkout-url="<?php echo esc_url( $checkout_url ); ?>"<?php echo $purchase_disabled_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<i class="fa-solid fa-bolt"></i>
-								<span class="btn-text"><?php echo $is_in_cart ? esc_html__( 'Order Completed', 'hkdev-shop-elements' ) : esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></span>
+								<span class="btn-text"><?php echo $is_in_cart ? esc_html( $t( 'order_completed' ) ) : esc_html( $t( 'buy_now' ) ); ?></span>
 							</button>
 						</div>
 
@@ -984,12 +988,12 @@ class SingleProductEngine {
 							<div class="hkdev-sp-contact-buttons">
 								<?php if ( $show_whatsapp ) : ?>
 									<a class="hkdev-sp-btn whatsapp-btn" href="<?php echo esc_url( $whatsapp_link ); ?>" target="_blank" rel="noopener">
-										<i class="fa-brands fa-whatsapp"></i> <?php esc_html_e( 'Order on WhatsApp', 'hkdev-shop-elements' ); ?>
+										<i class="fa-brands fa-whatsapp"></i> <?php echo esc_html( $t( 'whatsapp' ) ); ?>
 									</a>
 								<?php endif; ?>
 								<?php if ( $show_call ) : ?>
 									<a class="hkdev-sp-btn call-btn" href="<?php echo esc_url( $call_link ); ?>">
-										<i class="fa-solid fa-phone"></i> <?php esc_html_e( 'Call For Order', 'hkdev-shop-elements' ); ?>
+										<i class="fa-solid fa-phone"></i> <?php echo esc_html( $t( 'call' ) ); ?>
 									</a>
 								<?php endif; ?>
 							</div>
@@ -1000,7 +1004,7 @@ class SingleProductEngine {
 						<div class="hkdev-sp-brand-cat">
 							<?php if ( $brand_name ) : ?>
 								<span class="bc-item">
-									<span class="bc-label"><?php esc_html_e( 'Brand', 'hkdev-shop-elements' ); ?>:</span>
+									<span class="bc-label"><?php echo esc_html( $t( 'brand' ) ); ?>:</span>
 									<?php if ( $brand_logo ) : ?>
 										<img class="hkdev-sp-brand-logo" src="<?php echo esc_url( $brand_logo ); ?>" alt="<?php echo esc_attr( $brand_name ); ?>">
 									<?php endif; ?>
@@ -1009,7 +1013,7 @@ class SingleProductEngine {
 							<?php endif; ?>
 							<?php if ( ! empty( $category_names ) ) : ?>
 								<span class="bc-item">
-									<span class="bc-label"><?php esc_html_e( 'Category', 'hkdev-shop-elements' ); ?>:</span>
+									<span class="bc-label"><?php echo esc_html( $t( 'category' ) ); ?>:</span>
 									<span class="bc-value"><?php echo esc_html( implode( ', ', $category_names ) ); ?></span>
 								</span>
 							<?php endif; ?>
@@ -1019,10 +1023,10 @@ class SingleProductEngine {
 					<?php if ( $show_sku || $show_stock ) : ?>
 					<div class="hkdev-sp-product-meta">
 						<?php if ( $show_sku ) : ?>
-						<div class="meta-row"><strong><?php esc_html_e( 'SKU', 'hkdev-shop-elements' ); ?>:</strong> <span class="sku-val"><?php echo $product->get_sku() ? esc_html( $product->get_sku() ) : 'N/A'; ?></span></div>
+						<div class="meta-row"><strong><?php echo esc_html( $t( 'sku' ) ); ?>:</strong> <span class="sku-val"><?php echo $product->get_sku() ? esc_html( $product->get_sku() ) : esc_html( $t( 'sku_empty' ) ); ?></span></div>
 						<?php endif; ?>
 						<?php if ( $show_stock ) : ?>
-						<div class="meta-row"><strong><?php esc_html_e( 'Stock', 'hkdev-shop-elements' ); ?>:</strong> <span class="stock-val"><?php echo $product->is_in_stock() ? '<span class="in-stock-pill">' . esc_html__( 'In Stock', 'hkdev-shop-elements' ) . '</span>' : '<span class="out-stock-pill">' . esc_html__( 'Out of Stock', 'hkdev-shop-elements' ) . '</span>'; ?></span></div>
+						<div class="meta-row"><strong><?php echo esc_html( $t( 'stock' ) ); ?>:</strong> <span class="stock-val"><?php echo $product->is_in_stock() ? '<span class="in-stock-pill">' . esc_html( $t( 'in_stock' ) ) . '</span>' : '<span class="out-stock-pill">' . esc_html( $t( 'out_of_stock' ) ) . '</span>'; ?></span></div>
 						<?php endif; ?>
 					</div>
 					<?php endif; ?>
@@ -1032,8 +1036,8 @@ class SingleProductEngine {
 			<?php if ( $show_tabs ) : ?>
 			<div class="hkdev-sp-tabs-section">
 				<div class="hkdev-sp-tab-headers">
-					<button class="hkdev-sp-tab-link active" data-tab="desc"><?php esc_html_e( 'Description', 'hkdev-shop-elements' ); ?></button>
-					<button class="hkdev-sp-tab-link" data-tab="reviews"><?php esc_html_e( 'Reviews', 'hkdev-shop-elements' ); ?> (<?php echo esc_html( $product->get_review_count() ); ?>)</button>
+					<button class="hkdev-sp-tab-link active" data-tab="desc"><?php echo esc_html( $t( 'description' ) ); ?></button>
+					<button class="hkdev-sp-tab-link" data-tab="reviews"><?php echo esc_html( $t( 'reviews' ) ); ?> (<?php echo esc_html( $product->get_review_count() ); ?>)</button>
 				</div>
 				<div id="desc" class="hkdev-sp-tab-content active">
 					<div class="entry-content"><?php echo apply_filters( 'the_content', get_post_field( 'post_content', $product_id ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></div>
@@ -1053,11 +1057,11 @@ class SingleProductEngine {
 				<div id="hkdev-size-chart-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999999; justify-content:center; align-items:center; backdrop-filter:blur(3px);">
 					<div style="background:#fff; border-radius:12px; max-width:600px; width:90%; position:relative; box-shadow:0 25px 50px rgba(0,0,0,0.15); animation: zoomIn 0.3s ease;">
 						<div style="display:flex; justify-content:space-between; align-items:center; padding:15px 25px; border-bottom:1px solid #eee;">
-							<h3 style="margin:0; font-size:18px; font-family:inherit;"><?php esc_html_e( 'Size Chart', 'hkdev-shop-elements' ); ?></h3>
+							<h3 style="margin:0; font-size:18px; font-family:inherit;"><?php echo esc_html( $t( 'size_chart' ) ); ?></h3>
 							<button type="button" id="hkdev-size-chart-close" style="background:none; border:none; font-size:24px; cursor:pointer; color:#888;">&times;</button>
 						</div>
 						<div style="padding:20px; text-align:center; overflow-y:auto; max-height:70vh;">
-							<img src="<?php echo esc_url( $size_chart_url ); ?>" alt="Size Chart" style="max-width:100%; height:auto; border-radius:8px;">
+							<img src="<?php echo esc_url( $size_chart_url ); ?>" alt="<?php echo esc_attr( $t( 'size_chart' ) ); ?>" style="max-width:100%; height:auto; border-radius:8px;">
 						</div>
 					</div>
 				</div>
@@ -1133,7 +1137,7 @@ class SingleProductEngine {
 		if ( ! $product_to_add || ! $product_to_add->is_in_stock() ) {
 			wp_send_json_error(
 				[
-					'message' => esc_html__( 'This product is out of stock.', 'hkdev-shop-elements' ),
+					'message' => esc_html( UiLabels::text( 'single', 'out_of_stock_alert' ) ),
 				]
 			);
 		}

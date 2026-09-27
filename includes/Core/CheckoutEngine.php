@@ -116,6 +116,17 @@ class CheckoutEngine {
 	}
 
 	/**
+	 * Customizable checkout / thank-you label.
+	 *
+	 * @param string $group checkout|thankyou.
+	 * @param string $key   Label key.
+	 * @return string
+	 */
+	private function t( $group, $key ) {
+		return UiLabels::text( $group, $key );
+	}
+
+	/**
 	 * Register hooks.
 	 */
 	public function __construct() {
@@ -514,7 +525,7 @@ class CheckoutEngine {
 						<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 					</div>
 					<div class="hkdev-co-invoice-head-right">
-						<span class="hkdev-co-invoice-title"><?php esc_html_e( 'INVOICE', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-co-invoice-title"><?php echo esc_html( $this->t( 'thankyou', 'invoice' ) ); ?></span>
 						<span class="hkdev-co-invoice-order-no">#<?php echo esc_html( $order_number ); ?></span>
 						<span class="hkdev-co-invoice-status"><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></span>
 					</div>
@@ -523,33 +534,33 @@ class CheckoutEngine {
 				<div class="hkdev-co-invoice-top-row">
 					<div class="hkdev-co-invoice-meta-grid">
 						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'From', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'from' ) ); ?></span>
 							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span>
 						</div>
 						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Order Date', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'order_date' ) ); ?></span>
 							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></span>
 						</div>
 						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Bill To', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'bill_to' ) ); ?></span>
 							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_formatted_billing_full_name() ); ?></span>
 						</div>
 						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Phone', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'phone' ) ); ?></span>
 							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_billing_phone() ? $order->get_billing_phone() : '—' ); ?></span>
 						</div>
 						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Email', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'email' ) ); ?></span>
 							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_billing_email() ? $order->get_billing_email() : '—' ); ?></span>
 						</div>
 						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Payment', 'hkdev-shop-elements' ); ?></span>
+							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'payment' ) ); ?></span>
 							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $payment_method_title ); ?></span>
 						</div>
 					</div>
 					<div class="hkdev-co-invoice-print-wrap">
 						<button type="button" class="hkdev-co-print-btn" onclick="window.print()">
-							<i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Invoice', 'hkdev-shop-elements' ); ?>
+							<i class="fa-solid fa-print"></i> <?php echo esc_html( $this->t( 'thankyou', 'print' ) ); ?>
 						</button>
 					</div>
 				</div>
@@ -557,12 +568,12 @@ class CheckoutEngine {
 				<!-- Billing / Shipping addresses -->
 				<div class="hkdev-co-invoice-address-row">
 					<div class="hkdev-co-invoice-address-block">
-						<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Billing Address', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'billing' ) ); ?></span>
 						<span class="hkdev-co-invoice-meta-val"><?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'hkdev-shop-elements' ) ) ); ?></span>
 					</div>
 					<?php if ( $order->get_formatted_shipping_address() ) : ?>
 					<div class="hkdev-co-invoice-address-block">
-						<span class="hkdev-co-invoice-meta-label"><?php esc_html_e( 'Shipping Address', 'hkdev-shop-elements' ); ?></span>
+						<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'shipping' ) ); ?></span>
 						<span class="hkdev-co-invoice-meta-val"><?php echo wp_kses_post( $order->get_formatted_shipping_address() ); ?></span>
 					</div>
 					<?php endif; ?>
@@ -572,9 +583,9 @@ class CheckoutEngine {
 				<table class="hkdev-co-invoice-table">
 					<thead>
 						<tr>
-							<th><?php esc_html_e( 'Item', 'hkdev-shop-elements' ); ?></th>
-							<th class="col-qty"><?php esc_html_e( 'Qty', 'hkdev-shop-elements' ); ?></th>
-							<th class="col-total"><?php esc_html_e( 'Total', 'hkdev-shop-elements' ); ?></th>
+							<th><?php echo esc_html( $this->t( 'thankyou', 'item' ) ); ?></th>
+							<th class="col-qty"><?php echo esc_html( $this->t( 'thankyou', 'qty' ) ); ?></th>
+							<th class="col-total"><?php echo esc_html( $this->t( 'thankyou', 'total' ) ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -599,21 +610,21 @@ class CheckoutEngine {
 
 				<!-- Totals -->
 				<div class="hkdev-co-invoice-totals">
-					<div class="hkdev-co-invoice-total-row"><span><?php esc_html_e( 'Subtotal', 'hkdev-shop-elements' ); ?></span><strong><?php echo $order->get_subtotal_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<div class="hkdev-co-invoice-total-row"><span><?php echo esc_html( $this->t( 'thankyou', 'subtotal' ) ); ?></span><strong><?php echo $order->get_subtotal_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 					<?php foreach ( $order->get_items( 'coupon' ) as $coupon_item ) : ?>
-					<div class="hkdev-co-invoice-total-row is-discount"><span><i class="fa-solid fa-tag"></i> <?php esc_html_e( 'Coupon:', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $coupon_item->get_name() ); ?></span><strong>-<?php echo wc_price( $coupon_item->get_discount() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<div class="hkdev-co-invoice-total-row is-discount"><span><i class="fa-solid fa-tag"></i> <?php echo esc_html( $this->t( 'thankyou', 'coupon' ) ); ?> <?php echo esc_html( $coupon_item->get_name() ); ?></span><strong>-<?php echo wc_price( $coupon_item->get_discount() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 					<?php endforeach; ?>
 					<?php foreach ( $order->get_fees() as $fee ) : ?>
 					<div class="hkdev-co-invoice-total-row is-fee"><span><i class="fa-solid fa-gift"></i> <?php echo esc_html( $fee->get_name() ); ?></span><strong><?php echo wc_price( $fee->get_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 					<?php endforeach; ?>
-					<div class="hkdev-co-invoice-total-row"><span><?php esc_html_e( 'Shipping', 'hkdev-shop-elements' ); ?></span><strong><?php echo $order->get_shipping_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-					<div class="hkdev-co-invoice-total-row grand-total"><span><?php esc_html_e( 'Grand Total', 'hkdev-shop-elements' ); ?></span><strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<div class="hkdev-co-invoice-total-row"><span><?php echo esc_html( $this->t( 'thankyou', 'shipping_label' ) ); ?></span><strong><?php echo $order->get_shipping_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<div class="hkdev-co-invoice-total-row grand-total"><span><?php echo esc_html( $this->t( 'thankyou', 'grand_total' ) ); ?></span><strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 				</div>
 
 				<!-- Footer -->
 				<div class="hkdev-co-invoice-footer">
-					<p class="hkdev-co-invoice-thanks"><i class="fa-solid fa-circle-check"></i> <?php esc_html_e( 'Thank you for shopping with us!', 'hkdev-shop-elements' ); ?></p>
-					<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-shop-more-btn"><?php esc_html_e( 'Continue Shopping', 'hkdev-shop-elements' ); ?></a>
+					<p class="hkdev-co-invoice-thanks"><i class="fa-solid fa-circle-check"></i> <?php echo esc_html( $this->t( 'thankyou', 'thanks' ) ); ?></p>
+					<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-shop-more-btn"><?php echo esc_html( $this->t( 'thankyou', 'continue' ) ); ?></a>
 				</div>
 			</div>
 			<?php
@@ -626,8 +637,8 @@ class CheckoutEngine {
 			?>
 			<div class="hkdev-co-empty-cart-wrap">
 				<div class="empty-icon-circle"><i class="fa-solid fa-cart-arrow-down"></i></div>
-				<h3><?php esc_html_e( 'Your Cart is Empty', 'hkdev-shop-elements' ); ?></h3>
-				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-confirm-btn" style="display: inline-block; width: auto; padding: 15px 40px;"><?php esc_html_e( 'Start Shopping', 'hkdev-shop-elements' ); ?></a>
+				<h3><?php echo esc_html( $this->t( 'checkout', 'empty_title' ) ); ?></h3>
+				<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-confirm-btn" style="display: inline-block; width: auto; padding: 15px 40px;"><?php echo esc_html( $this->t( 'checkout', 'start_shopping' ) ); ?></a>
 			</div>
 			<?php
 			return ob_get_clean();
@@ -654,7 +665,7 @@ class CheckoutEngine {
 						<div class="hkdev-co-section-card">
 							<div class="hkdev-co-card-header">
 								<span class="hkdev-co-step-icon"><i class="fa-solid fa-basket-shopping"></i></span>
-								<h3><?php esc_html_e( 'Order Review', 'hkdev-shop-elements' ); ?></h3>
+								<h3><?php echo esc_html( $this->t( 'checkout', 'order_review' ) ); ?></h3>
 							</div>
 
 							<div id="hkdev-co-items-ajax">
@@ -665,7 +676,7 @@ class CheckoutEngine {
 						<div class="hkdev-co-section-card">
 							<div class="hkdev-co-card-header">
 								<span class="hkdev-co-step-icon"><i class="fa-solid fa-file-invoice"></i></span>
-								<h3><?php esc_html_e( 'Billing Address', 'hkdev-shop-elements' ); ?></h3>
+								<h3><?php echo esc_html( $this->t( 'checkout', 'billing' ) ); ?></h3>
 							</div>
 
 							<div class="form-body-wrap hkdev-co-form-area">
@@ -715,7 +726,7 @@ class CheckoutEngine {
 								<div class="hkdev-co-shipping-acc">
 									<button type="button" class="hkdev-co-shipping-acc-head" aria-expanded="false">
 										<span class="hkdev-co-acc-icon"><i class="fa-solid fa-truck-fast"></i></span>
-										<span class="hkdev-co-acc-title"><?php esc_html_e( 'Shipping Address', 'hkdev-shop-elements' ); ?></span>
+										<span class="hkdev-co-acc-title"><?php echo esc_html( $this->t( 'checkout', 'shipping' ) ); ?></span>
 										<span class="hkdev-co-acc-arrow"><i class="fa-solid fa-chevron-down"></i></span>
 									</button>
 									<div class="hkdev-co-shipping-acc-body">
@@ -736,7 +747,7 @@ class CheckoutEngine {
 						<div class="hkdev-co-section-card">
 							<div class="hkdev-co-card-header">
 								<span class="hkdev-co-step-icon"><i class="fa-regular fa-credit-card"></i></span>
-								<h3><?php esc_html_e( 'Payment Method', 'hkdev-shop-elements' ); ?></h3>
+								<h3><?php echo esc_html( $this->t( 'checkout', 'payment' ) ); ?></h3>
 							</div>
 
 							<div id="hkdev-co-payment-ajax">
@@ -749,7 +760,7 @@ class CheckoutEngine {
 							<div class="hkdev-co-shipping-acc">
 								<button type="button" class="hkdev-co-shipping-acc-head" aria-expanded="false">
 									<span class="hkdev-co-acc-icon"><i class="fa-solid fa-ticket"></i></span>
-									<span class="hkdev-co-acc-title"><?php esc_html_e( 'Have any coupon or gift voucher?', 'hkdev-shop-elements' ); ?></span>
+									<span class="hkdev-co-acc-title"><?php echo esc_html( $this->t( 'checkout', 'coupon_title' ) ); ?></span>
 									<span class="hkdev-co-acc-arrow"><i class="fa-solid fa-chevron-down"></i></span>
 								</button>
 								<div class="hkdev-co-shipping-acc-body">
@@ -770,7 +781,7 @@ class CheckoutEngine {
 						<div class="hkdev-co-section-card">
 							<div class="hkdev-co-card-header">
 								<span class="hkdev-co-step-icon"><i class="fa-solid fa-receipt"></i></span>
-								<h3><?php esc_html_e( 'Order Total', 'hkdev-shop-elements' ); ?></h3>
+								<h3><?php echo esc_html( $this->t( 'checkout', 'order_total' ) ); ?></h3>
 							</div>
 
 							<div id="hkdev-co-totals-ajax">
@@ -786,7 +797,7 @@ class CheckoutEngine {
 							<div class="hkdev-co-section-card">
 								<div class="hkdev-co-card-header">
 									<span class="hkdev-co-step-icon"><i class="fa-solid fa-pen"></i></span>
-									<h3><?php esc_html_e( 'Special Notes (Optional)', 'hkdev-shop-elements' ); ?></h3>
+									<h3><?php echo esc_html( $this->t( 'checkout', 'notes' ) ); ?></h3>
 								</div>
 
 								<div class="hkdev-co-notes-wrap">
@@ -812,7 +823,7 @@ class CheckoutEngine {
 
 						<div class="hkdev-co-submit-area">
 							<button type="submit" id="hkdev-co-submit-btn" class="hkdev-co-confirm-btn">
-								<i class="fa-solid fa-lock" style="margin-right: 8px;"></i> <?php esc_html_e( 'Confirm Order', 'hkdev-shop-elements' ); ?>
+								<i class="fa-solid fa-lock" style="margin-right: 8px;"></i> <?php echo esc_html( $this->t( 'checkout', 'confirm' ) ); ?>
 							</button>
 						</div>
 					</div>
@@ -885,9 +896,9 @@ class CheckoutEngine {
 		$hkdev_paid_qty   = max( 0, $hkdev_total_qty - $hkdev_total_free );
 		?>
 		<div class="hkdev-co-items-count-summary">
-			<span class="paid-count"><?php esc_html_e( 'Paid Items', 'hkdev-shop-elements' ); ?>: <strong><?php echo esc_html( $hkdev_paid_qty ); ?></strong></span>
+			<span class="paid-count"><?php echo esc_html( $this->t( 'checkout', 'paid_items' ) ); ?>: <strong><?php echo esc_html( $hkdev_paid_qty ); ?></strong></span>
 			<span class="separator"> | </span>
-			<span class="free-count"><?php esc_html_e( 'Free items', 'hkdev-shop-elements' ); ?>: <strong><?php echo esc_html( $hkdev_total_free ); ?></strong></span>
+			<span class="free-count"><?php echo esc_html( $this->t( 'checkout', 'free_items' ) ); ?>: <strong><?php echo esc_html( $hkdev_total_free ); ?></strong></span>
 		</div>
 
 		<?php
@@ -905,8 +916,8 @@ class CheckoutEngine {
 		<div class="hkdev-co-coupon-wrap">
 			<div class="hkdev-co-coupon-box">
 				<i class="fa-solid fa-ticket"></i>
-				<input type="text" id="hkdev-co-coupon-code" name="coupon_code" placeholder="<?php esc_attr_e( 'Enter coupon code', 'hkdev-shop-elements' ); ?>">
-				<button type="button" id="hkdev-co-apply-coupon"><?php esc_html_e( 'Apply', 'hkdev-shop-elements' ); ?></button>
+				<input type="text" id="hkdev-co-coupon-code" name="coupon_code" placeholder="<?php echo esc_attr( $this->t( 'checkout', 'coupon_placeholder' ) ); ?>">
+				<button type="button" id="hkdev-co-apply-coupon"><?php echo esc_html( $this->t( 'checkout', 'apply' ) ); ?></button>
 			</div>
 		</div>
 		<?php
@@ -937,7 +948,7 @@ class CheckoutEngine {
 						<?php
 					endforeach;
 				} else {
-					echo '<p>' . esc_html__( 'No payment methods available.', 'hkdev-shop-elements' ) . '</p>';
+					echo '<p>' . esc_html( $this->t( 'checkout', 'no_payment' ) ) . '</p>';
 				}
 				?>
 			</div>
@@ -955,11 +966,11 @@ class CheckoutEngine {
 		ob_start();
 		?>
 		<div class="hkdev-co-calculation-wrap">
-			<div class="hkdev-co-calc-line"><span><?php esc_html_e( 'Subtotal', 'hkdev-shop-elements' ); ?></span><strong><?php echo WC()->cart->get_cart_subtotal(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+			<div class="hkdev-co-calc-line"><span><?php echo esc_html( $this->t( 'checkout', 'subtotal' ) ); ?></span><strong><?php echo WC()->cart->get_cart_subtotal(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 
 			<?php foreach ( WC()->cart->get_coupons() as $code => $coupon ) : ?>
 				<div class="hkdev-co-calc-line coupon-line">
-					<span class="coupon-title"><i class="fa-solid fa-tag"></i> <?php esc_html_e( 'Coupon', 'hkdev-shop-elements' ); ?>: <?php echo esc_html( $code ); ?></span>
+					<span class="coupon-title"><i class="fa-solid fa-tag"></i> <?php echo esc_html( $this->t( 'checkout', 'coupon' ) ); ?>: <?php echo esc_html( $code ); ?></span>
 					<span class="coupon-val">
 						<strong>-<?php echo wc_price( WC()->cart->get_coupon_discount_amount( $code ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
 						<a href="#" class="hkdev-co-remove-coupon" data-coupon="<?php echo esc_attr( $code ); ?>"><i class="fa-solid fa-xmark"></i></a>
@@ -974,10 +985,10 @@ class CheckoutEngine {
 				</div>
 			<?php endforeach; ?>
 
-			<div class="hkdev-co-calc-line"><span><?php esc_html_e( 'Shipping', 'hkdev-shop-elements' ); ?></span><strong><?php echo wc_price( WC()->cart->get_shipping_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+			<div class="hkdev-co-calc-line"><span><?php echo esc_html( $this->t( 'checkout', 'shipping_label' ) ); ?></span><strong><?php echo wc_price( WC()->cart->get_shipping_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 
 			<div class="hkdev-co-calc-line grand-total-line">
-				<span><?php esc_html_e( 'GRAND TOTAL', 'hkdev-shop-elements' ); ?></span>
+				<span><?php echo esc_html( $this->t( 'checkout', 'grand_total' ) ); ?></span>
 				<strong class="total-amt"><?php echo WC()->cart->get_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong>
 			</div>
 		</div>
@@ -1124,7 +1135,7 @@ class CheckoutEngine {
 		<div class="hkdev-co-delivery-selection-wrap">
 			<div class="hkdev-co-card-header mini-header">
 				<span class="hkdev-co-step-icon mini"><i class="fa-solid fa-truck-fast"></i></span>
-				<h4><?php esc_html_e( 'Delivery Area', 'hkdev-shop-elements' ); ?></h4>
+				<h4><?php echo esc_html( $this->t( 'checkout', 'delivery_area' ) ); ?></h4>
 			</div>
 			<div class="radio-stack-custom">
 				<?php foreach ( $options as $rate_id => $option ) : $active = ( $chosen_shipping === $rate_id ) ? 'active' : ''; ?>
@@ -1613,8 +1624,7 @@ class CheckoutEngine {
 		$refund  = $this->wc_legal_page_link( 'refund', __( 'Refund and Return Policy', 'hkdev-shop-elements' ) );
 
 		return sprintf(
-			/* translators: 1: terms link, 2: privacy link, 3: refund link */
-			__( 'I have read and agree to the %1$s, %2$s &amp; %3$s.', 'hkdev-shop-elements' ),
+			$this->t( 'checkout', 'terms' ),
 			$terms,
 			$privacy,
 			$refund

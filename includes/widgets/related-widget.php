@@ -196,6 +196,16 @@ class RelatedWidget extends Widget_Base {
 		$this->end_controls_section();
 
 		$this->register_product_controls( true, true );
+
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::register_widget_section(
+				$this,
+				'related',
+				'section_related_texts',
+				esc_html__( 'Related Product Texts', 'hkdev-shop-elements' )
+			);
+		}
+
 		$this->register_style_sections();
 		$this->register_carousel_style_controls();
 
@@ -227,11 +237,15 @@ class RelatedWidget extends Widget_Base {
 		}
 
 		$settings = $this->get_settings_for_display();
+		$this->save_variation_labels( $settings );
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			\HkdevShopElements\Includes\Core\UiLabels::save_from_settings( 'related', $settings );
+		}
 
 		$product_id = $this->resolve_product_id( $settings );
 
 		if ( ! $product_id ) {
-			$this->render_empty_state( esc_html__( 'Related Products needs a product page (or a Product ID) to show items.', 'hkdev-shop-elements' ) );
+			$this->render_empty_state( $this->related_text( $settings, 'need_product' ) );
 			return;
 		}
 
@@ -266,19 +280,19 @@ class RelatedWidget extends Widget_Base {
 			$atts['is_related'] = 'yes';
 			$atts['id']         = $product_id;
 		} else {
-			$this->render_empty_state( esc_html__( 'No related products found for this item.', 'hkdev-shop-elements' ) );
+			$this->render_empty_state( $this->related_text( $settings, 'empty' ) );
 			return;
 		}
 
 		$grid = ShopEngine::instance()->master_shop_shortcode( $atts );
 
 		if ( '' === trim( wp_strip_all_tags( (string) $grid ) ) ) {
-			$this->render_empty_state( esc_html__( 'No related products found for this item.', 'hkdev-shop-elements' ) );
+			$this->render_empty_state( $this->related_text( $settings, 'empty' ) );
 			return;
 		}
 
 		$show_title = isset( $settings['show_title'] ) && 'yes' === $settings['show_title'];
-		$title      = isset( $settings['title'] ) ? trim( (string) $settings['title'] ) : '';
+		$title      = $this->related_heading( $settings );
 
 		echo '<div class="hkdev-related-wrapper" style="' . esc_attr( ShopEngine::design_style_attr( $atts ) ) . '" data-card-preset="' . esc_attr( $atts['card_preset'] ) . '" data-card-theme="' . esc_attr( $atts['card_theme'] ) . '" data-font-mode="' . esc_attr( $atts['font_mode'] ) . '">';
 		if ( $show_title && '' !== $title ) {
@@ -286,6 +300,54 @@ class RelatedWidget extends Widget_Base {
 		}
 		echo $grid; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</div>';
+	}
+
+	/**
+	 * Related heading: custom Texts value, else existing Heading, else saved label.
+	 *
+	 * @param array $settings Widget settings.
+	 * @return string
+	 */
+	private function related_heading( $settings ) {
+		$default = __( 'Related Products', 'hkdev-shop-elements' );
+		$ui      = isset( $settings['ui_related_heading'] ) ? trim( (string) $settings['ui_related_heading'] ) : '';
+		$legacy  = isset( $settings['title'] ) ? trim( (string) $settings['title'] ) : '';
+
+		if ( '' !== $ui && $ui !== $default ) {
+			return $ui;
+		}
+
+		if ( '' !== $legacy ) {
+			return $legacy;
+		}
+
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			return \HkdevShopElements\Includes\Core\UiLabels::text( 'related', 'heading' );
+		}
+
+		return $default;
+	}
+
+	/**
+	 * Related empty / helper copy.
+	 *
+	 * @param array  $settings Widget settings.
+	 * @param string $key      related group key.
+	 * @return string
+	 */
+	private function related_text( $settings, $key ) {
+		$control = 'ui_related_' . $key;
+		if ( isset( $settings[ $control ] ) && '' !== trim( (string) $settings[ $control ] ) ) {
+			return trim( (string) $settings[ $control ] );
+		}
+
+		if ( class_exists( '\HkdevShopElements\Includes\Core\UiLabels' ) ) {
+			return \HkdevShopElements\Includes\Core\UiLabels::text( 'related', $key );
+		}
+
+		return 'empty' === $key
+			? __( 'No related products found for this item.', 'hkdev-shop-elements' )
+			: __( 'Related Products needs a product page (or a Product ID) to show items.', 'hkdev-shop-elements' );
 	}
 
 	/**
@@ -385,7 +447,7 @@ class RelatedWidget extends Widget_Base {
 		}
 
 		echo '<div class="hkdev-related-empty" style="padding:18px 20px;border:1px dashed #c3c4c7;border-radius:8px;color:#50575e;background:#fff;">';
-		echo '<strong>' . esc_html__( 'Related Products', 'hkdev-shop-elements' ) . '</strong>';
+		echo '<strong>' . esc_html( $this->related_heading( $this->get_settings_for_display() ) ) . '</strong>';
 		echo '<p style="margin:8px 0 0;">' . esc_html( $message ) . '</p>';
 		echo '</div>';
 	}

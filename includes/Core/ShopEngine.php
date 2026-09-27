@@ -355,6 +355,10 @@ class ShopEngine {
 	 * @return string
 	 */
 	public function variation_modal_html() {
+		$t = static function ( $key ) {
+			return UiLabels::text( 'variation', $key );
+		};
+
 		ob_start();
 		?>
 		<div class="hkdev-variation-modal" style="display:none;">
@@ -363,19 +367,19 @@ class ShopEngine {
 				<div class="hkdev-vm-header">
 					<img class="hkdev-vm-thumb" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">
 					<h3 class="hkdev-vm-title"></h3>
-					<button type="button" class="hkdev-vm-close" aria-label="<?php esc_attr_e( 'Close', 'hkdev-shop-elements' ); ?>">&times;</button>
+					<button type="button" class="hkdev-vm-close" aria-label="<?php echo esc_attr( $t( 'close' ) ); ?>">&times;</button>
 				</div>
 				<div class="hkdev-vm-body">
-					<p class="hkdev-vm-note"><?php echo esc_html__( 'Select Size, Color, and other options that are in stock.', 'hkdev-shop-elements' ); ?></p>
+					<p class="hkdev-vm-note"><?php echo esc_html( $t( 'note' ) ); ?></p>
 					<div class="hkdev-vm-attributes"></div>
 					<div class="hkdev-vm-summary">
 						<div class="hkdev-vm-price"></div>
-						<div class="hkdev-vm-stock"><?php echo esc_html__( 'Select options', 'hkdev-shop-elements' ); ?></div>
+						<div class="hkdev-vm-stock"><?php echo esc_html( $t( 'select_options' ) ); ?></div>
 					</div>
 				</div>
 				<div class="hkdev-vm-footer">
-					<button type="button" class="hkdev-vm-btn hkdev-vm-add-btn"><i class="fa-solid fa-cart-plus"></i> <?php echo esc_html__( 'Add to Cart', 'hkdev-shop-elements' ); ?></button>
-					<button type="button" class="hkdev-vm-btn hkdev-vm-buy-btn"><i class="fa-solid fa-bolt"></i> <?php echo esc_html__( 'Buy Now', 'hkdev-shop-elements' ); ?></button>
+					<button type="button" class="hkdev-vm-btn hkdev-vm-add-btn"><i class="fa-solid fa-cart-plus"></i> <?php echo esc_html( $t( 'add_to_cart' ) ); ?></button>
+					<button type="button" class="hkdev-vm-btn hkdev-vm-buy-btn"><i class="fa-solid fa-bolt"></i> <?php echo esc_html( $t( 'buy_now' ) ); ?></button>
 				</div>
 			</div>
 		</div>
