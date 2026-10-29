@@ -226,7 +226,7 @@ jQuery(document).ready(function($) {
 
         $('#hkdev-sp-viewport').removeClass('zoomed-active');
 
-        const $zoomInner = $('#hkdev-sp-zoom-inner');
+        const $zoomInner = $('#hkdev-sp-zoom-container, #hkdev-sp-zoom-inner, .hkdev-sp-zoom-inner');
         const $player = $('#hkdev-sp-video-player');
 
         if ('video' === mediaType) {
@@ -242,20 +242,20 @@ jQuery(document).ready(function($) {
             }
         } else {
             // Show the image, hide the video player.
-            const fullSrc = $target.data('full');
+            const fullSrc = $target.data('full') || $target.find('img').attr('src') || '';
             if ($player.length) {
                 $player.stop(true, true).fadeOut(100).empty();
             }
             if ($zoomInner.is(':hidden')) {
                 // Coming back from a video: swap the src and show the
                 // container directly (no fadeOut needed on a hidden node).
-                $('#hkdev-sp-main-img').attr('src', fullSrc);
+                $('#hkdev-sp-main-img').removeAttr('srcset').attr('src', fullSrc);
                 $zoomInner.stop(true, true).fadeIn(200);
             } else {
                 // Normal image navigation: fade the image itself and swap
                 // the src in the callback (matches the proven pre-video path).
                 $('#hkdev-sp-main-img').stop(true, true).fadeOut(100, function() {
-                    $(this).attr('src', fullSrc).fadeIn(200);
+                    $(this).removeAttr('srcset').attr('src', fullSrc).fadeIn(200);
                 });
             }
         }
@@ -268,18 +268,33 @@ jQuery(document).ready(function($) {
         }
     }
 
-    $(document).on('click', '.hkdev-sp-thumb', function() {
-        updateMainImage($('.hkdev-sp-thumb').index(this));
+    $(document).on('click', '.hkdev-sp-thumb', function(e) {
+        e.preventDefault();
+        const $thumbs = $('.hkdev-sp-thumb');
+        const index = $thumbs.index(this);
+        if (index >= 0) {
+            updateMainImage(index);
+        }
     });
 
     $(document).on('click', '#hkdev-sp-next-img', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        updateMainImage($('.hkdev-sp-thumb.active').index() + 1);
+        const $thumbs = $('.hkdev-sp-thumb');
+        if (!$thumbs.length) return;
+        let currentIdx = $thumbs.index($('.hkdev-sp-thumb.active'));
+        if (currentIdx < 0) currentIdx = 0;
+        updateMainImage(currentIdx + 1);
     });
 
     $(document).on('click', '#hkdev-sp-prev-img', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        updateMainImage($('.hkdev-sp-thumb.active').index() - 1);
+        const $thumbs = $('.hkdev-sp-thumb');
+        if (!$thumbs.length) return;
+        let currentIdx = $thumbs.index($('.hkdev-sp-thumb.active'));
+        if (currentIdx < 0) currentIdx = 0;
+        updateMainImage(currentIdx - 1);
     });
 
     // YouTube lite embed in the gallery viewport (click poster -> load player).
@@ -389,7 +404,7 @@ jQuery(document).ready(function($) {
             }
 
             if (match.image && match.image.src) {
-                $('#hkdev-sp-main-img').attr('src', match.image.src);
+                $('#hkdev-sp-main-img').removeAttr('srcset').attr('src', match.image.src);
                 // Re-activate the thumb that matches the variation image so
                 // arrow navigation keeps working after a variation change.
                 var $vThumb = $('.hkdev-sp-thumb').removeClass('active').filter(function() {
