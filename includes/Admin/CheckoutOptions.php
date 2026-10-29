@@ -87,6 +87,16 @@ final class CheckoutOptions {
 
         register_setting(
             'hkdev_elements_checkout_fields_group',
+            'hkdev_elements_show_coupon_modal',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => 'yes',
+            ]
+        );
+
+        register_setting(
+            'hkdev_elements_checkout_fields_group',
             'hkdev_elements_billing_as_delivery',
             [
                 'type'              => 'string',
@@ -299,6 +309,7 @@ final class CheckoutOptions {
             check_admin_referer( 'hkdev_elements_reset_fields', 'reset_nonce' );
             delete_option( $engine->config_option_name() );
             delete_option( 'hkdev_elements_show_coupon' );
+            delete_option( 'hkdev_elements_show_coupon_modal' );
             delete_option( 'hkdev_elements_billing_as_delivery' );
             delete_option( 'hkdev_elements_checkout_modal_scope' );
             echo '<div class="notice notice-success is-dismissible"><p>'
@@ -309,6 +320,7 @@ final class CheckoutOptions {
         $groups                = $this->get_groups();
         $fields                = $engine->get_field_config();
         $show_coupon           = get_option( 'hkdev_elements_show_coupon', 'yes' );
+        $show_coupon_modal     = get_option( 'hkdev_elements_show_coupon_modal', 'yes' );
         $billing_as_delivery   = get_option( 'hkdev_elements_billing_as_delivery', 'no' );
         $checkout_modal_scope  = get_option( 'hkdev_elements_checkout_modal_scope', 'both' );
         $option_name           = $engine->config_option_name();
@@ -349,7 +361,7 @@ final class CheckoutOptions {
                     <div class="hkdev-admin-card-body">
                         <table class="form-table" role="presentation"><tbody>
                             <tr>
-                                <th scope="row"><?php esc_html_e( 'Coupon / Voucher', 'hkdev-shop-elements' ); ?></th>
+                                <th scope="row"><?php esc_html_e( 'Coupon (Checkout Page)', 'hkdev-shop-elements' ); ?></th>
                                 <td>
                                     <!-- hidden fallback so an unchecked box is still saved as "no" -->
                                     <input type="hidden" name="hkdev_elements_show_coupon" value="no">
@@ -357,7 +369,19 @@ final class CheckoutOptions {
                                         <input type="checkbox" name="hkdev_elements_show_coupon" value="yes" <?php checked( 'yes', $show_coupon ); ?>>
                                         <span class="hkdev-toggle-slider"></span>
                                     </label>
-                                    <span class="hkdev-toggle-text"><?php esc_html_e( 'Show coupon section on checkout', 'hkdev-shop-elements' ); ?></span>
+                                    <span class="hkdev-toggle-text"><?php esc_html_e( 'Show coupon section on checkout page', 'hkdev-shop-elements' ); ?></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php esc_html_e( 'Coupon (Checkout Modal)', 'hkdev-shop-elements' ); ?></th>
+                                <td>
+                                    <!-- hidden fallback so an unchecked box is still saved as "no" -->
+                                    <input type="hidden" name="hkdev_elements_show_coupon_modal" value="no">
+                                    <label class="hkdev-toggle">
+                                        <input type="checkbox" name="hkdev_elements_show_coupon_modal" value="yes" <?php checked( 'yes', $show_coupon_modal ); ?>>
+                                        <span class="hkdev-toggle-slider"></span>
+                                    </label>
+                                    <span class="hkdev-toggle-text"><?php esc_html_e( 'Show coupon section in checkout modal (Buy Now popup)', 'hkdev-shop-elements' ); ?></span>
                                 </td>
                             </tr>
                             <tr>

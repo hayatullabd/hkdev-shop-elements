@@ -102,6 +102,7 @@ class CheckoutEngine {
 	 * @var bool
 	 */
 	private $render_in_admin = false;
+	private $is_rendering_modal = false;
 
 	/**
 	 * Singleton.
@@ -755,7 +756,15 @@ class CheckoutEngine {
 							</div>
 						</div>
 
-						<?php if ( 'yes' === get_option( 'hkdev_elements_show_coupon', 'yes' ) ) : ?>
+						<?php
+						$show_coupon_opt = $this->is_rendering_modal
+							? ( 'yes' === get_option( 'hkdev_elements_show_coupon_modal', 'yes' ) )
+							: ( 'yes' === get_option( 'hkdev_elements_show_coupon', 'yes' ) );
+						if ( ! wc_coupons_enabled() ) {
+							$show_coupon_opt = false;
+						}
+						?>
+						<?php if ( $show_coupon_opt ) : ?>
 						<div class="hkdev-co-section-card">
 							<div class="hkdev-co-shipping-acc">
 								<button type="button" class="hkdev-co-shipping-acc-head" aria-expanded="false">
@@ -1175,9 +1184,11 @@ class CheckoutEngine {
 			ob_clean();
 		}
 
-		$this->render_in_admin = true;
-		$html                  = $this->custom_checkout_shortcode();
-		$this->render_in_admin = false;
+		$this->render_in_admin    = true;
+		$this->is_rendering_modal = true;
+		$html                     = $this->custom_checkout_shortcode();
+		$this->is_rendering_modal = false;
+		$this->render_in_admin    = false;
 
 		if ( '' === trim( $html ) ) {
 			wp_send_json_error( [ 'message' => 'Could not render checkout.' ] );
