@@ -3,7 +3,7 @@
  * Plugin Name:       HKDEV Shop Elements
  * Plugin URI:        https://github.com/hayatullabd/hkdev-shop-elements
  * Description:       Standalone Elementor + WooCommerce widgets (Shop Grid / Carousel, Cart, Checkout, Single Product, Header, Footer, Contact Form). Works with any WordPress theme.
- * Version:           1.1.13
+ * Version:           1.1.14
  * Author:            Md Hayatulla Kha
  * Author URI:        https://github.com/hayatullabd
  * Text Domain:       hkdev-shop-elements
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'HKDEV_ELEMENTS_VERSION', '1.1.13' );
+define( 'HKDEV_ELEMENTS_VERSION', '1.1.14' );
 define( 'HKDEV_ELEMENTS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_URL', plugin_dir_url( __FILE__ ) );
 define( 'HKDEV_ELEMENTS_ASSETS_URL', HKDEV_ELEMENTS_URL . 'assets/' );
@@ -663,6 +663,7 @@ function hkdev_elements_register_assets() {
 			'assets'   => [
 				'checkoutCss' => hkdev_elements_registered_asset_src( 'hkdev-elements-checkout-style', 'style' ),
 				'checkoutJs'  => hkdev_elements_registered_asset_src( 'hkdev-elements-checkout-js', 'script' ),
+				'html2canvasJs' => hkdev_elements_registered_asset_src( 'hkdev-elements-html2canvas', 'script' ),
 				'select2Css'  => hkdev_elements_registered_asset_src( 'select2', 'style' ),
 				'select2Js'   => hkdev_elements_registered_asset_src( wp_script_is( 'wc-select2', 'registered' ) ? 'wc-select2' : 'select2', 'script' ),
 				'authCss'     => hkdev_elements_registered_asset_src( 'hkdev-elements-auth-style', 'style' ),

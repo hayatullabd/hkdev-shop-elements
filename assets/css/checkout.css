@@ -324,41 +324,102 @@
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* =========================================
-   Compact Invoice (Thank-You Page)
+   Thank-You Page & Compact Invoice Box
    ========================================= */
-.hkdev-co-invoice {
-    font-family: 'Hind Siliguri', 'Inter', sans-serif !important;
-    max-width: 900px !important;
-    margin: 0 auto !important;
-    background: #fff !important;
-    border: 1px solid var(--co-border-color) !important;
-    border-radius: 14px !important;
-    padding: 28px !important;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04) !important;
+.hkdev-co-thankyou-wrap {
+    font-family: 'Hind Siliguri', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    max-width: 600px !important;
+    margin: 24px auto 40px !important;
+    padding: 0 12px !important;
+    box-sizing: border-box !important;
 }
 
-/* Header: logo + invoice title */
+/* 1. Thank-You Banner */
+.hkdev-co-thankyou-banner {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%) !important;
+    border: 1px solid #bbf7d0 !important;
+    border-radius: 14px !important;
+    padding: 24px 18px !important;
+    text-align: center !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 15px rgba(22, 101, 52, 0.05) !important;
+}
+.hkdev-co-thankyou-icon {
+    width: 56px !important;
+    height: 56px !important;
+    margin: 0 auto 12px !important;
+    background: #008b44 !important;
+    color: #ffffff !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 28px !important;
+    box-shadow: 0 4px 12px rgba(0, 139, 68, 0.25) !important;
+}
+.hkdev-co-thankyou-title {
+    font-size: 22px !important;
+    font-weight: 800 !important;
+    color: #14532d !important;
+    margin: 0 0 10px !important;
+    line-height: 1.3 !important;
+}
+.hkdev-co-thankyou-desc {
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #334155 !important;
+    line-height: 1.6 !important;
+    margin: 0 auto 12px !important;
+    max-width: 500px !important;
+}
+.hkdev-co-thankyou-order-pill {
+    display: inline-block !important;
+    background: #ffffff !important;
+    border: 1px dashed #86efac !important;
+    padding: 4px 14px !important;
+    border-radius: 999px !important;
+    font-size: 13px !important;
+    color: #15803d !important;
+}
+.hkdev-co-thankyou-order-pill strong {
+    color: #166534 !important;
+    font-weight: 800 !important;
+}
+
+/* 2. Compact Invoice Box */
+.hkdev-co-invoice {
+    font-family: inherit !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 22px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    box-sizing: border-box !important;
+}
+
+/* Invoice Header */
 .hkdev-co-invoice-header {
     display: flex !important;
     justify-content: space-between !important;
-    align-items: flex-start !important;
-    flex-wrap: wrap !important;
-    gap: 16px !important;
-    padding-bottom: 18px !important;
-    border-bottom: 2px solid var(--brand-light) !important;
-    margin-bottom: 18px !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding-bottom: 14px !important;
+    border-bottom: 2px solid #f1f5f9 !important;
+    margin-bottom: 16px !important;
 }
 .hkdev-co-invoice-brand img,
 .hkdev-co-invoice-brand .custom-logo {
-    max-height: 56px !important;
+    max-height: 48px !important;
     width: auto !important;
-    max-width: 180px !important;
+    max-width: 160px !important;
     object-fit: contain !important;
 }
 .hkdev-co-invoice-site-name {
-    font-size: 22px !important;
+    font-size: 18px !important;
     font-weight: 800 !important;
-    color: var(--brand-primary) !important;
+    color: var(--brand-primary, #008b44) !important;
     margin: 0 !important;
     line-height: 1.2 !important;
 }
@@ -366,108 +427,89 @@
     text-align: right !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 3px !important;
+    align-items: flex-end !important;
+    gap: 2px !important;
 }
 .hkdev-co-invoice-title {
-    font-size: 11px !important;
+    font-size: 10px !important;
     font-weight: 800 !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 1.5px !important;
     text-transform: uppercase !important;
-    color: var(--text-muted) !important;
+    color: #64748b !important;
 }
 .hkdev-co-invoice-order-no {
-    font-size: 20px !important;
+    font-size: 18px !important;
     font-weight: 800 !important;
-    color: var(--brand-primary) !important;
+    color: var(--brand-primary, #008b44) !important;
     line-height: 1.2 !important;
 }
 .hkdev-co-invoice-status {
     display: inline-block !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    color: #fff !important;
-    background: var(--brand-primary) !important;
+    color: #ffffff !important;
+    background: var(--brand-primary, #008b44) !important;
     border-radius: 999px !important;
-    padding: 3px 12px !important;
-    align-self: flex-end !important;
+    padding: 2px 10px !important;
+    margin-top: 2px !important;
 }
 
-/* Top row: meta + print button */
-.hkdev-co-invoice-top-row {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    gap: 16px !important;
+/* Compact Info Card */
+.hkdev-co-invoice-info-card {
+    background: #f8fafc !important;
+    border: 1px solid #f1f5f9 !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
     margin-bottom: 16px !important;
 }
-.hkdev-co-invoice-meta-grid {
+.hkdev-co-info-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 10px 18px !important;
-    flex: 1 !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px 14px !important;
 }
-.hkdev-co-invoice-meta-block {
+.hkdev-co-info-item {
     display: flex !important;
     flex-direction: column !important;
     gap: 2px !important;
 }
-.hkdev-co-invoice-meta-label {
-    font-size: 10px !important;
+.hkdev-co-info-item.full-width {
+    grid-column: 1 / -1 !important;
+    border-top: 1px dashed #e2e8f0 !important;
+    padding-top: 8px !important;
+    margin-top: 2px !important;
+}
+.hkdev-co-info-label {
+    font-size: 11px !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
-    color: var(--text-muted) !important;
+    color: #64748b !important;
 }
-.hkdev-co-invoice-meta-val {
-    font-size: 14px !important;
+.hkdev-co-info-val {
+    font-size: 13.5px !important;
     font-weight: 600 !important;
-    color: var(--text-dark) !important;
+    color: #1e293b !important;
     line-height: 1.4 !important;
+    word-break: break-word !important;
 }
-.hkdev-co-invoice-print-wrap {
-    flex-shrink: 0 !important;
-}
-.hkdev-co-print-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    padding: 10px 18px !important;
-    background: var(--brand-primary) !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    cursor: pointer !important;
-    transition: background 0.2s !important;
-    white-space: nowrap !important;
-}
-.hkdev-co-print-btn:hover { background: var(--brand-hover) !important; }
-
-/* Address row */
-.hkdev-co-invoice-address-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 18px !important;
-    background: var(--bg-soft) !important;
-    border-radius: 10px !important;
-    padding: 16px !important;
-    margin-bottom: 18px !important;
+.hkdev-co-info-val.address-val {
+    font-weight: 500 !important;
+    color: #334155 !important;
 }
 
-/* Items table */
+/* Items Table */
 .hkdev-co-invoice-table {
     width: 100% !important;
     border-collapse: collapse !important;
-    margin-bottom: 18px !important;
+    margin-bottom: 14px !important;
 }
 .hkdev-co-invoice-table th,
 .hkdev-co-invoice-table td {
     text-align: left !important;
-    padding: 10px 8px !important;
-    border-bottom: 1px solid var(--co-border-color) !important;
-    font-size: 14px !important;
-    color: var(--text-dark) !important;
+    padding: 8px 6px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    font-size: 13.5px !important;
+    color: #1e293b !important;
     vertical-align: top !important;
 }
 .hkdev-co-invoice-table th {
@@ -475,80 +517,142 @@
     font-weight: 800 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
-    color: var(--text-muted) !important;
-    border-bottom: 2px solid var(--co-border-color) !important;
+    color: #64748b !important;
+    border-bottom: 2px solid #e2e8f0 !important;
 }
 .hkdev-co-invoice-table td.col-qty,
 .hkdev-co-invoice-table th.col-qty,
 .hkdev-co-invoice-table td.col-total,
-.hkdev-co-invoice-table th.col-total { text-align: right !important; white-space: nowrap !important; }
+.hkdev-co-invoice-table th.col-total {
+    text-align: right !important;
+    white-space: nowrap !important;
+}
 .hkdev-co-invoice-sku {
     display: block !important;
     font-size: 11px !important;
-    color: var(--text-muted) !important;
-    font-weight: 600 !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
     margin-top: 2px !important;
 }
 
 /* Totals */
 .hkdev-co-invoice-totals {
-    max-width: 320px !important;
+    max-width: 280px !important;
     margin-left: auto !important;
-    margin-bottom: 20px !important;
+    margin-bottom: 14px !important;
 }
 .hkdev-co-invoice-total-row {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 6px 0 !important;
-    font-size: 14px !important;
+    padding: 4px 0 !important;
+    font-size: 13.5px !important;
     font-weight: 600 !important;
-    color: var(--text-muted) !important;
+    color: #64748b !important;
 }
-.hkdev-co-invoice-total-row strong { font-weight: 800 !important; color: var(--text-dark) !important; }
-.hkdev-co-invoice-total-row.is-discount { color: #d5541e !important; }
-.hkdev-co-invoice-total-row.is-discount strong { color: #d5541e !important; }
-.hkdev-co-invoice-total-row.is-fee { color: var(--brand-primary) !important; }
-.hkdev-co-invoice-total-row.is-fee strong { color: var(--brand-primary) !important; }
+.hkdev-co-invoice-total-row strong {
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+.hkdev-co-invoice-total-row.is-discount {
+    color: #d5541e !important;
+}
+.hkdev-co-invoice-total-row.is-discount strong {
+    color: #d5541e !important;
+}
+.hkdev-co-invoice-total-row.is-fee {
+    color: var(--brand-primary, #008b44) !important;
+}
+.hkdev-co-invoice-total-row.is-fee strong {
+    color: var(--brand-primary, #008b44) !important;
+}
 .hkdev-co-invoice-total-row.grand-total {
-    font-size: 18px !important;
-    color: var(--brand-primary) !important;
-    border-top: 2px dashed var(--co-border-color) !important;
+    font-size: 16px !important;
+    color: var(--brand-primary, #008b44) !important;
+    border-top: 2px dashed #e2e8f0 !important;
     margin-top: 6px !important;
-    padding-top: 10px !important;
+    padding-top: 8px !important;
 }
-.hkdev-co-invoice-total-row.grand-total strong { color: var(--brand-primary) !important; }
+.hkdev-co-invoice-total-row.grand-total strong {
+    color: var(--brand-primary, #008b44) !important;
+    font-weight: 800 !important;
+}
 
-/* Footer */
+/* Invoice Footer */
 .hkdev-co-invoice-footer {
-    border-top: 2px solid var(--brand-light) !important;
-    padding-top: 16px !important;
+    border-top: 1px solid #f1f5f9 !important;
+    padding-top: 10px !important;
     text-align: center !important;
 }
 .hkdev-co-invoice-thanks {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    color: var(--brand-primary) !important;
-    margin-bottom: 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+.hkdev-co-invoice-thanks i {
+    color: #008b44 !important;
+    font-size: 15px !important;
+}
+
+/* 3. Action Buttons Below Invoice */
+.hkdev-co-invoice-actions {
     display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin-top: 20px !important;
+}
+.hkdev-co-action-btn {
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     gap: 8px !important;
+    padding: 11px 18px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    line-height: 1.2 !important;
+    font-family: inherit !important;
 }
-.hkdev-co-invoice-thanks i { font-size: 18px !important; }
-
-/* Mobile */
-@media (max-width: 768px) {
-    .hkdev-co-invoice { padding: 18px !important; border-radius: 10px !important; }
-    .hkdev-co-invoice-header { flex-direction: column !important; }
-    .hkdev-co-invoice-brand img, .hkdev-co-invoice-brand .custom-logo { max-height: 44px !important; }
-    .hkdev-co-invoice-head-right { text-align: left !important; }
-    .hkdev-co-invoice-status { align-self: flex-start !important; }
-    .hkdev-co-invoice-top-row { flex-direction: column !important; }
-    .hkdev-co-invoice-meta-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
-    .hkdev-co-invoice-address-row { grid-template-columns: 1fr !important; }
-    .hkdev-co-invoice-table th, .hkdev-co-invoice-table td { padding: 8px 4px !important; font-size: 13px !important; }
-    .hkdev-co-invoice-totals { max-width: 100% !important; }
+.hkdev-co-btn-print {
+    background: #008b44 !important;
+    color: #ffffff !important;
+}
+.hkdev-co-btn-print:hover {
+    background: #007338 !important;
+    color: #ffffff !important;
+}
+.hkdev-co-btn-download {
+    background: #0284c7 !important;
+    color: #ffffff !important;
+}
+.hkdev-co-btn-download:hover {
+    background: #0369a1 !important;
+    color: #ffffff !important;
+}
+.hkdev-co-btn-download.is-downloading {
+    opacity: 0.75 !important;
+    pointer-events: none !important;
+}
+.hkdev-co-btn-home {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.hkdev-co-btn-home:hover {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
 }
 
 /* Print: only the invoice, compact on one page */
@@ -575,46 +679,52 @@
     }
     body.woocommerce-checkout, body.woocommerce-checkout body { background: #fff !important; }
 
-    /* Never print the print button / continue shopping link / QR. */
+    .hkdev-co-thankyou-banner,
+    .hkdev-co-invoice-actions,
     .hkdev-co-print-btn,
     .hkdev-co-invoice-print-wrap,
-    .hkdev-co-invoice-footer .hkdev-co-shop-more-btn,
     .hkdev-co-qr-block { display: none !important; }
 
-    /* Cap the logo so it wastes no vertical space. */
     .hkdev-co-invoice-brand img,
     .hkdev-co-invoice-brand .custom-logo,
     .hkdev-co-invoice-brand .custom-logo img { max-height: 36px !important; max-width: 180px !important; }
     .hkdev-co-invoice-site-name { font-size: 14px !important; font-weight: 700 !important; margin: 0 !important; }
 
-    /* Tighten address blocks (they render <br>/<p> from WC). */
-    .hkdev-co-invoice-address-block { line-height: 1.3 !important; }
-    .hkdev-co-invoice-address-block .hkdev-co-invoice-meta-label { display: block !important; font-weight: 700 !important; font-size: 10px !important; margin-bottom: 2px !important; }
-    .hkdev-co-invoice-address-block p { margin: 0 !important; padding: 0 !important; line-height: 1.3 !important; }
-
-    /* Compact layout for one page. */
     .hkdev-co-invoice-header { border-bottom-color: #ccc !important; padding-bottom: 8px !important; margin-bottom: 8px !important; }
-    .hkdev-co-invoice-head-right { display: flex !important; gap: 6px !important; flex-wrap: wrap !important; }
     .hkdev-co-invoice-title, .hkdev-co-invoice-order-no, .hkdev-co-invoice-status { font-size: 9px !important; }
-    .hkdev-co-invoice-status { border: 1px solid var(--brand-primary) !important; color: var(--brand-primary) !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .hkdev-co-invoice-meta-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 3px 6px !important; }
-    .hkdev-co-invoice-meta-block { line-height: 1.2 !important; }
-    .hkdev-co-invoice-meta-label { font-size: 8px !important; text-transform: uppercase; }
-    .hkdev-co-invoice-meta-val { font-size: 9px !important; font-weight: 600 !important; }
-    .hkdev-co-invoice-address-row { grid-template-columns: 1fr 1fr !important; padding: 6px !important; background: #f7f7f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .hkdev-co-invoice-table { margin-top: 6px !important; }
+    .hkdev-co-invoice-status { border: 1px solid var(--brand-primary, #008b44) !important; color: var(--brand-primary, #008b44) !important; background: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    .hkdev-co-invoice-info-card { background: #f7f7f7 !important; padding: 6px !important; margin-bottom: 8px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .hkdev-co-info-label { font-size: 8px !important; }
+    .hkdev-co-info-val { font-size: 9px !important; }
+    .hkdev-co-invoice-table { margin-top: 6px !important; margin-bottom: 8px !important; }
     .hkdev-co-invoice-table thead th { font-size: 9px !important; padding: 4px 2px !important; }
     .hkdev-co-invoice-table th, .hkdev-co-invoice-table td { border-bottom-color: #ccc !important; padding: 3px 2px !important; font-size: 9px !important; }
     .hkdev-co-invoice-total-row { font-size: 9px !important; padding: 2px 0 !important; }
     .hkdev-co-invoice-total-row strong { font-size: 9px !important; }
     .hkdev-co-invoice-total-row.grand-total { font-size: 10px !important; font-weight: 700 !important; }
     .hkdev-co-invoice-total-row.grand-total strong { font-size: 11px !important; }
-    .hkdev-co-invoice-footer { border-top-color: #ccc !important; padding-top: 8px !important; margin-top: 8px !important; }
+    .hkdev-co-invoice-footer { border-top-color: #ccc !important; padding-top: 6px !important; margin-top: 6px !important; }
     .hkdev-co-invoice-thanks { font-size: 10px !important; }
-    .hkdev-co-invoice h2 { font-size: 12px !important; margin: 0 !important; }
-    .hkdev-co-invoice th.total-amt, .hkdev-co-invoice td.total-amt { font-weight: 700 !important; }
-    /* Prevent the invoice from splitting mid-table on multi-item orders. */
     .hkdev-co-invoice-totals, .hkdev-co-invoice-table { page-break-inside: avoid !important; }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .hkdev-co-thankyou-banner { padding: 18px 14px !important; }
+    .hkdev-co-thankyou-title { font-size: 19px !important; }
+    .hkdev-co-thankyou-desc { font-size: 14px !important; }
+    .hkdev-co-invoice { padding: 16px !important; border-radius: 10px !important; }
+    .hkdev-co-invoice-header { flex-direction: row !important; align-items: center !important; }
+    .hkdev-co-invoice-brand img, .hkdev-co-invoice-brand .custom-logo { max-height: 40px !important; }
+    .hkdev-co-invoice-order-no { font-size: 16px !important; }
+    .hkdev-co-info-grid { grid-template-columns: 1fr 1fr !important; gap: 8px 10px !important; }
+    .hkdev-co-info-label { font-size: 10px !important; }
+    .hkdev-co-info-val { font-size: 12.5px !important; }
+    .hkdev-co-invoice-table th, .hkdev-co-invoice-table td { padding: 6px 4px !important; font-size: 12.5px !important; }
+    .hkdev-co-invoice-totals { max-width: 100% !important; }
+    .hkdev-co-invoice-actions { flex-direction: column !important; width: 100% !important; }
+    .hkdev-co-action-btn { width: 100% !important; }
 }
 
 /* Responsive adjustments */

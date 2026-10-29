@@ -325,3 +325,58 @@ jQuery(document).ready(function($) {
         initCheckoutSelect2($wrapper);
     });
 })(jQuery);
+
+/* Save Invoice as Image */
+(function ($) {
+    $(document).on('click', '#hkdev-co-download-img-btn', function (e) {
+        e.preventDefault();
+        var $btn = $(this);
+        var invoiceEl = document.getElementById('hkdev-co-invoice');
+        if (!invoiceEl) return;
+
+        if ($btn.hasClass('is-downloading')) return;
+        $btn.addClass('is-downloading');
+        var $btnText = $btn.find('.btn-text');
+        var originalText = $btnText.text();
+        $btnText.text('ছবি তৈরি হচ্ছে...');
+
+        function downloadCanvas() {
+            html2canvas(invoiceEl, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                scrollX: 0,
+                scrollY: 0
+            }).then(function (canvas) {
+                var orderNo = $btn.data('order-number') || 'order';
+                var link = document.createElement('a');
+                link.download = 'invoice-' + orderNo + '.png';
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                $btn.removeClass('is-downloading');
+                $btnText.text(originalText);
+            }).catch(function (err) {
+                console.error('Invoice image download error:', err);
+                alert('ইনভয়েস ছবি তৈরি করতে সমস্যা হয়েছে। অনুগ্রহ করে প্রিন্ট অপশনটি ব্যবহার করুন।');
+                $btn.removeClass('is-downloading');
+                $btnText.text(originalText);
+            });
+        }
+
+        if (typeof html2canvas === 'function') {
+            downloadCanvas();
+        } else {
+            var scriptUrl = (window.hkdev_elements_ajax && window.hkdev_elements_ajax.assets && window.hkdev_elements_ajax.assets.html2canvasJs) || 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            $.getScript(scriptUrl, function () {
+                downloadCanvas();
+            }).fail(function () {
+                alert('ছবি তৈরির স্ক্রিপ্ট লোড করা যায়নি। অনুগ্রহ করে প্রিন্ট অপশনটি ব্যবহার করুন।');
+                $btn.removeClass('is-downloading');
+                $btnText.text(originalText);
+            });
+        }
+    });
+})(jQuery);

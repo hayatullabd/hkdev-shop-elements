@@ -503,6 +503,9 @@ class CheckoutEngine {
 				return ob_get_clean();
 			}
 
+			wp_enqueue_script( 'hkdev-elements-html2canvas' );
+			wp_enqueue_script( 'hkdev-elements-checkout-js' );
+
 			$payment_method_title = $order->get_payment_method_title();
 			if ( empty( $payment_method_title ) ) {
 				$payment_method_title = 'Cash On Delivery';
@@ -518,114 +521,131 @@ class CheckoutEngine {
 			}
 
 			$order_number = $order->get_order_number();
+			$order_date   = $order->get_date_created() ? wc_format_datetime( $order->get_date_created() ) : '';
+			$customer_name = $order->get_formatted_billing_full_name();
+			$phone        = $order->get_billing_phone() ? $order->get_billing_phone() : '—';
+			$address      = $order->get_formatted_shipping_address();
+			if ( empty( $address ) ) {
+				$address = $order->get_formatted_billing_address( '' );
+			}
 			?>
-			<div class="hkdev-co-invoice fade-in" id="hkdev-co-invoice">
-				<!-- Invoice header: logo + order info + print button -->
-				<div class="hkdev-co-invoice-header">
-					<div class="hkdev-co-invoice-brand">
-						<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<div class="hkdev-co-thankyou-wrap fade-in">
+				<!-- 1. Prominent Thank You Banner -->
+				<div class="hkdev-co-thankyou-banner">
+					<div class="hkdev-co-thankyou-icon">
+						<i class="fa-solid fa-circle-check"></i>
 					</div>
-					<div class="hkdev-co-invoice-head-right">
-						<span class="hkdev-co-invoice-title"><?php echo esc_html( $this->t( 'thankyou', 'invoice' ) ); ?></span>
-						<span class="hkdev-co-invoice-order-no">#<?php echo esc_html( $order_number ); ?></span>
-						<span class="hkdev-co-invoice-status"><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></span>
-					</div>
-				</div>
-
-				<div class="hkdev-co-invoice-top-row">
-					<div class="hkdev-co-invoice-meta-grid">
-						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'from' ) ); ?></span>
-							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span>
-						</div>
-						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'order_date' ) ); ?></span>
-							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></span>
-						</div>
-						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'bill_to' ) ); ?></span>
-							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_formatted_billing_full_name() ); ?></span>
-						</div>
-						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'phone' ) ); ?></span>
-							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_billing_phone() ? $order->get_billing_phone() : '—' ); ?></span>
-						</div>
-						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'email' ) ); ?></span>
-							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $order->get_billing_email() ? $order->get_billing_email() : '—' ); ?></span>
-						</div>
-						<div class="hkdev-co-invoice-meta-block">
-							<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'payment' ) ); ?></span>
-							<span class="hkdev-co-invoice-meta-val"><?php echo esc_html( $payment_method_title ); ?></span>
-						</div>
-					</div>
-					<div class="hkdev-co-invoice-print-wrap">
-						<button type="button" class="hkdev-co-print-btn" onclick="window.print()">
-							<i class="fa-solid fa-print"></i> <?php echo esc_html( $this->t( 'thankyou', 'print' ) ); ?>
-						</button>
+					<h2 class="hkdev-co-thankyou-title"><?php echo esc_html( $this->t( 'thankyou', 'banner_title' ) ); ?></h2>
+					<p class="hkdev-co-thankyou-desc"><?php echo esc_html( $this->t( 'thankyou', 'banner_desc' ) ); ?></p>
+					<div class="hkdev-co-thankyou-order-pill">
+						<span><?php esc_html_e( 'অর্ডার নম্বর:', 'hkdev-shop-elements' ); ?> <strong>#<?php echo esc_html( $order_number ); ?></strong></span>
 					</div>
 				</div>
 
-				<!-- Billing / Shipping addresses -->
-				<div class="hkdev-co-invoice-address-row">
-					<div class="hkdev-co-invoice-address-block">
-						<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'billing' ) ); ?></span>
-						<span class="hkdev-co-invoice-meta-val"><?php echo wp_kses_post( $order->get_formatted_billing_address( esc_html__( 'N/A', 'hkdev-shop-elements' ) ) ); ?></span>
+				<!-- 2. Compact Invoice Box (All info neatly bounded, NO dummy email) -->
+				<div class="hkdev-co-invoice" id="hkdev-co-invoice">
+					<!-- Invoice header: logo + order info -->
+					<div class="hkdev-co-invoice-header">
+						<div class="hkdev-co-invoice-brand">
+							<?php echo $logo_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+						</div>
+						<div class="hkdev-co-invoice-head-right">
+							<span class="hkdev-co-invoice-title"><?php echo esc_html( $this->t( 'thankyou', 'invoice' ) ); ?></span>
+							<span class="hkdev-co-invoice-order-no">#<?php echo esc_html( $order_number ); ?></span>
+							<span class="hkdev-co-invoice-status"><?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?></span>
+						</div>
 					</div>
-					<?php if ( $order->get_formatted_shipping_address() ) : ?>
-					<div class="hkdev-co-invoice-address-block">
-						<span class="hkdev-co-invoice-meta-label"><?php echo esc_html( $this->t( 'thankyou', 'shipping' ) ); ?></span>
-						<span class="hkdev-co-invoice-meta-val"><?php echo wp_kses_post( $order->get_formatted_shipping_address() ); ?></span>
-					</div>
-					<?php endif; ?>
-				</div>
 
-				<!-- Items table -->
-				<table class="hkdev-co-invoice-table">
-					<thead>
-						<tr>
-							<th><?php echo esc_html( $this->t( 'thankyou', 'item' ) ); ?></th>
-							<th class="col-qty"><?php echo esc_html( $this->t( 'thankyou', 'qty' ) ); ?></th>
-							<th class="col-total"><?php echo esc_html( $this->t( 'thankyou', 'total' ) ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( $order->get_items() as $item_id => $item ) : ?>
-						<tr>
-							<td>
-								<?php
-								$product   = $item->get_product();
-								$item_name = apply_filters( 'woocommerce_order_item_name', $item->get_name(), $item, false );
-								echo wp_kses_post( $item_name );
-								if ( $product && $product->get_sku() ) :
-									?>
-									<span class="hkdev-co-invoice-sku"><?php esc_html_e( 'SKU:', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $product->get_sku() ); ?></span>
-								<?php endif; ?>
-							</td>
-							<td class="col-qty"><?php echo esc_html( $item->get_quantity() ); ?></td>
-							<td class="col-total"><?php echo $order->get_formatted_line_subtotal( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
-						</tr>
+					<!-- Compact Info Card -->
+					<div class="hkdev-co-invoice-info-card">
+						<div class="hkdev-co-info-grid">
+							<div class="hkdev-co-info-item">
+								<span class="hkdev-co-info-label"><?php echo esc_html( $this->t( 'thankyou', 'order_date' ) ); ?></span>
+								<span class="hkdev-co-info-val"><?php echo esc_html( $order_date ); ?></span>
+							</div>
+							<div class="hkdev-co-info-item">
+								<span class="hkdev-co-info-label"><?php echo esc_html( $this->t( 'thankyou', 'payment' ) ); ?></span>
+								<span class="hkdev-co-info-val"><?php echo esc_html( $payment_method_title ); ?></span>
+							</div>
+							<div class="hkdev-co-info-item">
+								<span class="hkdev-co-info-label"><?php echo esc_html( $this->t( 'thankyou', 'bill_to' ) ); ?></span>
+								<span class="hkdev-co-info-val"><?php echo esc_html( $customer_name ? $customer_name : '—' ); ?></span>
+							</div>
+							<div class="hkdev-co-info-item">
+								<span class="hkdev-co-info-label"><?php echo esc_html( $this->t( 'thankyou', 'phone' ) ); ?></span>
+								<span class="hkdev-co-info-val"><?php echo esc_html( $phone ); ?></span>
+							</div>
+							<?php if ( ! empty( $address ) ) : ?>
+							<div class="hkdev-co-info-item full-width">
+								<span class="hkdev-co-info-label"><?php echo esc_html( $this->t( 'thankyou', 'shipping' ) ); ?></span>
+								<div class="hkdev-co-info-val address-val"><?php echo wp_kses_post( $address ); ?></div>
+							</div>
+							<?php endif; ?>
+						</div>
+					</div>
+
+					<!-- Items table -->
+					<table class="hkdev-co-invoice-table">
+						<thead>
+							<tr>
+								<th><?php echo esc_html( $this->t( 'thankyou', 'item' ) ); ?></th>
+								<th class="col-qty"><?php echo esc_html( $this->t( 'thankyou', 'qty' ) ); ?></th>
+								<th class="col-total"><?php echo esc_html( $this->t( 'thankyou', 'total' ) ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ( $order->get_items() as $item_id => $item ) : ?>
+							<tr>
+								<td>
+									<?php
+									$product   = $item->get_product();
+									$item_name = apply_filters( 'woocommerce_order_item_name', $item->get_name(), $item, false );
+									echo wp_kses_post( $item_name );
+									if ( $product && $product->get_sku() ) :
+										?>
+										<span class="hkdev-co-invoice-sku"><?php esc_html_e( 'SKU:', 'hkdev-shop-elements' ); ?> <?php echo esc_html( $product->get_sku() ); ?></span>
+									<?php endif; ?>
+								</td>
+								<td class="col-qty"><?php echo esc_html( $item->get_quantity() ); ?></td>
+								<td class="col-total"><?php echo $order->get_formatted_line_subtotal( $item ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+
+					<!-- Totals -->
+					<div class="hkdev-co-invoice-totals">
+						<div class="hkdev-co-invoice-total-row"><span><?php echo esc_html( $this->t( 'thankyou', 'subtotal' ) ); ?></span><strong><?php echo $order->get_subtotal_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+						<?php foreach ( $order->get_items( 'coupon' ) as $coupon_item ) : ?>
+						<div class="hkdev-co-invoice-total-row is-discount"><span><i class="fa-solid fa-tag"></i> <?php echo esc_html( $this->t( 'thankyou', 'coupon' ) ); ?> <?php echo esc_html( $coupon_item->get_name() ); ?></span><strong>-<?php echo wc_price( $coupon_item->get_discount() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
 						<?php endforeach; ?>
-					</tbody>
-				</table>
+						<?php foreach ( $order->get_fees() as $fee ) : ?>
+						<div class="hkdev-co-invoice-total-row is-fee"><span><i class="fa-solid fa-gift"></i> <?php echo esc_html( $fee->get_name() ); ?></span><strong><?php echo wc_price( $fee->get_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+						<?php endforeach; ?>
+						<div class="hkdev-co-invoice-total-row"><span><?php echo esc_html( $this->t( 'thankyou', 'shipping_label' ) ); ?></span><strong><?php echo $order->get_shipping_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+						<div class="hkdev-co-invoice-total-row grand-total"><span><?php echo esc_html( $this->t( 'thankyou', 'grand_total' ) ); ?></span><strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					</div>
 
-				<!-- Totals -->
-				<div class="hkdev-co-invoice-totals">
-					<div class="hkdev-co-invoice-total-row"><span><?php echo esc_html( $this->t( 'thankyou', 'subtotal' ) ); ?></span><strong><?php echo $order->get_subtotal_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-					<?php foreach ( $order->get_items( 'coupon' ) as $coupon_item ) : ?>
-					<div class="hkdev-co-invoice-total-row is-discount"><span><i class="fa-solid fa-tag"></i> <?php echo esc_html( $this->t( 'thankyou', 'coupon' ) ); ?> <?php echo esc_html( $coupon_item->get_name() ); ?></span><strong>-<?php echo wc_price( $coupon_item->get_discount() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-					<?php endforeach; ?>
-					<?php foreach ( $order->get_fees() as $fee ) : ?>
-					<div class="hkdev-co-invoice-total-row is-fee"><span><i class="fa-solid fa-gift"></i> <?php echo esc_html( $fee->get_name() ); ?></span><strong><?php echo wc_price( $fee->get_total() ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-					<?php endforeach; ?>
-					<div class="hkdev-co-invoice-total-row"><span><?php echo esc_html( $this->t( 'thankyou', 'shipping_label' ) ); ?></span><strong><?php echo $order->get_shipping_to_display(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
-					<div class="hkdev-co-invoice-total-row grand-total"><span><?php echo esc_html( $this->t( 'thankyou', 'grand_total' ) ); ?></span><strong><?php echo $order->get_formatted_order_total(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></strong></div>
+					<!-- Footer inside invoice -->
+					<div class="hkdev-co-invoice-footer">
+						<p class="hkdev-co-invoice-thanks"><i class="fa-solid fa-circle-check"></i> <?php echo esc_html( $this->t( 'thankyou', 'thanks' ) ); ?></p>
+					</div>
 				</div>
 
-				<!-- Footer -->
-				<div class="hkdev-co-invoice-footer">
-					<p class="hkdev-co-invoice-thanks"><i class="fa-solid fa-circle-check"></i> <?php echo esc_html( $this->t( 'thankyou', 'thanks' ) ); ?></p>
-					<a href="<?php echo esc_url( get_permalink( wc_get_page_id( 'shop' ) ) ); ?>" class="hkdev-co-shop-more-btn"><?php echo esc_html( $this->t( 'thankyou', 'continue' ) ); ?></a>
+				<!-- 3. Actions Below Invoice (Print, Save Image, Go to Home) -->
+				<div class="hkdev-co-invoice-actions">
+					<button type="button" class="hkdev-co-action-btn hkdev-co-btn-print" id="hkdev-co-print-btn" onclick="window.print()">
+						<i class="fa-solid fa-print"></i>
+						<span><?php echo esc_html( $this->t( 'thankyou', 'print' ) ); ?></span>
+					</button>
+					<button type="button" class="hkdev-co-action-btn hkdev-co-btn-download" id="hkdev-co-download-img-btn" data-order-number="<?php echo esc_attr( $order_number ); ?>">
+						<i class="fa-solid fa-download"></i>
+						<span class="btn-text"><?php echo esc_html( $this->t( 'thankyou', 'download_img' ) ); ?></span>
+					</button>
+					<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="hkdev-co-action-btn hkdev-co-btn-home">
+						<i class="fa-solid fa-house"></i>
+						<span><?php echo esc_html( $this->t( 'thankyou', 'home_btn' ) ); ?></span>
+					</a>
 				</div>
 			</div>
 			<?php

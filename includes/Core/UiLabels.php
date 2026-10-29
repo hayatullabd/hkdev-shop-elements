@@ -82,6 +82,10 @@ class UiLabels {
 				'terms'              => [ 'label' => __( 'Terms Agreement', 'hkdev-shop-elements' ), 'default' => __( 'I have read and agree to the %1$s, %2$s &amp; %3$s.', 'hkdev-shop-elements' ), 'multiline' => true ],
 			],
 			'thankyou' => [
+				'banner_title'   => [ 'label' => __( 'Thank You Banner Title', 'hkdev-shop-elements' ), 'default' => __( 'ধন্যবাদ! আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে', 'hkdev-shop-elements' ) ],
+				'banner_desc'    => [ 'label' => __( 'Thank You Banner Message', 'hkdev-shop-elements' ), 'default' => __( 'অর্ডারটি সম্পন্ন হয়েছে, ২৪ ঘন্টার মধ্যে আপনাকে কল করে অর্ডার কনফার্ম করে আপনার ঠিকানায় পণ্য পাঠিয়ে দেয়া হবে।', 'hkdev-shop-elements' ), 'multiline' => true ],
+				'download_img'   => [ 'label' => __( 'Save Invoice Image Button', 'hkdev-shop-elements' ), 'default' => __( 'ইনভয়েস ছবি সেভ করুন', 'hkdev-shop-elements' ) ],
+				'home_btn'       => [ 'label' => __( 'Home Button', 'hkdev-shop-elements' ), 'default' => __( 'হোম পেজে যান', 'hkdev-shop-elements' ) ],
 				'invoice'        => [ 'label' => __( 'Invoice Title', 'hkdev-shop-elements' ), 'default' => __( 'INVOICE', 'hkdev-shop-elements' ) ],
 				'from'           => [ 'label' => __( 'From', 'hkdev-shop-elements' ), 'default' => __( 'From', 'hkdev-shop-elements' ) ],
 				'order_date'     => [ 'label' => __( 'Order Date', 'hkdev-shop-elements' ), 'default' => __( 'Order Date', 'hkdev-shop-elements' ) ],
