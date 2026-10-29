@@ -857,8 +857,10 @@
 			var $restore = $('.hkdev-float-cart-restore').first();
 			var $link = $wrap.find('.hkdev-float-cart').first();
 			var wrapEl = $wrap[0];
+			var restoreEl = $restore[0];
 			var storageKey = 'hkdevFloatCart';
 			var dragging = false;
+			var draggingRestore = false;
 			var moved = false;
 			var startX = 0;
 			var startY = 0;
@@ -942,14 +944,20 @@
 			}
 
 			function clampLeft(left) {
-				var space = pads();
 				var width = $wrap.outerWidth() || 96;
-				var max = Math.max(space.x, viewSize().w - width - space.x);
+				var max = viewSize().w - width;
 
-				return Math.max(space.x, Math.min(max, left));
+				return Math.max(0, Math.min(max, left));
 			}
 
 			function movedStyle(left, top) {
+				var width = $wrap.outerWidth() || 96;
+				if (left >= viewSize().w - width - 24) {
+					return 'top:' + top + 'px !important;right:0 !important;left:auto !important;bottom:auto !important;transform:none !important;';
+				}
+				if (left <= 24) {
+					return 'top:' + top + 'px !important;left:0 !important;right:auto !important;bottom:auto !important;transform:none !important;';
+				}
 				return 'top:' + top + 'px !important;left:' + left + 'px !important;right:auto !important;bottom:auto !important;transform:none !important;';
 			}
 
@@ -975,7 +983,8 @@
 				var style = movedStyle(left, top);
 
 				$wrap.addClass('is-moved').attr('style', defaults + style);
-				$restore.addClass('is-moved').attr('style', style);
+				// Minimized restore button ALWAYS stays docked flush to the right edge:
+				$restore.addClass('is-moved').attr('style', 'top:' + top + 'px !important;right:0 !important;left:auto !important;bottom:auto !important;transform:none !important;');
 			}
 
 			function persist(partial) {
@@ -1029,7 +1038,7 @@
 			}
 
 			function beginDrag(e) {
-				if (isHideTarget(e.target)) {
+				if ($(e.target).closest('.hkdev-float-cart-hide').length > 0) {
 					return;
 				}
 
@@ -1038,25 +1047,34 @@
 				}
 
 				var point = eventPoint(e);
-				var rect = wrapEl.getBoundingClientRect();
+				var onRestore = restoreEl && ($(e.target).closest('.hkdev-float-cart-restore').length > 0 || e.currentTarget === restoreEl);
 
 				dragging = true;
+				draggingRestore = !!onRestore;
 				moved = false;
 				revealedOnPress = false;
 				pointerId = 'pointerId' in e ? e.pointerId : 1;
 				inputType = e.pointerType || ((e.touches && e.touches.length) ? 'touch' : 'mouse');
 				startX = point.x;
 				startY = point.y;
-				startLeft = rect.left;
-				startTop = rect.top;
 
-				if ('mouse' !== inputType && e.pointerId != null) {
-					try {
-						wrapEl.setPointerCapture(e.pointerId);
-					} catch (err) {}
+				if (draggingRestore && restoreEl) {
+					var rRect = restoreEl.getBoundingClientRect();
+					startLeft = rRect.left;
+					startTop = rRect.top;
+					if ('mouse' !== inputType && e.pointerId != null) {
+						try { restoreEl.setPointerCapture(e.pointerId); } catch (err) {}
+					}
+				} else {
+					var rect = wrapEl.getBoundingClientRect();
+					startLeft = rect.left;
+					startTop = rect.top;
+					if ('mouse' !== inputType && e.pointerId != null) {
+						try { wrapEl.setPointerCapture(e.pointerId); } catch (err) {}
+					}
 				}
 
-				if (isCoarseInput()) {
+				if (isCoarseInput() && !draggingRestore) {
 					clearHold();
 					holdTimer = window.setTimeout(function () {
 						if (dragging && !moved) {
@@ -1089,18 +1107,27 @@
 					revealedOnPress = false;
 					floatCartJustDragged = true;
 					clearHold();
-					$wrap.addClass('is-dragging is-moved');
+					if (draggingRestore) {
+						$restore.addClass('is-dragging is-moved');
+					} else {
+						$wrap.addClass('is-dragging is-moved');
+					}
 				}
 
 				if (e.cancelable) {
 					e.preventDefault();
 				}
 
-				$wrap.attr(
-					'style',
-					($wrap.attr('data-default-style') || '') +
-					movedStyle(clampLeft(startLeft + dx), clampTop(startTop + dy))
-				);
+				if (draggingRestore) {
+					var rTop = clampTop(startTop + dy);
+					$restore.attr('style', 'top:' + rTop + 'px !important;right:0 !important;left:auto !important;bottom:auto !important;transform:none !important;');
+				} else {
+					$wrap.attr(
+						'style',
+						($wrap.attr('data-default-style') || '') +
+						movedStyle(clampLeft(startLeft + dx), clampTop(startTop + dy))
+					);
+				}
 			}
 
 			function endDrag(e) {
@@ -1114,26 +1141,40 @@
 
 				var wasMoved = moved;
 				var wasReveal = revealedOnPress;
+				var isRestoreDrag = draggingRestore;
 				var target = e ? e.target : null;
 
 				clearHold();
 				dragging = false;
+				draggingRestore = false;
 				moved = false;
 				revealedOnPress = false;
 				pointerId = null;
 				$wrap.removeClass('is-dragging');
+				$restore.removeClass('is-dragging');
 
 				if (wasMoved) {
-					var rect = wrapEl.getBoundingClientRect();
-
-					persist({
-						top: Math.round(rect.top),
-						left: Math.round(rect.left)
-					});
+					if (isRestoreDrag && restoreEl) {
+						var rRect = restoreEl.getBoundingClientRect();
+						persist({
+							top: Math.round(rRect.top)
+						});
+					} else {
+						var rect = wrapEl.getBoundingClientRect();
+						persist({
+							top: Math.round(rect.top),
+							left: Math.round(rect.left)
+						});
+					}
 					showControls();
 					window.setTimeout(function () {
 						floatCartJustDragged = false;
 					}, 400);
+					return;
+				}
+
+				if (isRestoreDrag) {
+					persist({ hidden: false });
 					return;
 				}
 
@@ -1152,7 +1193,7 @@
 			}
 
 			function bind(el, type, handler, opts) {
-				el.addEventListener(type, handler, opts || false);
+				if (el) el.addEventListener(type, handler, opts || false);
 			}
 
 			applyState(normalize(loadState()));
@@ -1166,19 +1207,24 @@
 
 			$restore.on('click', function (e) {
 				e.preventDefault();
-				persist({ hidden: false });
+				if (!floatCartJustDragged) {
+					persist({ hidden: false });
+				}
 			});
 
 			if (hasPointer) {
 				bind(wrapEl, 'pointerdown', beginDrag);
+				bind(restoreEl, 'pointerdown', beginDrag);
 				bind(document, 'pointermove', moveDrag, { passive: false });
 				bind(document, 'pointerup', endDrag);
 				bind(document, 'pointercancel', endDrag);
 			} else {
 				bind(wrapEl, 'mousedown', beginDrag);
+				bind(restoreEl, 'mousedown', beginDrag);
 				bind(document, 'mousemove', moveDrag);
 				bind(document, 'mouseup', endDrag);
 				bind(wrapEl, 'touchstart', beginDrag, { passive: false });
+				bind(restoreEl, 'touchstart', beginDrag, { passive: false });
 				bind(document, 'touchmove', moveDrag, { passive: false });
 				bind(document, 'touchend', endDrag);
 				bind(document, 'touchcancel', endDrag);

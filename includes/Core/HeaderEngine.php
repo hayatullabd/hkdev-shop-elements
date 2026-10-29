@@ -973,8 +973,8 @@ class HeaderEngine {
 			style="<?php echo esc_attr( $float_cart_inline_style ); ?>"
 		>
 			<?php if ( $customer ) : ?>
-			<button type="button" class="hkdev-float-cart-hide" aria-label="<?php esc_attr_e( 'Hide floating cart', 'hkdev-shop-elements' ); ?>">
-				<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+			<button type="button" class="hkdev-float-cart-hide" aria-label="<?php esc_attr_e( 'Fold floating cart', 'hkdev-shop-elements' ); ?>" title="<?php esc_attr_e( 'Fold cart', 'hkdev-shop-elements' ); ?>">
+				<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
 			</button>
 			<?php endif; ?>
 			<a

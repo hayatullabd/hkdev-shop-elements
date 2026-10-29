@@ -1694,6 +1694,12 @@ body.hkdev-header-locked {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16) !important;
 }
 
+.hkdev-float-cart-wrap[style*="right:0"] .hkdev-float-cart,
+.hkdev-float-cart-wrap[style*="right: 0"] .hkdev-float-cart {
+    border-radius: 12px 0 0 12px !important;
+    box-shadow: -5px 8px 24px rgba(0, 0, 0, 0.16) !important;
+}
+
 .hkdev-float-cart-wrap.is-dragging .hkdev-float-cart {
     cursor: grabbing;
 }
@@ -1716,15 +1722,16 @@ body.hkdev-header-locked {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease !important;
+    opacity: 0.85 !important;
+    pointer-events: auto !important;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
 }
 
 .hkdev-float-cart-wrap:hover .hkdev-float-cart-hide,
 .hkdev-float-cart-wrap:focus-within .hkdev-float-cart-hide {
-    opacity: 1;
-    pointer-events: auto;
+    opacity: 1 !important;
+    transform: scale(1.08) !important;
 }
 
 .hkdev-float-cart-restore {
@@ -1734,20 +1741,37 @@ body.hkdev-header-locked {
     left: auto !important;
     z-index: 9990 !important;
     width: 36px !important;
-    height: 44px !important;
+    height: 46px !important;
     padding: 0 !important;
     border: 0 !important;
     border-radius: 12px 0 0 12px !important;
     background: var(--hd-secondary) !important;
     color: #ffffff !important;
     cursor: pointer !important;
-    box-shadow: -4px 6px 16px rgba(0, 0, 0, 0.14) !important;
+    box-shadow: -4px 6px 16px rgba(0, 0, 0, 0.18) !important;
     transform: translateY(-50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    touch-action: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.hkdev-float-cart-restore:hover {
+    transform: translateY(-50%) translateX(-3px) !important;
+    box-shadow: -6px 8px 20px rgba(0, 0, 0, 0.22) !important;
 }
 
 .hkdev-float-cart-restore.is-moved {
-    border-radius: 12px !important;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14) !important;
+    right: 0 !important;
+    left: auto !important;
+    border-radius: 12px 0 0 12px !important;
+    box-shadow: -4px 6px 16px rgba(0, 0, 0, 0.18) !important;
+    transform: none !important;
+}
+
+.hkdev-float-cart-restore.is-moved:hover {
+    transform: translateX(-3px) !important;
 }
 
 .hkdev-float-cart-restore[hidden] {
@@ -1756,20 +1780,15 @@ body.hkdev-header-locked {
 
 @media (hover: none), (pointer: coarse) {
     .hkdev-float-cart-hide {
-        top: 4px !important;
-        left: auto !important;
-        right: 4px !important;
-        width: 22px !important;
-        height: 22px !important;
+        top: -6px !important;
+        left: -6px !important;
+        right: auto !important;
+        width: 24px !important;
+        height: 24px !important;
         font-size: 11px !important;
-        background: rgba(0, 0, 0, 0.45) !important;
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .hkdev-float-cart-wrap.is-controls .hkdev-float-cart-hide {
-        opacity: 1;
-        pointer-events: auto;
+        background: #111111 !important;
+        opacity: 0.9 !important;
+        pointer-events: auto !important;
     }
 
     .hkdev-float-cart,
@@ -1778,7 +1797,7 @@ body.hkdev-header-locked {
     }
 
     .hkdev-float-cart-restore {
-        width: 42px !important;
+        width: 36px !important;
         height: 48px !important;
     }
 }
