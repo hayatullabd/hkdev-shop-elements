@@ -1111,12 +1111,42 @@ class CheckoutEngine {
 	}
 
 	/**
-	 * Configured (static) price of a shipping method instance.
+	 * Configured price of a shipping method instance for the current cart.
+	 *
+	 * When the method is from a different zone than the customer's current destination,
+	 * WooCommerce's package rate calculation didn't evaluate it. This method simulates
+	 * the shipping package rate calculation (base cost + shipping class costs based on
+	 * current cart items) so all displayed delivery options reflect accurate fees rather
+	 * than showing 0.
 	 *
 	 * @param \WC_Shipping_Method $method Method instance.
-	 * @return float|null Null when no static price is configured.
+	 * @return float|null Null when no valid price is configured.
 	 */
 	private function co_delivery_method_cost( $method ) {
+		// If WooCommerce cart has a package, ask the shipping method to calculate its shipping
+		// rate directly so flat rate formulas and shipping class costs are evaluated accurately.
+		if ( function_exists( 'WC' ) && WC()->shipping() && WC()->cart && ! WC()->cart->is_empty() ) {
+			$packages = WC()->shipping()->get_packages();
+			$package  = ! empty( $packages ) ? reset( $packages ) : null;
+
+			if ( $package && method_exists( $method, 'calculate_shipping' ) ) {
+				try {
+					$cloned = clone $method;
+					$cloned->rates = [];
+					$cloned->calculate_shipping( $package );
+
+					if ( ! empty( $cloned->rates ) ) {
+						$rate = reset( $cloned->rates );
+						if ( isset( $rate->cost ) && is_numeric( $rate->cost ) ) {
+							return (float) $rate->cost;
+						}
+					}
+				} catch ( \Throwable $e ) {
+					// Fall back to manual inspection below.
+				}
+			}
+		}
+
 		$settings = ( isset( $method->instance_settings ) && is_array( $method->instance_settings ) ) ? $method->instance_settings : [];
 
 		if ( isset( $settings['cost'] ) && is_numeric( $settings['cost'] ) ) {
