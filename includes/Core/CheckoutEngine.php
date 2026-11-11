@@ -1107,6 +1107,51 @@ class CheckoutEngine {
 			}
 		}
 
+		// Single Delivery Option Mode: When cart items belong to admin-configured
+		// shipping classes (e.g. All BD / Nationwide), collapse multiple delivery
+		// options into 1 single option to eliminate redundant choices.
+		$single_classes = (array) get_option( 'hkdev_elements_single_option_classes', [] );
+		if ( ! empty( $single_classes ) && ! empty( $filtered ) && function_exists( 'WC' ) && WC()->cart ) {
+			$cart_classes = [];
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				if ( ! empty( $cart_item['data'] ) && method_exists( $cart_item['data'], 'get_shipping_class' ) ) {
+					$sc_slug = $cart_item['data']->get_shipping_class();
+					$sc_id   = (string) $cart_item['data']->get_shipping_class_id();
+					if ( '' !== $sc_slug ) {
+						$cart_classes[ $sc_slug ] = true;
+					}
+					if ( '0' !== $sc_id && '' !== $sc_id ) {
+						$cart_classes[ $sc_id ] = true;
+					}
+				}
+			}
+
+			// Check if any cart item matches the configured single option classes
+			$matched_class_name = '';
+			foreach ( $single_classes as $target_class ) {
+				if ( isset( $cart_classes[ $target_class ] ) ) {
+					$term = get_term_by( 'slug', $target_class, 'product_shipping_class' );
+					if ( ! $term && is_numeric( $target_class ) ) {
+						$term = get_term_by( 'id', (int) $target_class, 'product_shipping_class' );
+					}
+					$matched_class_name = $term && ! is_wp_error( $term ) ? $term->name : $target_class;
+					break;
+				}
+			}
+
+			if ( '' !== $matched_class_name ) {
+				$custom_label = trim( (string) get_option( 'hkdev_elements_single_option_label', '' ) );
+				$final_label  = '' !== $custom_label ? $custom_label : $matched_class_name;
+
+				// Take the first valid option and relabel it
+				$first_key  = array_key_first( $filtered );
+				$first_item = $filtered[ $first_key ];
+				$first_item['label'] = $final_label;
+
+				return [ $first_key => $first_item ];
+			}
+		}
+
 		return $filtered;
 	}
 

@@ -117,6 +117,26 @@ final class CheckoutOptions {
 
         register_setting(
             'hkdev_elements_checkout_fields_group',
+            'hkdev_elements_single_option_classes',
+            [
+                'type'              => 'array',
+                'sanitize_callback' => [ $this, 'sanitize_class_array' ],
+                'default'           => [],
+            ]
+        );
+
+        register_setting(
+            'hkdev_elements_checkout_fields_group',
+            'hkdev_elements_single_option_label',
+            [
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => '',
+            ]
+        );
+
+        register_setting(
+            'hkdev_elements_checkout_fields_group',
             \HkdevShopElements\Includes\Core\CheckoutEngine::instance()->config_option_name(),
             [
                 'type'              => 'array',
@@ -206,6 +226,19 @@ final class CheckoutOptions {
         }
 
         return $clean;
+    }
+
+    /**
+     * Sanitize array of selected shipping class slugs/IDs.
+     *
+     * @param mixed $input Submitted value.
+     * @return array
+     */
+    public function sanitize_class_array( $input ) {
+        if ( ! is_array( $input ) ) {
+            return [];
+        }
+        return array_values( array_filter( array_map( 'sanitize_text_field', $input ) ) );
     }
 
     /**
@@ -323,6 +356,9 @@ final class CheckoutOptions {
         $show_coupon_modal     = get_option( 'hkdev_elements_show_coupon_modal', 'yes' );
         $billing_as_delivery   = get_option( 'hkdev_elements_billing_as_delivery', 'no' );
         $checkout_modal_scope  = get_option( 'hkdev_elements_checkout_modal_scope', 'both' );
+        $single_classes        = (array) get_option( 'hkdev_elements_single_option_classes', [] );
+        $single_label          = get_option( 'hkdev_elements_single_option_label', '' );
+        $wc_shipping_classes   = function_exists( 'WC' ) && WC()->shipping() ? WC()->shipping()->get_shipping_classes() : [];
         $option_name           = $engine->config_option_name();
         $is_first              = true;
 
@@ -405,6 +441,35 @@ final class CheckoutOptions {
                                         <option value="none" <?php selected( 'none', $checkout_modal_scope ); ?>><?php esc_html_e( 'Disabled', 'hkdev-shop-elements' ); ?></option>
                                     </select>
                                     <p class="description"><?php esc_html_e( 'Choose where the Buy Now checkout modal opens. When disabled, Buy Now redirects to the checkout page.', 'hkdev-shop-elements' ); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php esc_html_e( 'Single Delivery Option Classes', 'hkdev-shop-elements' ); ?></th>
+                                <td>
+                                    <?php if ( ! empty( $wc_shipping_classes ) ) : ?>
+                                        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+                                            <?php foreach ( $wc_shipping_classes as $sc ) : ?>
+                                                <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                                                    <input type="checkbox" name="hkdev_elements_single_option_classes[]"
+                                                           value="<?php echo esc_attr( $sc->slug ); ?>"
+                                                           <?php checked( in_array( $sc->slug, $single_classes, true ) || in_array( (string) $sc->term_id, $single_classes, true ) ); ?>>
+                                                    <span><strong><?php echo esc_html( $sc->name ); ?></strong> <code>(<?php echo esc_html( $sc->slug ); ?>)</code></span>
+                                                </label>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php else : ?>
+                                        <p class="description" style="color:#d63638;"><?php esc_html_e( 'No WooCommerce shipping classes found. Create one under WooCommerce → Settings → Shipping → Shipping classes.', 'hkdev-shop-elements' ); ?></p>
+                                    <?php endif; ?>
+                                    <p class="description"><?php esc_html_e( 'When a product in the cart has any of these shipping classes, checkout will show only 1 single delivery option instead of inside/outside area options.', 'hkdev-shop-elements' ); ?></p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><?php esc_html_e( 'Single Option Label (Optional)', 'hkdev-shop-elements' ); ?></th>
+                                <td>
+                                    <input type="text" class="regular-text" name="hkdev_elements_single_option_label"
+                                           value="<?php echo esc_attr( $single_label ); ?>"
+                                           placeholder="<?php esc_attr_e( 'e.g. সারা বাংলাদেশ বা ডেলিভারি চার্জ (Leave blank to use Class name)', 'hkdev-shop-elements' ); ?>">
+                                    <p class="description"><?php esc_html_e( 'Custom title to display for the single delivery option. If left blank, it will display the product shipping class name.', 'hkdev-shop-elements' ); ?></p>
                                 </td>
                             </tr>
                         </tbody></table>
